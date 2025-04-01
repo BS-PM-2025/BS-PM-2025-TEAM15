@@ -1,1 +1,17 @@
-5.0.3-django
+5.0.3-djangopip install django
+
+
+React installtion:
+all the dependencies we need.
+ "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^13.5.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-scripts": "5.0.1",
+    "web-vitals": "^2.1.4"
+
+Connting to Django and React : 
+"pip install django-cors-headers"
+"python3 -m pip install djangorestframework"

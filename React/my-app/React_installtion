@@ -1,0 +1,26 @@
+How to install react :
+1)make sure you have node.js on the computer, if not download from here:
+"http://nodejs.org"
+
+2) after installing , check that you have it on the system using cmd/Terminal and Run : 
+node -v
+npm -v
+
+3) go to the app folder(cd my-app) and there run the line : "npm start ".
+
+4) after first boot, check in the same folder in the file named :package.json -> if you have all the right versions. (compare with README.MD)
+
+///django + react work:
+
+
+5)install these packegs(using cmd/termial):
+    "python3 -m pip install djangorestframework"
+    "python3 -m  pip install django-cors-headers" 
+    "npm start axios"
+    "npm install react-router-dom"
+
+6)make migratoins and migrate in django .
+
+7)run django,django runs on one terminal/cmd and react on another!
+
+Good luck. for more guides and help please contect some random dude , because the author of this file is quiting! and joinning a different depertment.
