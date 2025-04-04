@@ -4,7 +4,7 @@ import Stopwatch from '../Components/Stopwatch';
 function Home_test() {
   return (
     <div>
-      <h1>Welcome to Home Page! here im adding shit aha!</h1>
+      <h1>Welcome to Home Page! another new thng </h1>
       <div>
         <Stopwatch/>
     </div>
