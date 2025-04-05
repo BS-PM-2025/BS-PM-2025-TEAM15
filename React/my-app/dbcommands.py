@@ -78,3 +78,49 @@ def enroll_student(id_student, id_course):
         "finish": None
     })
     return True
+
+# 11. Get User Info (excluding password)
+def get_user_info(user_id):
+    return users.find_one({"_id": user_id}, {"password": 0})
+
+# 12. Get Full Student Profile
+def get_full_student_profile(student_id):
+    user = users.find_one({"_id": student_id})
+    student_data = students.find_one({"user_id": student_id})
+    if user and student_data:
+        profile = {**user, **student_data}
+        profile.pop("user_id", None)
+        return profile
+    return None
+
+# 13. Get Pending Asks for Admin
+def get_pending_asks_for_admin(admin_id):
+    return list(requests.find({"id_receiving": admin_id, "status": "pending"}))
+
+# 14. Delete Ask
+def delete_ask(ask_id):
+    result = requests.delete_one({"_id": ask_id})
+    return result.deleted_count > 0
+
+# 15. Get Course Info
+def get_course_info(course_id):
+    return courses.find_one({"_id": course_id})
+
+# 16. Update Grade for Student in a Course
+def update_grade(student_id, course_id, grade):
+    result = studcourses.update_one(
+        {"id_student": student_id, "id_course": course_id},
+        {"$set": {"grade": grade}}
+    )
+    return result.modified_count > 0
+
+# 17. Update Average for a Student
+def update_average(student_id):
+    course_ids = get_all_courses(student_id)
+    grades = [get_grade(student_id, cid) for cid in course_ids]
+    valid_grades = [g for g in grades if g is not None]
+    if valid_grades:
+        new_avg = sum(valid_grades) / len(valid_grades)
+        students.update_one({"user_id": student_id}, {"$set": {"average": new_avg}})
+        return new_avg
+    return None
