@@ -2,6 +2,10 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./Pages/Home";
 import Wel from "./Pages/Wel";
+import Requestsubmissions_student from "./Pages/Requestsubmissions_student";
+import Navbar from "./Components/Navbar";
+import Sidebar from "./Components/sidebar";
+
 
 import React, { useEffect, useState } from "react";
 
@@ -36,10 +40,20 @@ function App() {
 function App2() {
   return (
     <Router>
-      <Routes>
-        <Route path="/Home" element={<Home />} />
-        <Route path="/Wel" element={<Wel />} />
-      </Routes>
+    <div class="layout">
+      <div className="app-wrapper">
+        <div className="content-wrapper">
+          <Sidebar className="sidebar" />
+          <div className="main-content">
+            <Routes>
+              <Route path="/Home" element={<Home />} />
+              <Route path="/Wel" element={<Wel />} />
+              <Route path="/Requestsubmissions_student" element={<Requestsubmissions_student />} />
+            </Routes>
+          </div>
+        </div>
+      </div>
+      </div>
     </Router>
   );
 }
