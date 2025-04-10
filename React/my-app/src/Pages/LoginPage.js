@@ -1,142 +1,313 @@
 import React, { useState } from "react";
+import axios from "axios";
 
 function LoginPage() {
-  const [isSignup, setIsSignup] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [signupName, setSignupName] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
 
-  const handleLogin = (e) => {
+  const BASE_URL = "http://localhost:8000/api/auth"; // adjust as needed
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    alert(`Logging in with:\nEmail: ${loginEmail}\nPassword: ${loginPassword}`);
+    try {
+      const res = await axios.post(`${BASE_URL}/login`, {
+        email: loginEmail,
+        password: loginPassword,
+      });
+      alert(res.data.message);
+    } catch (err) {
+      alert(err.response?.data?.error || "Login failed");
+    }
   };
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
-    alert(`Signing up with:\nName: ${signupName}\nEmail: ${signupEmail}\nPassword: ${signupPassword}`);
-  };
-
-  const wrapperStyle = {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    minHeight: "100vh",
-    backgroundColor: "#f0f2f5",
-    fontFamily: "Arial, sans-serif",
-  };
-
-  const cardStyle = {
-    backgroundColor: "#fff",
-    padding: "30px",
-    borderRadius: "10px",
-    width: "320px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-    boxSizing: "border-box",
-  };
-
-  const inputStyle = {
-    width: "100%",
-    padding: "10px",
-    marginBottom: "15px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
-    fontSize: "14px",
-  };
-
-  const buttonStyle = {
-    width: "100%",
-    padding: "12px",
-    backgroundColor: "#6c63ff",
-    color: "#fff",
-    border: "none",
-    borderRadius: "5px",
-    fontWeight: "bold",
-    cursor: "pointer",
-  };
-
-  const switchTextStyle = {
-    textAlign: "center",
-    marginTop: "15px",
-    fontSize: "14px",
-  };
-
-  const toggleLinkStyle = {
-    color: "#6c63ff",
-    cursor: "pointer",
-    fontWeight: "bold",
-    marginLeft: "5px",
+    try {
+      const res = await axios.post(`${BASE_URL}/signup`, {
+        name: signupName,
+        email: signupEmail,
+        password: signupPassword,
+      });
+      alert(res.data.message);
+    } catch (err) {
+      alert(err.response?.data?.error || "Signup failed");
+    }
   };
 
   return (
-    <div style={wrapperStyle}>
-      <div style={cardStyle}>
-        <h2 style={{ textAlign: "center", marginBottom: "20px", color: "#333" }}>
-          {isSignup ? "Sign Up" : "Log In"}
-        </h2>
+    <>
+      <style>{`
+                .wrapper {
+              --input-focus: #2d8cf0;
+              --font-color: #323232;
+              --font-color-sub: #666;
+              --bg-color: #fff;
+              --bg-color-alt: #666;
+              --main-color: #323232;
+          }
 
-        {!isSignup ? (
-          <form onSubmit={handleLogin}>
-            <input
-              type="email"
-              placeholder="Email"
-              value={loginEmail}
-              onChange={(e) => setLoginEmail(e.target.value)}
-              style={inputStyle}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={loginPassword}
-              onChange={(e) => setLoginPassword(e.target.value)}
-              style={inputStyle}
-              required
-            />
-            <button type="submit" style={buttonStyle}>Log In</button>
-          </form>
-        ) : (
-          <form onSubmit={handleSignup}>
-            <input
-              type="text"
-              placeholder="Name"
-              value={signupName}
-              onChange={(e) => setSignupName(e.target.value)}
-              style={inputStyle}
-              required
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              value={signupEmail}
-              onChange={(e) => setSignupEmail(e.target.value)}
-              style={inputStyle}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={signupPassword}
-              onChange={(e) => setSignupPassword(e.target.value)}
-              style={inputStyle}
-              required
-            />
-            <button type="submit" style={buttonStyle}>Sign Up</button>
-          </form>
-        )}
+          .switch {
+              transform: translateY(-200px);
+              position: relative;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+              gap: 30px;
+              width: 50px;
+              height: 20px;
+          }
 
-        <div style={switchTextStyle}>
-          {isSignup ? "Already have an account?" : "Don't have an account?"}
-          <span
-            onClick={() => setIsSignup(!isSignup)}
-            style={toggleLinkStyle}
-          >
-            {isSignup ? "Log In" : "Sign Up"}
-          </span>
+          .card-side::before {
+              position: absolute;
+              content: 'Log in';
+              left: -70px;
+              top: 0;
+              width: 100px;
+              text-decoration: underline;
+              color: var(--font-color);
+              font-weight: 600;
+          }
+
+          .card-side::after {
+              position: absolute;
+              content: 'Sign up';
+              left: 70px;
+              top: 0;
+              width: 100px;
+              text-decoration: none;
+              color: var(--font-color);
+              font-weight: 600;
+          }
+
+          .toggle {
+              opacity: 0;
+              width: 0;
+              height: 0;
+          }
+
+          .slider {
+              box-sizing: border-box;
+              border-radius: 5px;
+              border: 2px solid var(--main-color);
+              box-shadow: 4px 4px var(--main-color);
+              position: absolute;
+              cursor: pointer;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background-color: var(--bg-color);
+              transition: 0.3s;
+          }
+
+          .slider:before {
+              box-sizing: border-box;
+              position: absolute;
+              content: "";
+              height: 20px;
+              width: 20px;
+              border: 2px solid var(--main-color);
+              border-radius: 5px;
+              left: -2px;
+              bottom: 2px;
+              background-color: var(--bg-color);
+              box-shadow: 0 3px 0 var(--main-color);
+              transition: 0.3s;
+          }
+
+          .toggle:checked + .slider {
+              background-color: var(--input-focus);
+          }
+
+          .toggle:checked + .slider:before {
+              transform: translateX(30px);
+          }
+
+          .toggle:checked ~ .card-side:before {
+              text-decoration: none;
+          }
+
+          .toggle:checked ~ .card-side:after {
+              text-decoration: underline;
+          }
+
+          .flip-card__inner {
+              width: 300px;
+              height: 350px;
+              position: relative;
+              background-color: transparent;
+              perspective: 1000px;
+              text-align: center;
+              transition: transform 0.8s;
+              transform-style: preserve-3d;
+          }
+
+          .toggle:checked ~ .flip-card__inner {
+              transform: rotateY(180deg);
+          }
+
+          .toggle:checked ~ .flip-card__front {
+              box-shadow: none;
+          }
+
+          .flip-card__front,
+          .flip-card__back {
+              padding: 20px;
+              position: absolute;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              -webkit-backface-visibility: hidden;
+              backface-visibility: hidden;
+              background: lightgrey;
+              gap: 20px;
+              border-radius: 5px;
+              border: 2px solid var(--main-color);
+              box-shadow: 4px 4px var(--main-color);
+          }
+
+          .flip-card__back {
+              width: 100%;
+              transform: rotateY(180deg);
+          }
+
+          .flip-card__form {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 20px;
+          }
+
+          .title {
+              margin: 20px 0;
+              font-size: 25px;
+              font-weight: 900;
+              text-align: center;
+              color: var(--main-color);
+          }
+
+          .flip-card__input {
+              width: 250px;
+              height: 40px;
+              border-radius: 5px;
+              border: 2px solid var(--main-color);
+              background-color: var(--bg-color);
+              box-shadow: 4px 4px var(--main-color);
+              font-size: 15px;
+              font-weight: 600;
+              color: var(--font-color);
+              padding: 5px 10px;
+              outline: none;
+          }
+
+          .flip-card__input::placeholder {
+              color: var(--font-color-sub);
+              opacity: 0.8;
+          }
+
+          .flip-card__input:focus {
+              border: 2px solid var(--input-focus);
+          }
+
+          .flip-card__btn:active,
+          .button-confirm:active {
+              box-shadow: 0px 0px var(--main-color);
+              transform: translate(3px, 3px);
+          }
+
+          .flip-card__btn {
+              margin: 20px 0;
+              width: 120px;
+              height: 40px;
+              border-radius: 5px;
+              border: 2px solid var(--main-color);
+              background-color: var(--bg-color);
+              box-shadow: 4px 4px var(--main-color);
+              font-size: 17px;
+              font-weight: 600;
+              color: var(--font-color);
+              cursor: pointer;
+          }
+      `}</style>
+
+      <div className="wrapper">
+        <div className="card-switch">
+          <label className="switch">
+            <input type="checkbox" className="toggle" />
+            <span className="slider"></span>
+            <span className="card-side"></span>
+
+            <div className="flip-card__inner">
+              <div className="flip-card__front">
+                <div className="title">Log in</div>
+                <form className="flip-card__form" onSubmit={handleLogin}>
+                  <input
+                    className="flip-card__input"
+                    name="email"
+                    placeholder="Email"
+                    type="email"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    required
+                  />
+                  <input
+                    className="flip-card__input"
+                    name="password"
+                    placeholder="Password"
+                    type="password"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    required
+                  />
+                  <button className="flip-card__btn" type="submit">
+                    Let's go!
+                  </button>
+                </form>
+              </div>
+
+              <div className="flip-card__back">
+                <div className="title">Sign up</div>
+                <form className="flip-card__form" onSubmit={handleSignup}>
+                  <input
+                    className="flip-card__input"
+                    placeholder="Name"
+                    type="text"
+                    value={signupName}
+                    onChange={(e) => setSignupName(e.target.value)}
+                    required
+                  />
+                  <input
+                    className="flip-card__input"
+                    name="email"
+                    placeholder="Email"
+                    type="email"
+                    value={signupEmail}
+                    onChange={(e) => setSignupEmail(e.target.value)}
+                    required
+                  />
+                  <input
+                    className="flip-card__input"
+                    name="password"
+                    placeholder="Password"
+                    type="password"
+                    value={signupPassword}
+                    onChange={(e) => setSignupPassword(e.target.value)}
+                    required
+                  />
+                  <button className="flip-card__btn" type="submit">
+                    Confirm!
+                  </button>
+                </form>
+              </div>
+            </div>
+          </label>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
