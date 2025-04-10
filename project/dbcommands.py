@@ -124,3 +124,51 @@ def update_average(student_id):
         students.update_one({"user_id": student_id}, {"$set": {"average": new_avg}})
         return new_avg
     return None
+
+# ==== User field getters ====
+
+def get_user_name_by_id(user_id):
+    user = users.find_one({"_id": user_id})
+    return user["name"] if user else None
+
+def get_user_email_by_id(user_id):
+    user = users.find_one({"_id": user_id})
+    return user["email"] if user else None
+
+def get_user_password_by_id(user_id):
+    user = users.find_one({"_id": user_id})
+    return user["password"] if user else None
+
+def get_user_type_by_id(user_id):
+    user = users.find_one({"_id": user_id})
+    return user["type"] if user else None
+
+
+# ==== Student field getters ====
+
+def get_student_department_by_id(user_id):
+    student = students.find_one({"user_id": user_id})
+    return student["department"] if student else None
+
+def get_student_status_by_id(user_id):
+    student = students.find_one({"user_id": user_id})
+    return student["status"] if student else None
+
+def get_student_sum_points_by_id(user_id):
+    student = students.find_one({"user_id": user_id})
+    return student["sum_points"] if student else None
+
+def get_student_average_by_id(user_id):
+    student = students.find_one({"user_id": user_id})
+    return student["average"] if student else None
+
+
+# ==== Admin field getters ====
+
+def get_admin_department_by_id(user_id):
+    admin = administrators.find_one({"user_id": user_id})
+    return admin["department"] if admin else None
+
+def get_admin_role_by_id(user_id):
+    admin = administrators.find_one({"user_id": user_id})
+    return admin["role"] if admin else None

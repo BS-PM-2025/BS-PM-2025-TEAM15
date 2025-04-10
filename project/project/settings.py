@@ -43,10 +43,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'myapp',
+    'adminapp',
     'rest_framework',
     'corsheaders',#react_don't touch!,
-    'rest_framework',
+    
 ]
 
 MIDDLEWARE = [
