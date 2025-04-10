@@ -4,6 +4,9 @@ import Home from "./Pages/Home";
 import Wel from "./Pages/Wel";
 import Requestsubmissions_student from "./Pages/Requestsubmissions_student";
 import Navbar from "./Components/Navbar";
+import LoginPage from "./Pages/LoginPage";
+import Sidebar from "./Components/sidebar";
+import Layout from "./Components/layout";
 
 
 function App() {
@@ -23,23 +26,21 @@ function App() {
   //     </div>
   //   </Router>
   // );
-<Router>
-<div class="layout">
 
-  <div className="app-wrapper">
-    <div className="content-wrapper">
-      <Sidebar className="sidebar" />
-      <div className="main-content">
-        <Routes>
+<Router>
+  {/* Check this current conflict when merging with the main */}
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        
+        
+        {/* Layout routes */}
+        <Route element={<Layout />}>
           <Route path="/Home" element={<Home />} />
           <Route path="/Wel" element={<Wel />} />
           <Route path="/Requestsubmissions_student" element={<Requestsubmissions_student />} />
-        </Routes>
-      </div>
-    </div>
-  </div>
-  </div>
-</Router>
+        </Route>
+      </Routes>
+    </Router>
   );
 }
 
