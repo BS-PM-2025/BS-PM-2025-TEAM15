@@ -41,6 +41,14 @@ def get_average(student_id):
 def get_all_asks(student_id):
     return [ask["_id"] for ask in requests.find({"id_sending": student_id})]
 
+
+# 18. Get all non-closed asks for a specific admin
+def get_open_asks_for_admin(admin_id):
+    return list(requests.find({
+        "id_receiving": admin_id,
+        "status": {"$ne": "closed"}
+    }))
+
 # 7. Department Asks
 def department_asks(dept_name):
     return [ask["_id"] for ask in requests.find({"department": dept_name})]
