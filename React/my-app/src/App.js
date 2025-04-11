@@ -4,7 +4,7 @@ import Home from "./Pages/Home";
 import Wel from "./Pages/Wel";
 import Requestsubmissions_student from "./Pages/Requestsubmissions_student";
 import Navbar from "./Components/Navbar";
-
+import Sidebar from "./Components/sidebar"
 
 function App() {
   

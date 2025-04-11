@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import Progress from "../Components/Progress";
+import axios from "axios";
+
+// To what endpoint to send
+ const BASE_URL = 'http://localhost:8000/api/studentrequests/';
 
 function Requestsubmissions_student() {
   const [quote, setQuote] = useState("");
@@ -17,7 +21,8 @@ function Requestsubmissions_student() {
       alert("Please fill in both the subject and details before submitting.");
       return;
     }
-
+    
+  
     alert(`Type: ${request_type}\nSubject: ${subject}\nFile: ${attachment?.name || "None"}`);
     console.log("Subject:", subject);
     console.log("Quote:", quote);
@@ -25,7 +30,25 @@ function Requestsubmissions_student() {
 
     setProgress(0);
     setShowProgress(true);
+    axios.post(BASE_URL, {
+      id_sending: 1,
+      id_receiving: 2,
+      importance: "high",
+      title: subject,
+      text: quote,
+      documents: "None"
+    })
+    .then((response) => {
+      console.log("Request sent successfully:", response.data);
+      // איפוס שדות או עדכון UI
+    })
+    .catch((error) => {
+      console.error("Error sending request:", error.response?.data || error.message);
+    });
   };
+
+  
+
 
   useEffect(() => {
     let interval;
@@ -58,7 +81,9 @@ function Requestsubmissions_student() {
 
   const options = [
     { value: "Medical", label: "Medical Request" },
-    { value: "financial", label: "Financial Request" }
+    { value: "financial", label: "Financial Request" },
+    {value : "grade-related" ,label :"Grade-related Request"},
+    {value : "Course-related", label :"Course-related Request"}
   ];
 
   return (
