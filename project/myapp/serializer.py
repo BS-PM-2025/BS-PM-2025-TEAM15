@@ -24,3 +24,4 @@ class StudentRequestSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'idr': {'read_only': True}
         }
+
