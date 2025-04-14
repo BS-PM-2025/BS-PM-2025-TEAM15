@@ -16,3 +16,12 @@ class YourRequestSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'idr': {'read_only': True}
         }
+
+class StudentRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentRequest
+        fields = '__all__'
+        extra_kwargs = {
+            'idr': {'read_only': True}
+        }
+

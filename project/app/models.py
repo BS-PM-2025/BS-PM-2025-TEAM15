@@ -22,3 +22,13 @@ class Counter(models.Model):
 
     class Meta:
         db_table = "counters"
+
+class StudentRequest(models.Model):
+    idr = models.AutoField(primary_key=True)
+    id_sending = models.IntegerField()
+    id_receiving = models.IntegerField()
+    importance = models.CharField(max_length=255)
+    text = models.TextField()
+    title = models.CharField(max_length=255)
+    documents = models.FileField(upload_to='documents/', null=True, blank=True)  # uploaded file
+    department = models.IntegerField()

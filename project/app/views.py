@@ -1,7 +1,3 @@
-from rest_framework.decorators import api_view
-from rest_framework import status
-from bson import ObjectId
-import dbcommands
 from django.shortcuts import render
 
 # Create your views here.
@@ -18,8 +14,6 @@ from rest_framework.views import APIView
 from . models import *
 from rest_framework.response import Response
 from . serializer import *
-
-
 
 class ReactView(APIView):
   
@@ -74,3 +68,4 @@ class Student_personal_requests(APIView):
             return Response({"success": True, "data": serializer.data})
         else:
             return Response({"success": False, "errors": serializer.errors}, status=400)
+        
