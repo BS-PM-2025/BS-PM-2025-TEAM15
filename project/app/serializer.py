@@ -17,6 +17,11 @@ class YourRequestSerializer(serializers.ModelSerializer):
             'idr': {'read_only': True}
         }
 
+class RequestStatusserializer(serializers.ModelSerializer):
+    class Meta:
+        model = request_status  # שם המודל שאת משתמשת בו
+        fields = '__all__'  # או רשימה מפורטת של שדות שאת רוצה כמו: ['idr', 'title', 'text', ...]
+        
 class StudentRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentRequest

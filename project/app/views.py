@@ -99,3 +99,16 @@ class Student_personal_requests(APIView):
             return Response({"success": True, "data": {"_id": str(inserted)}}, status=201)
         else:
             return Response({"success": False, "errors": serializer.errors}, status=400)
+        #סטטוס בקשות 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+#from .models import YourRequestModel
+from .serializer import YourRequestSerializer
+from . import dbcommands as dbcom 
+
+class RequestStatusView(APIView):
+    def get(self, request):
+        requests = dbcom.get_pending_asks_for_admin(2)  # אם צריך לפי משתמש, סנן לפי `request.user`
+        serializer = RequestStatusserializer(requests, many=True)
+        return Response(serializer.data)
+        
