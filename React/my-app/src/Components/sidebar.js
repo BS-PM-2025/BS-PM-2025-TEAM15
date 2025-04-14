@@ -99,7 +99,7 @@ export default function Sidebar() {
         <ul class="sub-menu">
           <div>
            <li><Link to="/Requestsubmissions_student">Folder</Link></li>
-            <li><a href="#">Document</a></li>
+            <li><a href="/Student_status_request">Student status request</a></li>
             <li><a href="#">Project</a></li>
           </div>
         </ul>
