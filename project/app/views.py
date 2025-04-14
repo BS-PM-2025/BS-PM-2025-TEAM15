@@ -1,3 +1,7 @@
+from rest_framework.decorators import api_view
+from rest_framework import status
+from bson import ObjectId
+import dbcommands as db
 from django.shortcuts import render
 
 # Create your views here.
@@ -5,7 +9,6 @@ def home(request):
     return render(request, 'home.html')
 
 from .models import Counter
-from django.db import transaction
 
 #react
 from django.shortcuts import render
@@ -15,62 +18,88 @@ from . models import *
 from rest_framework.response import Response
 from . serializer import *
 
+
+
 class ReactView(APIView):
   
     serializer_class = ReactSerializer
 
-    def get(self, request):
-        detail = [ {"name": detail.name,"detail": detail.detail} 
-        for detail in React.objects.all()]
-        return Response(detail)
+    # def get(self, request):
+    #     detail = [ {"name": detail.name,"detail": detail.detail} 
+    #     for detail in React.objects.all()]
+    #     return Response(detail)
 
-    def post(self, request):
+    # def post(self, request):
 
-        serializer = ReactSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return  Response(serializer.data)
+    #     serializer = ReactSerializer(data=request.data)
+    #     if serializer.is_valid(raise_exception=True):
+    #         serializer.save()
+    #         return  Response(serializer.data)
         
-class Student_personal_requests(APIView):
-    @transaction.atomic
-    def get_next_sequence(self, name):
-        try:
-            counter = Counter.objects.get(pk=name)
-            counter.sequence_value += 1
-        except Counter.DoesNotExist:
-            counter = Counter(_id=name, sequence_value=1)
-        
-        counter.save()
-        return counter.sequence_value
+# class Student_personal_requests(APIView):
+#     # @transaction.atomic
+  
+#     def get_next_sequence(self, name):
+#         counter = db.counters.find_one_and_update(
+#             {"_id": name},
+#             {"$inc": {"seq": 1}},
+#             upsert=True,
+#             return_document=ReturnDocument.AFTER
+#         )
+#         return counter["seq"]
 
 
 from .serializer import YourRequestSerializer  # ודא/י שאת מייבאת את הסריאלייזר המתאים
 
 class Student_personal_requests(APIView):
-    @transaction.atomic
-    def get_next_sequence(self, name):
-        try:
-            counter = Counter.objects.get(pk=name)
-            counter.sequence_value += 1
-        except Counter.DoesNotExist:
-            counter = Counter(_id=name, sequence_value=1)
+    # @transaction.atomic
+   
+    # def get_next_sequence(self, name):
+    #     counter = db.counters.find_one_and_update(
+    #         {"_id": name},
+    #         {"$inc": {"seq": 1}},
+    #         upsert=True,
+    #         return_document=ReturnDocument.AFTER
+    #     )
+    #     return counter["seq"]
 
-        counter.save()
-        return counter.sequence_value
+    def filehandle(self,request):
+        file = request.FILES.get('documents')
 
+        if file:
+            from django.core.files.storage import FileSystemStorage
+            fs = FileSystemStorage()
+            filename = fs.save(file.name, file)
+            file_url = fs.url(filename)
+        else:
+            file_url = None
+
+        return file_url
     def post(self, request):
-        data = request.data.copy()  # חשוב לעשות copy כדי לא לערוך ישירות את request.data
-        data["idr"] = self.get_next_sequence("student_requests_id")
+        print("========== REQUEST DATA ==========")
+        print(request.data)  # This shows the body data (JSON)
+        print("==================================")
 
-        serializer = YourRequestSerializer(data=data)
+        data = request.data.copy()  # חשוב לעשות copy כדי לא לערוך ישירות את request.data
+        # data["idr"] = self.get_next_sequence("student_requests_id")
+
+        serializer = StudentRequestSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
-            return Response({"success": True, "data": serializer.data})
+            data = serializer.validated_data
+            file_url_res = self.filehandle(request)
+            inserted = db.add_ask(
+                data["id_sending"],
+                data["id_receiving"],
+                data["importance"],
+                data["text"],
+                data["title"],
+                file_url_res,
+                data["department"]
+            )
+            return Response({"success": True, "data": {"_id": str(inserted)}}, status=201)
         else:
             return Response({"success": False, "errors": serializer.errors}, status=400)
-
-
-#סטטוס בקשות 
+        #סטטוס בקשות 
 from rest_framework.views import APIView
 from rest_framework.response import Response
 #from .models import YourRequestModel
