@@ -5,6 +5,8 @@ import Wel from "./Pages/Wel";
 import Requestsubmissions_student from "./Pages/Requestsubmissions_student";
 import Navbar from "./Components/Navbar";
 import Sidebar from "./Components/sidebar"
+import StudentStatusRequest from './Pages/student_status_request';
+
 
 function App() {
   
@@ -34,6 +36,7 @@ function App() {
           <Route path="/Home" element={<Home />} />
           <Route path="/Wel" element={<Wel />} />
           <Route path="/Requestsubmissions_student" element={<Requestsubmissions_student />} />
+          <Route path="/Student_status_request" element={<StudentStatusRequest />} />
         </Routes>
       </div>
     </div>

@@ -22,3 +22,9 @@ class Counter(models.Model):
 
     class Meta:
         db_table = "counters"
+
+#מחלקה לקבלת סטטוסים
+class request_status(models.Model):
+    id_sending = models.IntegerField()
+    importance = models.CharField(max_length=255)
+    status = models.CharField(max_length=255) 
