@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 
+const BASE_URL = "http://localhost:8000/api/users"; 
+
 function LoginPage() {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -8,9 +10,7 @@ function LoginPage() {
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
 
-  const BASE_URL = "http://localhost:8000/api/auth"; // adjust as needed
-
-  const handleLogin = async (e) => {
+  const handleLogin = async (e) => { //part that will handle login
     e.preventDefault();
     try {
       const res = await axios.post(`${BASE_URL}/login`, {
@@ -23,7 +23,7 @@ function LoginPage() {
     }
   };
 
-  const handleSignup = async (e) => {
+  const handleSignup = async (e) => { //part that will handle signup
     e.preventDefault();
     try {
       const res = await axios.post(`${BASE_URL}/signup`, {
