@@ -9,6 +9,7 @@ function LoginPage() {
   const [signupName, setSignupName] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
+  const [signupId, setSignupId] = useState("");
 
   const handleLogin = async (e) => { //part that will handle login
     e.preventDefault();
@@ -30,6 +31,7 @@ function LoginPage() {
         name: signupName,
         email: signupEmail,
         password: signupPassword,
+        Id: signupId,
       });
       alert(res.data.message);
     } catch (err) {
@@ -297,6 +299,15 @@ function LoginPage() {
                     value={signupPassword}
                     onChange={(e) => setSignupPassword(e.target.value)}
                     required
+                  />                  
+                  <input
+                  className="flip-card__input"
+                  name="Id"
+                  placeholder="Id"
+                  type="text"
+                  value={signupId}
+                  onChange={(e) => setSignupId(e.target.value)}
+                  required
                   />
                   <button className="flip-card__btn" type="submit">
                     Confirm!

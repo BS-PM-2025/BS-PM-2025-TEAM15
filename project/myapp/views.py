@@ -45,6 +45,7 @@ def signup_view(request):
         name = data.get("name")
         email = data.get("email")
         password = data.get("password")
+        Id = data.get("Id")
 
         if user_collection.find_one({"email": email}):
             return JsonResponse({"error": "User already exists"}, status=400)
@@ -55,6 +56,7 @@ def signup_view(request):
             "name": name,
             "email": email,
             "password": hashed_pw,
+            "_id": Id,
         })
 
         return JsonResponse({"message": "User created successfully"}, status=201)

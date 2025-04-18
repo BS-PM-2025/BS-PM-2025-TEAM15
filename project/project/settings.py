@@ -134,4 +134,4 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #added for user model
-MONGO_URI = "mongodb://localhost:3000/"
+MONGO_URI = "mongodb+srv://admin:123456!@db.hsm1joq.mongodb.net/"
