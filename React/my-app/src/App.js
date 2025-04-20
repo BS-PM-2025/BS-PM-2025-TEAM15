@@ -5,6 +5,7 @@ import Wel from "./Pages/Wel";
 import StudentLookup from "./Pages/StudentLookup";
 import Viewasks_admin from "./Pages/Viewasks_admin";
 import Requestsubmissions_student from "./Pages/Requestsubmissions_student";
+import StudentStatusRequest from "./Pages/student_status_request";
 import Navbar from "./Components/Navbar";
 import Sidebar from "./Components/sidebar"
 import React, { useEffect, useState } from "react";
