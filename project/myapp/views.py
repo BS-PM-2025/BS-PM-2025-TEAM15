@@ -68,7 +68,6 @@ def login_view(request):
         data = json.loads(request.body)
         email = data.get("email")
         password = data.get("password")
-
         user = user_collection.find_one({"email": email})
         if not user:
             return JsonResponse({"error": "User not found"}, status=404)

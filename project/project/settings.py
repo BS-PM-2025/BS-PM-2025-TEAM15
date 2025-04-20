@@ -36,6 +36,15 @@ REST_FRAMEWORK = {
 }    
 CORS_ALLOW_ALL_ORIGINS = True
 
+#React django 
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',
+]
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -43,9 +52,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'myapp',
-    'corsheaders',#react_don't touch!,
+    'app',
     'rest_framework',
+    'corsheaders',#react_don't touch!,
+    
 ]
 
 MIDDLEWARE = [
@@ -58,6 +68,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',#React_dont_touch!!!
 ]
+
+#Files saving
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 ROOT_URLCONF = 'project.urls'
 
@@ -83,12 +97,8 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# Connect to mongodb
-DATABASES = { 
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+DATABASES = {
+ 
 }
 
 

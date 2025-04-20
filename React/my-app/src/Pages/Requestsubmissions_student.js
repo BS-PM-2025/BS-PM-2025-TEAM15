@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import Progress from "../Components/Progress";
+import axios from "axios";
+
+// To what endpoint to send
+ const BASE_URL = 'http://localhost:8000/api/studentrequests/';
 
 function Requestsubmissions_student() {
   const [quote, setQuote] = useState("");
@@ -10,6 +14,7 @@ function Requestsubmissions_student() {
   const [progress, setProgress] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
 
+  
   const handleSubmit = (event) => {
     event.preventDefault();
 
@@ -17,7 +22,6 @@ function Requestsubmissions_student() {
       alert("Please fill in both the subject and details before submitting.");
       return;
     }
-
     alert(`Type: ${request_type}\nSubject: ${subject}\nFile: ${attachment?.name || "None"}`);
     console.log("Subject:", subject);
     console.log("Quote:", quote);
@@ -25,40 +29,66 @@ function Requestsubmissions_student() {
 
     setProgress(0);
     setShowProgress(true);
-  };
+    const formData = new FormData();
 
+    formData.append("id_sending", 1);
+    formData.append("id_receiving", 2);
+    formData.append("importance", "high");
+    formData.append("title", subject);
+    formData.append("text", quote);
+    formData.append("department", 2);
+  
+    if (attachment) {
+      formData.append("documents", attachment);  // Important!
+    }
+  
+    setProgress(0);
+    setShowProgress(true);
+  
+    axios.post(BASE_URL, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+    .then((response) => {
+      console.log("Request sent successfully:", response.data);
+      //add -> מחיקת מידע ברגע שאושר בקשה (מחיקת שדות )
+      setProgress(100);
+
+      setTimeout(() => {
+        alert("Request has been sent successfully!");
+        setShowProgress(false);
+        setProgress(0);
+      }, 2000);  
+    
+    })
+    .catch((error) => {
+      console.error("Error sending request:", error.response?.data || error.message);
+      setShowProgress(false);
+      setProgress(0);
+    });
+  };
   useEffect(() => {
     let interval;
     if (showProgress) {
       interval = setInterval(() => {
         setProgress((prev) => {
-          if (prev === 100) {
-            clearInterval(interval);
-            setTimeout(() => {
-              setShowProgress(false);
-              setProgress(0);
-            }, 500);
-            return 100;
+          if (prev >= 90) {
+            return prev;  // Stop at 90% until success
           }
           return prev + 5;
         });
       }, 300);
     }
+    return () => clearInterval(interval);
   }, [showProgress]);
 
-  useEffect(() => {
-    if (progress === 100) {
-      setTimeout(() => {
-        alert("Request has been sent successfully!");
-        setShowProgress(false);
-        setProgress(0);
-      }, 300);
-    }
-  }, [progress]);
 
   const options = [
     { value: "Medical", label: "Medical Request" },
-    { value: "financial", label: "Financial Request" }
+    { value: "financial", label: "Financial Request" },
+    {value : "grade-related" ,label :"Grade-related Request"},
+    {value : "Course-related", label :"Course-related Request"}
   ];
 
   return (
