@@ -124,3 +124,14 @@ def update_average(student_id):
         students.update_one({"user_id": student_id}, {"$set": {"average": new_avg}})
         return new_avg
     return None
+
+# ===== Set User =====
+def set_User(user_id, user_name, user_email, user_password, user_type):
+    ask = {
+        "_id": user_id,
+        "email": user_email,
+        "name": user_name,
+        "password": user_password,
+        "type": user_type,
+    }
+    return users.insert_one(ask).inserted_id

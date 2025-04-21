@@ -5,16 +5,12 @@ import Wel from "./Pages/Wel";
 import StudentLookup from "./Pages/StudentLookup";
 import Viewasks_admin from "./Pages/Viewasks_admin";
 import Requestsubmissions_student from "./Pages/Requestsubmissions_student";
+import StudentStatusRequest from "./Pages/student_status_request"
 import Navbar from "./Components/Navbar";
-<<<<<<< HEAD
-import LoginPage from "./Pages/LoginPage";
-import Sidebar from "./Components/sidebar";
-import Layout from "./Components/layout";
-
-=======
 import Sidebar from "./Components/sidebar"
+import  Layout from"./Components/layout";
+import LoginPage from "./Pages/LoginPage";
 import React, { useEffect, useState } from "react";
->>>>>>> origin/main
 
 function App() {
   
@@ -47,20 +43,12 @@ function App() {
           <Route path="/asks" element={<Viewasks_admin />} />
           <Route path="/studentlookup" element={<StudentLookup />}/>
           <Route path="/Requestsubmissions_student" element={<Requestsubmissions_student />} />
-<<<<<<< HEAD
-        </Route>
-      </Routes>
-    </Router>
-=======
           <Route path="/Student_status_request" element={<StudentStatusRequest />} />
           
+        </Route>
         </Routes>
-      </div>
-    </div>
-  </div>
-  </div>
 </Router>
->>>>>>> origin/main
+    
   );
 }
 

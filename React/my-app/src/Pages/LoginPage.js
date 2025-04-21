@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8000/api/users"; 
+const BASE_URL_Login = "http://localhost:8000/api/users/Login"; 
+const BASE_URL_SignUp = "http://localhost:8000/api/users/SignUp";
 
 function LoginPage() {
   const [loginEmail, setLoginEmail] = useState("");
@@ -14,28 +15,31 @@ function LoginPage() {
   const handleLogin = async (e) => { //part that will handle login
     e.preventDefault();
     try {
-      const res = await axios.post(`${BASE_URL}/login`, {
+      const res = await axios.post( BASE_URL_Login, {
         email: loginEmail,
         password: loginPassword,
       });
       alert(res.data.message);
     } catch (err) {
-      alert(err.response?.data?.error || "Login failed");
+      const errorMsg = err?.response?.data?.error || err.message || "Login failed";
+      alert(errorMsg);
     }
   };
 
   const handleSignup = async (e) => { //part that will handle signup
     e.preventDefault();
     try {
-      const res = await axios.post(`${BASE_URL}/signup`, {
-        name: signupName,
+      const res = await axios.post( BASE_URL_SignUp, {
+        _id: parseInt(signupId),
         email: signupEmail,
+        name: signupName,
         password: signupPassword,
-        Id: signupId,
+        type: "Student",
       });
       alert(res.data.message);
     } catch (err) {
-      alert(err.response?.data?.error || "Signup failed");
+      const errorMsg = err?.response?.data?.error || err.message || "Sign up failed";
+      alert(errorMsg);
     }
   };
 
@@ -61,6 +65,16 @@ function LoginPage() {
               gap: 30px;
               width: 50px;
               height: 20px;
+          }
+
+          body{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 400px;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(115deg, #56d8e4 10%, #9f01ea 90%);
           }
 
           .card-side::before {
@@ -303,7 +317,7 @@ function LoginPage() {
                   <input
                   className="flip-card__input"
                   name="Id"
-                  placeholder="Id"
+                  placeholder="Id Number"
                   type="text"
                   value={signupId}
                   onChange={(e) => setSignupId(e.target.value)}

@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework import status
 from bson import ObjectId
-import dbcommands as db
+from . import dbcommands as db  
 from django.shortcuts import render
 
 # Create your views here.
@@ -17,8 +17,6 @@ from rest_framework.views import APIView
 from . models import *
 from rest_framework.response import Response
 from . serializer import *
-
-
 
 class ReactView(APIView):
   
@@ -47,7 +45,6 @@ class ReactView(APIView):
 #             return_document=ReturnDocument.AFTER
 #         )
 #         return counter["seq"]
-
 
 from .serializer import YourRequestSerializer  # ודא/י שאת מייבאת את הסריאלייזר המתאים
 
@@ -111,4 +108,62 @@ class RequestStatusView(APIView):
         requests = dbcom.get_pending_asks_for_admin(2)  # אם צריך לפי משתמש, סנן לפי `request.user`
         serializer = RequestStatusserializer(requests, many=True)
         return Response(serializer.data)
-        
+
+from django.contrib.auth.hashers import make_password, check_password
+from .models import users
+from .serializer import UserSignUpSerializer
+import json
+
+# SIGN UP View
+class SignUpView(APIView):
+    
+    def post(self, request):
+        try:
+            data = request.data
+           
+            # if users.objects.filter(email=data['email']).exists():
+            #     return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            serializer = UserSignUpSerializer(data=data)
+            print("========== REQUEST DATA ==========")
+            print(request.data)  # This shows the body data (JSON)
+            print("==================================")
+            if serializer.is_valid():
+                #put here a function to send data,USING DB.COMMANDS
+                data = serializer.validated_data
+                db.set_User(
+                    data["_id"],
+                    data["name"],
+                    data["email"],
+                    data["password"],
+                    data["type"]
+                );
+                return Response({'message': 'Signup successful'}, status=status.HTTP_201_CREATED)
+            else:
+                print(serializer.errors)
+                return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# LOGIN View
+class LoginView(APIView):
+
+    def post(self, request):
+        try:
+            data = request.data
+            email = data.get('email')
+            password = data.get('password')
+
+            print("========== LOGIN REQUEST ==========")
+            print(request.data)
+            print("===================================")
+
+            user_id = db.login(email, password)  # This uses the dbcommands login function
+            if user_id:
+                return Response({'message': 'Login successful', 'user_id': user_id}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
