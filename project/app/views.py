@@ -116,18 +116,15 @@ import json
 
 # SIGN UP View
 class SignUpView(APIView):
-    
     def post(self, request):
         try:
             data = request.data
-           
-            # if users.objects.filter(email=data['email']).exists():
-            #     return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
-            
             serializer = UserSignUpSerializer(data=data)
+
             print("========== REQUEST DATA ==========")
             print(request.data)  # This shows the body data (JSON)
             print("==================================")
+
             if serializer.is_valid():
                 #put here a function to send data,USING DB.COMMANDS
                 data = serializer.validated_data
@@ -148,7 +145,6 @@ class SignUpView(APIView):
 
 # LOGIN View
 class LoginView(APIView):
-
     def post(self, request):
         try:
             data = request.data
@@ -165,5 +161,29 @@ class LoginView(APIView):
             else:
                 return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
 
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+class GetUserNameView(APIView):
+    def post(self, request):
+        try:
+            user_id = request.data.get('_id')
+
+            if not user_id and isinstance(request.data, (str, int)):
+                user_id = request.data
+
+            if not user_id:
+                return Response({'error': 'Missing user_id'}, status=status.HTTP_400_BAD_REQUEST)
+
+            print("========== USER REQUEST ==========")
+            print("user_id =", user_id)
+            print("===================================")
+
+            found_user = db.get_user_name(user_id);
+            if found_user:
+                return Response({'name': found_user}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -19,7 +19,12 @@ function LoginPage() {
         email: loginEmail,
         password: loginPassword,
       });
+      
+      localStorage.setItem("user_id", res.data.user_id) //user id token
+
       alert(res.data.message);
+
+      window.location.href = "/home" //relode page to home
     } catch (err) {
       const errorMsg = err?.response?.data?.error || err.message || "Login failed";
       alert(errorMsg);

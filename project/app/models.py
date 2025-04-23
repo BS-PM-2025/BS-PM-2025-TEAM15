@@ -40,7 +40,7 @@ class StudentRequest(models.Model):
 
 #user class
 class users(models.Model):
-    _id = models.IntegerField(max_length=8)
+    _id = models.IntegerField()
     email = models.CharField(max_length=100)
     name = models.CharField(max_length=200)
     password = models.CharField(max_length=50)

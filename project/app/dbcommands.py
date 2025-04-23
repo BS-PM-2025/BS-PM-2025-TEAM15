@@ -39,7 +39,7 @@ def get_average(student_id):
 
 # 6. Get All Requests (Asks) by Student
 def get_all_asks(student_id):
-    return [ask["_id"] for ask in requests.find({"id_sending": student_id})]
+    return [ask["_id"] for ask in requests.find({"id_sending": int(student_id)})]
 
 # 7. Department Asks
 def department_asks(dept_name):
@@ -47,7 +47,7 @@ def department_asks(dept_name):
 
 # 8. Change Ask Status
 def change_ask_status(ask_id, new_status):
-    result = requests.update_one({"_id": ask_id}, {"$set": {"status": new_status}})
+    result = requests.update_one({"_id": int(ask_id)}, {"$set": {"status": new_status}})
     return result.modified_count > 0
 
 # 9. Add Ask
@@ -81,12 +81,23 @@ def enroll_student(id_student, id_course):
 
 # 11. Get User Info (excluding password)
 def get_user_info(user_id):
-    return users.find_one({"_id": user_id}, {"password": 0})
+    return users.find_one({"_id":int(user_id)}, {"password": 0})
+
+
+
+def get_user_name(user_id):
+    user = users.find_one({"_id": int( user_id)} )
+   
+    if user:
+        return user.get("name")
+    return None
+
+
 
 # 12. Get Full Student Profile
 def get_full_student_profile(student_id):
-    user = users.find_one({"_id": student_id})
-    student_data = students.find_one({"user_id": student_id})
+    user = users.find_one({"_id":int (student_id)})
+    student_data = students.find_one({"user_id": int(student_id)})
     if user and student_data:
         profile = {**user, **student_data}
         profile.pop("user_id", None)
@@ -99,17 +110,17 @@ def get_pending_asks_for_admin(admin_id):
 
 # 14. Delete Ask
 def delete_ask(ask_id):
-    result = requests.delete_one({"_id": ask_id})
+    result = requests.delete_one({"_id": int(ask_id)})
     return result.deleted_count > 0
 
 # 15. Get Course Info
 def get_course_info(course_id):
-    return courses.find_one({"_id": course_id})
+    return courses.find_one({"_id": int(course_id)})
 
 # 16. Update Grade for Student in a Course
 def update_grade(student_id, course_id, grade):
     result = studcourses.update_one(
-        {"id_student": student_id, "id_course": course_id},
+        {"id_student": student_id, "id_course": int(course_id)},
         {"$set": {"grade": grade}}
     )
     return result.modified_count > 0
@@ -121,14 +132,14 @@ def update_average(student_id):
     valid_grades = [g for g in grades if g is not None]
     if valid_grades:
         new_avg = sum(valid_grades) / len(valid_grades)
-        students.update_one({"user_id": student_id}, {"$set": {"average": new_avg}})
+        students.update_one({"user_id": int(student_id)}, {"$set": {"average": new_avg}})
         return new_avg
     return None
 
 # ===== Set User =====
 def set_User(user_id, user_name, user_email, user_password, user_type):
     ask = {
-        "_id": user_id,
+        "_id": int(user_id),
         "email": user_email,
         "name": user_name,
         "password": user_password,
