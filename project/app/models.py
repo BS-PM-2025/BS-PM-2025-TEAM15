@@ -37,3 +37,11 @@ class StudentRequest(models.Model):
     title = models.CharField(max_length=255)
     documents = models.FileField(upload_to='documents/', null=True, blank=True)  # uploaded file
     department = models.IntegerField()
+
+#user class
+class users(models.Model):
+    _id = models.IntegerField()
+    email = models.CharField(max_length=100)
+    name = models.CharField(max_length=200)
+    password = models.CharField(max_length=50)
+    type = models.CharField(max_length=20,default="Student")
