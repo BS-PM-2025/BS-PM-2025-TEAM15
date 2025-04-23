@@ -5,7 +5,7 @@ const StudentStatusRequest = () => {
     const [requests, setRequests] = useState([]);
 
     useEffect(() => {
-        axios.get("http://127.0.0.1:8000/api/request-status/")
+        axios.get("http://127.0.0.1:8000/api/request_status/")
             .then(res => setRequests(res.data))
             .catch(err => console.log(err));
     }, []);
