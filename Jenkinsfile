@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Clone') {
             steps {
-                credentialsId: 'gittoken', url: 'https://github.com/BS-PM-2025/BS-PM-2025-TEAM15.git'
+                git branch: 'main', url: 'https://github.com/BS-PM-2025/BS-PM-2025-TEAM15.git'
             }
         }
 
