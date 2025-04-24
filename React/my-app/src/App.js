@@ -6,8 +6,11 @@ import StudentLookup from "./Pages/StudentLookup";
 import Viewasks_admin from "./Pages/Viewasks_admin";
 import Requestsubmissions_student from "./Pages/Requestsubmissions_student";
 import StudentStatusRequest from "./Pages/student_status_request";
+
 import Navbar from "./Components/Navbar";
 import Sidebar from "./Components/sidebar"
+import  Layout from"./Components/layout";
+import LoginPage from "./Pages/LoginPage";
 import React, { useEffect, useState } from "react";
 
 function App() {
@@ -27,14 +30,15 @@ function App() {
   //     </div>
   //   </Router>
   // );
-<Router>
-<div class="layout">
 
-  <div className="app-wrapper">
-    <div className="content-wrapper">
-      <Sidebar className="sidebar" />
-      <div className="main-content">
-        <Routes>
+<Router>
+  {/* Check this current conflict when merging with the main */}
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        
+        
+        {/* Layout routes */}
+        <Route element={<Layout />}>
           <Route path="/Home" element={<Home />} />
           <Route path="/Wel" element={<Wel />} />
           <Route path="/asks" element={<Viewasks_admin />} />
@@ -42,12 +46,10 @@ function App() {
           <Route path="/Requestsubmissions_student" element={<Requestsubmissions_student />} />
           <Route path="/Student_status_request" element={<StudentStatusRequest />} />
           
+        </Route>
         </Routes>
-      </div>
-    </div>
-  </div>
-  </div>
 </Router>
+    
   );
 }
 

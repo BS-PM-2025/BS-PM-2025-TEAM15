@@ -30,3 +30,10 @@ class StudentRequestSerializer(serializers.ModelSerializer):
             'idr': {'read_only': True}
         }
 
+class UserSignUpSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = users
+        fields = '__all__'
+        extra_kwargs = {
+            'idr': {'read_only': True}
+        }
