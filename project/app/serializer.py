@@ -22,13 +22,17 @@ class RequestStatusserializer(serializers.ModelSerializer):
         model = request_status  # שם המודל שאת משתמשת בו
         fields = '__all__'  # או רשימה מפורטת של שדות שאת רוצה כמו: ['idr', 'title', 'text', ...]
         
-class StudentRequestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = StudentRequest
-        fields = '__all__'
-        extra_kwargs = {
-            'idr': {'read_only': True}
-        }
+from rest_framework import serializers
+
+class StudentRequestSerializer(serializers.Serializer):
+    id_sending = serializers.IntegerField()
+    id_receiving = serializers.IntegerField()
+    importance = serializers.CharField()
+    text = serializers.CharField()
+    title = serializers.CharField()
+    department = serializers.CharField()  # 🔥 should be CharField, not IntegerField!
+    documents = serializers.FileField(required=False)
+
 
 class UserSignUpSerializer(serializers.ModelSerializer):
     class Meta:

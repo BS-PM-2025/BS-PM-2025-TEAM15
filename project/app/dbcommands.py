@@ -176,7 +176,7 @@ def department_asks(dept_name):
     return [ask["_id"] for ask in requests.find({"department": dept_name})]
 
 def change_ask_status(ask_id, new_status):
-    result = requests.update_one({"_id": int(ask_id)}, {"$set": {"status": new_status}})
+    result = requests.update_one({"_id": ask_id}, {"$set": {"status": new_status}})
     return result.modified_count > 0
 
 def add_ask(id_sending, id_receiving, importance, text, title, documents, department):

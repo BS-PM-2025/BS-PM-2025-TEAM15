@@ -2,8 +2,9 @@ import pytest
 from rest_framework.test import APIClient
 import mongomock
 from bson import ObjectId
-import dbcommands
 from datetime import datetime
+from app import dbcommands
+
 
 @pytest.fixture
 def client():
@@ -45,7 +46,7 @@ def test_update_ask_status(client, monkeypatch):
 
     monkeypatch.setattr(dbcommands, "requests", fake_db.requests)
 
-    response = client.post(f"/update_ask_status/{ask_id}/", {
+    response = client.post(f"/asks/{ask_id}/update_status/", {
         "status": "closed"
     }, format="json")
 
@@ -62,7 +63,7 @@ def test_reassign_ask(client, monkeypatch):
 
     monkeypatch.setattr(dbcommands, "requests", fake_db.requests)
 
-    response = client.post(f"/reassign_ask/{ask_id}/", {
+    response = client.post(f"/asks/{ask_id}/reassign/", {
         "new_admin_id": 3
     }, format="json")
 
@@ -79,7 +80,7 @@ def test_add_note_to_ask(client, monkeypatch):
 
     monkeypatch.setattr(dbcommands, "requests", fake_db.requests)
 
-    response = client.post(f"/add_note_to_ask/{ask_id}/", {
+    response = client.post(f"/asks/{ask_id}/add_note/", {
         "note": "New note"
     }, format="json")
 
@@ -90,10 +91,10 @@ def test_add_note_to_ask(client, monkeypatch):
 # --- Get Full Student Summary ---
 def test_get_full_student_summary(client, monkeypatch):
     sid = 10
-    fake_db = mongomock.MongoClient().db
-    fake_db.students.insert_one({"user_id": sid})
-    monkeypatch.setattr(dbcommands, "students", fake_db.students)
+    fake_students = mongomock.MongoClient().db.students
+    fake_students.insert_one({"user_id": sid})
 
+    monkeypatch.setattr(dbcommands, "students", fake_students)
     monkeypatch.setattr(dbcommands, "get_user_name_by_id", lambda _: "Tali")
     monkeypatch.setattr(dbcommands, "get_user_email_by_id", lambda _: "tali@example.com")
     monkeypatch.setattr(dbcommands, "get_student_department_by_id", lambda _: "CS")

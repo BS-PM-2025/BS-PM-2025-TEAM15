@@ -1,0 +1,79 @@
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import Requestsubmissions_student from "../pages/Requestsubmissions_student";
+import StudentStatusRequest from "../pages/StudentStatusRequest";
+import StudentLookup from "../pages/StudentLookup";
+import ViewAsks from "../pages/ViewAsks";
+import axios from "axios";
+
+// 🧪 Mock Axios and global alert
+jest.mock("axios");
+window.alert = jest.fn();
+
+//
+// ======================================
+// 🟪 Requestsubmissions_student.jsx
+// ======================================
+describe("Requestsubmissions_student", () => {
+  test("renders form fields and submit button", () => {
+    render(<Requestsubmissions_student />);
+    
+    expect(screen.getByText(/Submit a Request/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Request Subject/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Details/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Upload File/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Submit Request/i })).toBeInTheDocument();
+  });
+
+  test("alerts when required fields are missing", () => {
+    render(<Requestsubmissions_student />);
+    const button = screen.getByRole("button", { name: /Submit Request/i });
+    fireEvent.click(button);
+    expect(window.alert).toHaveBeenCalledWith(
+      "Please fill in both the subject and details before submitting."
+    );
+  });
+});
+
+//
+// ======================================
+// 🟦 StudentStatusRequest.jsx
+// ======================================
+describe("StudentStatusRequest", () => {
+  test("renders status table with request data", async () => {
+    axios.get.mockResolvedValueOnce({
+      data: [{ id_sending: 1, importance: "high", status: "pending" }],
+    });
+
+    render(<StudentStatusRequest />);
+    expect(screen.getByText(/My Requests Status/i)).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText("1")).toBeInTheDocument();
+      expect(screen.getByText("high")).toBeInTheDocument();
+      expect(screen.getByText("pending")).toBeInTheDocument();
+    });
+  });
+});
+
+//
+// ======================================
+// 🟨 StudentLookup.jsx
+// ======================================
+describe("StudentLookup", () => {
+  test("renders student ID input and search button", () => {
+    render(<StudentLookup />);
+    expect(screen.getByPlaceholderText("Enter Student ID")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Search/i })).toBeInTheDocument();
+  });
+});
+
+//
+// ======================================
+// 🟥 ViewAsks.jsx
+// ======================================
+describe("ViewAsks", () => {
+  test("renders Incoming Requests title", () => {
+    render(<ViewAsks />);
+    expect(screen.getByText(/Incoming Requests/i)).toBeInTheDocument();
+  });
+});
