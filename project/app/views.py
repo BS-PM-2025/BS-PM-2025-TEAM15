@@ -128,7 +128,7 @@ class SignUpView(APIView):
             if serializer.is_valid():
                 #put here a function to send data,USING DB.COMMANDS
                 data = serializer.validated_data
-                db.set_User(
+                db.set_user(
                     data["_id"],
                     data["name"],
                     data["email"],
@@ -180,7 +180,7 @@ class GetUserNameView(APIView):
             print("user_id =", user_id)
             print("===================================")
 
-            found_user = db.get_user_name(user_id);
+            found_user = db.get_user_name_by_id(user_id);
             if found_user:
                 return Response({'name': found_user}, status=status.HTTP_200_OK)
             else:
