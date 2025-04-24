@@ -1,17 +1,21 @@
-//import React from "react";
+import React, { useState, useEffect } from "react"; // 🛠 Fix!
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
 import Home from "./Pages/Home";
 import Wel from "./Pages/Wel";
 import StudentLookup from "./Pages/StudentLookup";
 import Viewasks_admin from "./Pages/Viewasks_admin";
 import Requestsubmissions_student from "./Pages/Requestsubmissions_student";
+
 import StudentStatusRequest from "./Pages/student_status_request";
 
 import Navbar from "./Components/Navbar";
-import Sidebar from "./Components/sidebar"
-import  Layout from"./Components/layout";
+import Sidebar from "./Components/sidebar";
+import Layout from "./Components/layout";
 import LoginPage from "./Pages/LoginPage";
-import React, { useEffect, useState } from "react";
+
+
 
 function App() {
   

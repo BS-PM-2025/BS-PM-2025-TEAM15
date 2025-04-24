@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import Progress from "../Components/Progress";
 import axios from "axios";
+console.log("✅ Requestsubmissions_student loaded");
 
 // To what endpoint to send
  const BASE_URL = 'http://localhost:8000/api/studentrequests/';
@@ -36,7 +37,7 @@ function Requestsubmissions_student() {
     formData.append("importance", "high");
     formData.append("title", subject);
     formData.append("text", quote);
-    formData.append("department", 2);
+    formData.append("department", "2");
   
     if (attachment) {
       formData.append("documents", attachment);  // Important!

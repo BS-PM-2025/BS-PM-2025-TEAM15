@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework import status
 from bson import ObjectId
-from . import dbcommands as db  
+from app import dbcommands as db  
 from django.shortcuts import render
 
 # Create your views here.
