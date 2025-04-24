@@ -1,0 +1,17 @@
+// src/__tests__/StudentLookup.test.js
+import { render, screen, fireEvent } from "@testing-library/react"
+import StudentLookup from "../pages/StudentLookup"
+
+test("renders lookup input", () => {
+  render(<StudentLookup />)
+  const input = screen.getByPlaceholderText(/Enter Student ID/i)
+  expect(input).toBeInTheDocument()
+})
+// src/__tests__/ViewAsks.test.js
+import { render, screen } from "@testing-library/react"
+import ViewAsks from "../pages/ViewAsks"
+
+test("displays incoming requests heading", () => {
+  render(<ViewAsks />)
+  expect(screen.getByText(/Incoming Requests/i)).toBeInTheDocument()
+})
