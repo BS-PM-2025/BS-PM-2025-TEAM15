@@ -50,7 +50,7 @@ function StudentLookup() {
       <input
         type="number"
         value={studentId}
-        onChange={(e) => setStudentId(e.target.value)}
+        onChange={(e) => setStudentId(Number(e.target.value))}
         placeholder="Enter Student ID"
         style={{ marginRight: "10px" }}
       />
