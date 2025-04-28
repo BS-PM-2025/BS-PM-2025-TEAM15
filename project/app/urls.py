@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .adminviews import get_all_requests,reassign_ask,update_ask_status,get_all_admins,add_note_to_ask,get_full_student_summary
+from .adminviews import is_admin,get_all_requests,reassign_ask,update_ask_status,get_all_admins,add_note_to_ask,get_full_student_summary
 from .views import  ReactView,Student_personal_requests,RequestStatusView,SignUpView,LoginView,GetUserNameView
 from django.conf.urls.static import static
 from django.conf import settings
@@ -19,5 +19,8 @@ urlpatterns = [
     path("asks/<str:ask_id>/update_status/", update_ask_status),
     path("admins/", get_all_admins),
     path("asks/<str:ask_id>/add_note/", add_note_to_ask),
-    path("studentlookup/<int:student_id>/", get_full_student_summary)
+    path("studentlookup/<int:student_id>/", get_full_student_summary),
+
+    #to check if the user is admin
+    path('api/isadmin/',is_admin)
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
