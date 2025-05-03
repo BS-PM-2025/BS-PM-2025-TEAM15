@@ -41,3 +41,11 @@ class UserSignUpSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'idr': {'read_only': True}
         }
+
+class SearchSerializer(serializers.Serializer):
+    _id = serializers.CharField()
+    user_id = serializers.IntegerField()
+    department = serializers.CharField()
+    status = serializers.CharField()
+    sum_points = serializers.IntegerField()
+    average = serializers.IntegerField()

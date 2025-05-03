@@ -1,5 +1,6 @@
 from pymongo import MongoClient, ReturnDocument
 from datetime import datetime
+from django.http import JsonResponse
 
 # MongoDB Setup
 client = MongoClient("mongodb+srv://admin:123456!@db.hsm1joq.mongodb.net/")
@@ -59,6 +60,12 @@ def set_user(user_id, user_name, user_email, user_password, user_type):
     return users.insert_one(new_user).inserted_id
 
 # === Student Info ===
+def get_all_students():
+    students_cursor = students.find()
+    return list(students_cursor)  
+
+
+
 def get_full_student_profile(student_id):
     user = users.find_one({"_id": to_int(student_id)})
     student_data = students.find_one({"user_id": to_int(student_id)})
@@ -75,6 +82,8 @@ def get_student_department_by_id(user_id):
 def get_student_status_by_id(user_id):
     student = students.find_one({"user_id": to_int(user_id)})
     return student.get("status") if student else None
+
+
 
 def get_student_sum_points_by_id(user_id):
     student = students.find_one({"user_id": to_int(user_id)})
@@ -150,6 +159,11 @@ def department_asks(dept_name):
 def change_ask_status(ask_id, new_status):
     result = requests.update_one({"_id": ask_id}, {"$set": {"status": new_status}})
     return result.modified_count > 0
+
+def change_student_status_by_id(user_id,status):
+    return students.update_one({"user_id":user_id},
+                                {"$set": {"status":status}})
+     
 
 def add_ask(id_sending, id_receiving, importance, text, title, documents, department):
     ask = {

@@ -49,16 +49,7 @@ class ReactView(APIView):
 from .serializer import YourRequestSerializer  # ודא/י שאת מייבאת את הסריאלייזר המתאים
 
 class Student_personal_requests(APIView):
-    # @transaction.atomic
-   
-    # def get_next_sequence(self, name):
-    #     counter = db.counters.find_one_and_update(
-    #         {"_id": name},
-    #         {"$inc": {"seq": 1}},
-    #         upsert=True,
-    #         return_document=ReturnDocument.AFTER
-    #     )
-    #     return counter["seq"]
+
 
     def filehandle(self,request):
         file = request.FILES.get('documents')
@@ -99,8 +90,9 @@ class Student_personal_requests(APIView):
         #סטטוס בקשות 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-#from .models import YourRequestModel
+from django.http import JsonResponse
 from .serializer import YourRequestSerializer
+
 from . import dbcommands as dbcom 
 
 class RequestStatusView(APIView):
@@ -110,8 +102,8 @@ class RequestStatusView(APIView):
         return Response(serializer.data)
 
 from django.contrib.auth.hashers import make_password, check_password
-from .models import users
-from .serializer import UserSignUpSerializer
+from .models import users,SearchModel
+from .serializer import UserSignUpSerializer, SearchSerializer
 import json
 
 # SIGN UP View
@@ -185,5 +177,37 @@ class GetUserNameView(APIView):
                 return Response({'name': found_user}, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class Searchview(APIView):
+    def get(self, request):
+        query = request.GET.get("query", "")
+        if not query:
+            return Response([])
+
+        documents = dbcom.get_all_students()
+
+        student_list = []
+        for doc in documents:
+            doc['_id'] = str(doc['_id'])  # Convert ObjectId
+            student_list.append(doc)
+        
+        print(student_list[0])
+
+        serializer = SearchSerializer(student_list, many=True)
+        return Response(serializer.data)
+    def post(self,request):
+        try:
+            user_id = int(request.data.get('user_id'))
+            status_change = request.data.get('Statuschange')
+            print("The User is ",user_id)
+            print("The wanted Status:",status_change)
+
+            if(dbcom.change_student_status_by_id(user_id,status_change)):
+                return Response({"success": True},status=status.HTTP_200_OK)
+            else:
+                return Response({"success": False,'error': 'Cant change Status ,try again please'}, status=status.HTTP_404_NOT_FOUND)
+    
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
