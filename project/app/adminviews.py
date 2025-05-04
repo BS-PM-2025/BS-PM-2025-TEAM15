@@ -2,6 +2,10 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from . import dbcommands as dbcommands
+from django.utils.dateparse import parse_datetime
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
 
 # Hardcoded admin ID (can be made dynamic later)
 adminid = 2
@@ -53,14 +57,51 @@ def update_ask_status(request, ask_id):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-# --- GET: All open asks assigned to admin ---
 @api_view(["GET"])
 def get_all_requests(request):
-    all_asks = dbcommands.get_open_asks_for_admin(adminid)
-    for ask in all_asks:
-        ask["_id"] = str(ask["_id"])
-        ask["date_sent"] = ask["date_sent"].isoformat()
-    return Response(all_asks)
+    try:
+        importance = request.GET.get("importance")
+        status_filter = request.GET.get("status")
+        category = request.GET.get("category")  
+        date_sent_from = request.GET.get("from")
+        date_sent_to = request.GET.get("to")
+        sort_by = request.GET.get("sort")
+        order = request.GET.get("order", "asc")
+
+        query = {"id_receiving": adminid}
+
+        if importance:
+            query["importance"] = importance
+        if status_filter:
+            query["status"] = status_filter
+        if category:
+            query["category"] = category
+
+        if date_sent_from or date_sent_to:
+            query["date_sent"] = {}
+            if date_sent_from:
+                query["date_sent"]["$gte"] = parse_datetime(date_sent_from)
+            if date_sent_to:
+                query["date_sent"]["$lte"] = parse_datetime(date_sent_to)
+
+        asks = list(dbcommands.requests.find(query))
+
+        for ask in asks:
+            ask["_id"] = str(ask["_id"])
+            ask["date_sent"] = ask["date_sent"].isoformat()
+
+        reverse = (order == "desc")
+        if sort_by == "importance":
+            asks.sort(key=lambda x: importance_order.get(x.get("importance", "low"), 3), reverse=reverse)
+        elif sort_by == "date":
+            asks.sort(key=lambda x: x.get("date_sent"), reverse=reverse)
+
+        return Response(asks)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+
 
 # --- POST: Add a note (appended to ask text) ---
 @api_view(["POST"])
@@ -89,19 +130,11 @@ def add_note_to_ask(request, ask_id):
 def get_full_student_summary(request, student_id):
     try:
         student_id = int(student_id)
-        student_exists = dbcommands.students.find_one({"user_id": student_id})
-        if not student_exists:
+        profile = dbcommands.get_full_student_profile(student_id)
+        if not profile:
             return Response({"error": f"User ID {student_id} is not a student."}, status=404)
 
-        info = {
-            "name": dbcommands.get_user_name_by_id(student_id),
-            "email": dbcommands.get_user_email_by_id(student_id),
-            "department": dbcommands.get_student_department_by_id(student_id),
-            "status": dbcommands.get_student_status_by_id(student_id),
-            "sum_points": dbcommands.get_student_sum_points_by_id(student_id),
-            "average": dbcommands.get_student_average_by_id(student_id),
-        }
-
+        # Fetch courses
         course_ids = dbcommands.get_all_courses(student_id)
         courses = []
         for cid in course_ids:
@@ -114,13 +147,21 @@ def get_full_student_summary(request, student_id):
                     "grade": dbcommands.get_grade(student_id, cid)
                 })
 
-        ask_ids = dbcommands.get_all_asks_by_idr(student_id)
-        asks = [dbcommands.get_ask_by_idr(aid) for aid in ask_ids if dbcommands.get_ask_by_idr(aid)]
+        # Fetch requests
+        ask_ids = dbcommands.get_student_asks(student_id)
+        asks = [dbcommands.get_ask_by_id(aid) for aid in ask_ids if dbcommands.get_ask_by_id(aid)]
 
         return Response({
-            "info": info,
+            "info": {
+                "name": profile.get("name"),
+                "email": profile.get("email"),
+                "department": profile.get("department"),
+                "status": profile.get("status"),
+                "sum_points": profile.get("sum_points"),
+                "average": profile.get("average")
+            },
             "courses": courses,
-            "average": info["average"],
+            "average": profile.get("average"),
             "asks": asks
         })
     except Exception as e:
