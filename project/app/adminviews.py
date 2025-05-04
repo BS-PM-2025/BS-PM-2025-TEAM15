@@ -23,6 +23,12 @@ def get_all_admins(request):
                 "name": name
             })
     return Response(results)
+#-- check if current useris admin --#
+@api_view(["POST"])
+def is_admin(request):
+    user_id = request.data.get("userId")  # read from POST body
+    user_check = dbcommands.is_admin(user_id)
+    return Response({"is_admin": user_check})
 
 # --- POST: Reassign ask to a different admin ---
 @api_view(["POST"])
