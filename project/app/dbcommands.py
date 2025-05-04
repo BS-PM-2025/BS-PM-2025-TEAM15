@@ -135,8 +135,8 @@ def get_course_info(course_id):
     return courses.find_one({"_id": course_id})  # don't cast to int
 
 # === Requests / Asks ===
-def get_all_asks(student_id):
-    return [ask["_id"] for ask in requests.find({"id_sending": to_int(student_id)})]
+def get_student_asks(student_id):
+    return [ask["idr"] for ask in requests.find({"id_sending": to_int(student_id)})]
 
 def get_open_asks_for_admin(admin_id):
     return list(requests.find({"id_receiving": to_int(admin_id), "status": {"$ne": "closed"}}))
@@ -170,19 +170,9 @@ def delete_ask(ask_id):
     result = requests.delete_one({"_id": ask_id})
     return result.deleted_count > 0
 
-def get_ask_by_id(ask_id):
-    ask = requests.find_one({"_id": ask_id})
-    if ask:
-        ask["_id"] = str(ask["_id"])
-        ask["date_sent"] = ask["date_sent"].isoformat()
-    return ask
-
-def get_all_asks_by_idr(student_id):
-    return [ask["idr"] for ask in requests.find({"id_sending": to_int(student_id)}) if "idr" in ask]
-
-def get_ask_by_idr(idr):
+def get_ask_by_id(idr):
     ask = requests.find_one({"idr": to_int(idr)})
     if ask:
-        ask["_id"] = str(ask.get("_id", ""))
+        ask["_id"] = str(ask["_id"])
         ask["date_sent"] = ask["date_sent"].isoformat()
     return ask
