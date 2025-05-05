@@ -176,3 +176,35 @@ def get_ask_by_id(idr):
         ask["_id"] = str(ask["_id"])
         ask["date_sent"] = ask["date_sent"].isoformat()
     return ask
+
+
+# === Requests / Ask Updates ===
+
+def reassign_ask_by_idr(idr, new_admin_id):
+    return requests.update_one(
+        {"idr": to_int(idr)},
+        {"$set": {
+            "id_receiving": to_int(new_admin_id),
+            "status": "pending"
+        }}
+    ).modified_count > 0
+
+def update_ask_status_by_idr(idr, new_status, new_admin_id=None):
+    update_fields = {"status": new_status}
+    if new_admin_id is not None:
+        update_fields["id_receiving"] = to_int(new_admin_id)
+    return requests.update_one(
+        {"idr": to_int(idr)},
+        {"$set": update_fields}
+    ).modified_count > 0
+
+def append_note_to_ask(idr, note_text):
+    ask = requests.find_one({"idr": to_int(idr)})
+    if not ask:
+        return False
+    new_text = ask.get("text", "") + f"\n{note_text}"
+    result = requests.update_one(
+        {"idr": to_int(idr)},
+        {"$set": {"text": new_text}}
+    )
+    return result.modified_count > 0

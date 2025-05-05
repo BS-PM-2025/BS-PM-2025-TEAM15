@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-function RequestModal({ ask, onClose, currentUserId, currentUserName, refreshAsks }) {
+function RequestModal({ ask, onClose, admin_id, currentUserName, refreshAsks }) {
   const [emailBack, setEmailBack] = useState("");
   const [noteText, setNoteText] = useState("");
   const [newStatus, setNewStatus] = useState("..");
@@ -21,49 +21,42 @@ function RequestModal({ ask, onClose, currentUserId, currentUserName, refreshAsk
     };
 
     if (newStatus === "assigned to me") {
-      update.id_receiving = currentUserId;
+      update.id_receiving = parseInt(admin_id);
     }
 
-    await fetch(`http://localhost:8000/asks/${ask._id}/update_status/`, {
+    await fetch(`http://localhost:8000/asks/${ask.idr}/update_status/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(update),
     });
 
-    await refreshAsks();
-    onClose();
+    await refreshAsks(); // keep modal open
   };
 
   const handleReassign = async () => {
     if (!selectedAdminId) return;
 
-    await fetch(`http://localhost:8000/asks/${ask._id}/reassign/`, {
+    await fetch(`http://localhost:8000/asks/${ask.idr}/reassign/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ new_admin_id: selectedAdminId }),
+      body: JSON.stringify({ new_admin_id: parseInt(selectedAdminId) }),
     });
 
-    await fetch(`http://localhost:8000/asks/${ask._id}/update_status/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "pending" }),
-    });
-
-    await refreshAsks();
-    onClose();
+    await refreshAsks(); // reflect changes
+    setSelectedAdminId(""); // optional: clear selection
   };
 
   const handleAddNote = async () => {
     const note = `note from ${currentUserName}: ${noteText}`;
-    await fetch(`http://localhost:8000/asks/${ask._id}/add_note/`, {
+    await fetch(`http://localhost:8000/asks/${ask.idr}/add_note/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ note: `\n${note}` }), // <- NEW LINE
+      body: JSON.stringify({ note: `\n${note}` }),
     });
 
     alert("Note added");
     setNoteText("");
-    await refreshAsks();
+    await refreshAsks(); // update ask text
   };
 
   const handleSendEmail = () => {
@@ -76,7 +69,6 @@ function RequestModal({ ask, onClose, currentUserId, currentUserName, refreshAsk
   return (
     <>
       <div
-        onClick={onClose}
         style={{
           position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: "rgba(0,0,0,0.5)", zIndex: 999
