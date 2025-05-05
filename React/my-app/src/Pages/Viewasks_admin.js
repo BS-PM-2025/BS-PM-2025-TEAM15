@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import RequestModal from "../Components/RequestModal";
 
 function ViewAsks() {
-  const admin_id = parseInt(localStorage.getItem('user_id'));
+  const admin_id = parseInt(localStorage.getItem("user_id"));
   const [asks, setAsks] = useState([]);
   const [selectedAsk, setSelectedAsk] = useState(null);
   const [admins, setAdmins] = useState([]);
@@ -17,7 +17,6 @@ function ViewAsks() {
   const [toDate, setToDate] = useState("");
 
   useEffect(() => {
-    // Fetch admins once and set current admin's name
     fetch("http://localhost:8000/admins/")
       .then(res => res.json())
       .then(data => {
@@ -30,7 +29,7 @@ function ViewAsks() {
         alert("Failed to fetch admin list");
       });
 
-    applyFilters(); // Also fetch asks initially
+    applyFilters();
   }, [admin_id]);
 
   const applyFilters = () => {
@@ -61,9 +60,7 @@ function ViewAsks() {
     applyFilters();
   };
 
-  const refreshAsks = () => {
-    applyFilters();
-  };
+  const refreshAsks = () => applyFilters();
 
   return (
     <div style={{ padding: "20px" }}>
@@ -112,13 +109,11 @@ function ViewAsks() {
           </select>
         </label>
 
-        <label>
+        <div>
           Order:
-          <select value={sortOrder} onChange={e => setSortOrder(e.target.value)}>
-            <option value="asc">Asc</option>
-            <option value="desc">Desc</option>
-          </select>
-        </label>
+          <button onClick={() => { setSortOrder("asc"); applyFilters(); }} style={{ marginLeft: "5px" }}>⬆️</button>
+          <button onClick={() => { setSortOrder("desc"); applyFilters(); }} style={{ marginLeft: "5px" }}>⬇️</button>
+        </div>
 
         <label>
           From:
@@ -152,7 +147,7 @@ function ViewAsks() {
       <RequestModal
         ask={selectedAsk}
         onClose={() => setSelectedAsk(null)}
-        currentUserId={admin_id}
+        admin_id={admin_id}
         currentUserName={currentUserName}
         admins={admins}
         refreshAsks={refreshAsks}
