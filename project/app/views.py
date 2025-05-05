@@ -133,13 +133,29 @@ from rest_framework.response import Response
 #from .models import YourRequestModel
 from .serializer import YourRequestSerializer
 from . import dbcommands as dbcom 
+from . import dbcommands
 
 class RequestStatusView(APIView):
     def get(self, request):
-        requests = dbcom.get_pending_asks_for_admin(2)  # אם צריך לפי משתמש, סנן לפי `request.user`
-        serializer = RequestStatusserializer(requests, many=True)
-        return Response(serializer.data)
+        student_id = request.query_params.get('user_id')
+        if not student_id:
+            return Response({'error': 'Missing user_id'}, status=status.HTTP_400_BAD_REQUEST)
 
+        try:
+            ask_ids = dbcommands.get_student_asks(student_id)
+            print("\n",student_id)
+            # שימוש ב get_ask_by_id כמו שהוא
+            asks = []
+            for aid in ask_ids:
+                ask = dbcommands.get_ask_by_id(aid)
+                if ask:
+                    asks.append(ask)
+
+            return Response(asks, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 from django.contrib.auth.hashers import make_password, check_password
 from .models import users
 from .serializer import UserSignUpSerializer

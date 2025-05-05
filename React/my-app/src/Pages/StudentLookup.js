@@ -18,6 +18,7 @@ function StudentLookup() {
   const [sortOrder, setSortOrder] = useState("asc");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  //ID של המשתמש שמחובר הרגע לאתר מחזיר INT 
   const admin_id = parseInt(localStorage.getItem("user_id")); // force int
 
   useEffect(() => {
