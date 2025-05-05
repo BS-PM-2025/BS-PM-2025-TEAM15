@@ -20,6 +20,7 @@ urlpatterns = [
     path("admins/", get_all_admins),
     path("asks/<str:ask_id>/add_note/", add_note_to_ask),
     path("studentlookup/<int:student_id>/", get_full_student_summary),
+    
 
     #to check if the user is admin
     path('api/isadmin/',is_admin)

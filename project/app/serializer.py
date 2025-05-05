@@ -30,8 +30,9 @@ class StudentRequestSerializer(serializers.Serializer):
     importance = serializers.CharField()
     text = serializers.CharField()
     title = serializers.CharField()
-    department = serializers.CharField()  # 🔥 should be CharField, not IntegerField!
+    department = serializers.CharField()  
     documents = serializers.FileField(required=False)
+    category = serializers.CharField()
 
 
 class UserSignUpSerializer(serializers.ModelSerializer):
@@ -41,3 +42,12 @@ class UserSignUpSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'idr': {'read_only': True}
         }
+
+#Course - get all Courses.
+
+class CourseSerializer(serializers.Serializer):
+    _id = serializers.CharField()
+    name = serializers.CharField()
+    lecturer = serializers.IntegerField()
+    department = serializers.CharField()
+    points = serializers.IntegerField()

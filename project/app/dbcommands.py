@@ -151,7 +151,10 @@ def change_ask_status(ask_id, new_status):
     result = requests.update_one({"_id": ask_id}, {"$set": {"status": new_status}})
     return result.modified_count > 0
 
-def add_ask(id_sending, id_receiving, importance, text, title, documents, department):
+def add_ask(id_sending, id_receiving, importance, text, title, documents, department,category):
+    last_doc = db.requests.find_one({}, {'idr': 1}, sort=[('idr', -1)])
+    last_idr = int(last_doc['idr']) if last_doc and 'idr' in last_doc else 0
+    new_idr = last_idr + 1   
     ask = {
         "id_sending": to_int(id_sending),
         "id_receiving": to_int(id_receiving),
@@ -162,7 +165,8 @@ def add_ask(id_sending, id_receiving, importance, text, title, documents, depart
         "status": "pending",
         "documents": documents,
         "department": department,
-        "idr": requests.count_documents({}) + 1  # generate `idr` for integer indexing
+        "idr": new_idr,  # generate `idr` for integer indexing
+        "category": category
     }
     return requests.insert_one(ask).inserted_id
 
