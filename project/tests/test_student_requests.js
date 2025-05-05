@@ -38,9 +38,14 @@ describe("📄 Requestsubmissions_student Component", () => {
     const fileInput = screen.getByLabelText("Upload File:", { selector: "input" });
     const testFile = new File(["dummy content"], "test-file.pdf", { type: "application/pdf" });
 
+    // מדמה העלאת קובץ
     fireEvent.change(fileInput, { target: { files: [testFile] } });
 
-    
+    // אם מוצג טקסט עם שם הקובץ:
     expect(screen.getByText(/Selected File: test-file.pdf/)).toBeInTheDocument();
+
+    // בנוסף – בדיקה ישירה על הקלט (לא חובה):
+    expect(fileInput.files[0]).toBe(testFile);
+    expect(fileInput.files).toHaveLength(1);
   });
 });
