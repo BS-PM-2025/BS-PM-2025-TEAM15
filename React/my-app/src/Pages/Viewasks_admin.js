@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import RequestModal from "../Components/RequestModal";
 
 function ViewAsks() {
-  const admin_id = 2;
+  const admin_id = parseInt(localStorage.getItem('user_id'));
   const [asks, setAsks] = useState([]);
   const [selectedAsk, setSelectedAsk] = useState(null);
   const [admins, setAdmins] = useState([]);
-  const [currentUserName] = useState("Admin");
+  const [currentUserName, setCurrentUserName] = useState("Admin");
 
   const [importance, setImportance] = useState("");
   const [status, setStatus] = useState("");
@@ -17,15 +17,24 @@ function ViewAsks() {
   const [toDate, setToDate] = useState("");
 
   useEffect(() => {
-    applyFilters();
-
+    // Fetch admins once and set current admin's name
     fetch("http://localhost:8000/admins/")
       .then(res => res.json())
-      .then(data => setAdmins(data));
-  }, []);
+      .then(data => {
+        setAdmins(data);
+        const current = data.find(admin => parseInt(admin.user_id) === admin_id);
+        setCurrentUserName(current?.name || "Unknown Admin");
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Failed to fetch admin list");
+      });
+
+    applyFilters(); // Also fetch asks initially
+  }, [admin_id]);
 
   const applyFilters = () => {
-    let url = `http://localhost:8000/asks/?`;
+    let url = `http://localhost:8000/asks/?admin_id=${admin_id}&`;
     if (importance) url += `importance=${importance}&`;
     if (status) url += `status=${status}&`;
     if (category) url += `category=${category}&`;
@@ -36,9 +45,7 @@ function ViewAsks() {
     fetch(url)
       .then(res => res.json())
       .then(data => {
-        const filtered = data.filter(
-          ask => ask.id_receiving === admin_id && ask.status !== "closed"
-        );
+        const filtered = data.filter(ask => ask.status !== "closed");
         setAsks(filtered);
       });
   };

@@ -1,14 +1,8 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from . import dbcommands as dbcommands
+from . import dbcommands
 from django.utils.dateparse import parse_datetime
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
-
-# Hardcoded admin ID (can be made dynamic later)
-adminid = 2
 
 # --- GET all admins ---
 @api_view(["GET"])
@@ -23,10 +17,11 @@ def get_all_admins(request):
                 "name": name
             })
     return Response(results)
-#-- check if current useris admin --#
+
+# -- Check if current user is admin --
 @api_view(["POST"])
 def is_admin(request):
-    user_id = request.data.get("userId")  # read from POST body
+    user_id = request.data.get("userId")
     user_check = dbcommands.is_admin(user_id)
     return Response({"is_admin": user_check})
 
@@ -36,13 +31,12 @@ def reassign_ask(request, ask_id):
     try:
         ask_id = int(ask_id)
         new_admin_id = int(request.data.get("new_admin_id"))
-        dbcommands.requests.update_one(
-            {"_id": ask_id},
-            {"$set": {"id_receiving": new_admin_id}}
-        )
-        return Response({"message": "Ask reassigned."})
+        success = dbcommands.reassign_ask_to_admin(ask_id, new_admin_id)
+        if success:
+            return Response({"message": "Ask reassigned."})
+        return Response({"error": "Request not found or update failed."}, status=404)
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": str(e)}, status=400)
 
 # --- POST: Update ask status (and optionally assign) ---
 @api_view(["POST"])
@@ -50,39 +44,37 @@ def update_ask_status(request, ask_id):
     try:
         ask_id = int(ask_id)
         new_status = request.data.get("status")
-        update_data = {"status": new_status}
+        id_receiving = request.data.get("id_receiving")
 
-        if "id_receiving" in request.data:
-            update_data["id_receiving"] = int(request.data["id_receiving"])
-
-        dbcommands.requests.update_one(
-            {"_id": ask_id},
-            {"$set": update_data}
-        )
-        return Response({"message": "Ask status updated."})
+        success = dbcommands.update_ask_status_by_idr(ask_id, new_status, id_receiving)
+        if success:
+            return Response({"message": "Ask status updated."})
+        return Response({"error": "Request not found or update failed."}, status=404)
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": str(e)}, status=400)
 
+# --- GET: All requests for a given admin ---
 @api_view(["GET"])
 def get_all_requests(request):
     try:
         importance = request.GET.get("importance")
         status_filter = request.GET.get("status")
-        category = request.GET.get("category")  
+        category = request.GET.get("category")
         date_sent_from = request.GET.get("from")
         date_sent_to = request.GET.get("to")
         sort_by = request.GET.get("sort")
         order = request.GET.get("order", "asc")
+        admin_id = request.GET.get("admin_id")
 
-        query = {"id_receiving": adminid}
-
+        query = {}
+        if admin_id:
+            query["id_receiving"] = int(admin_id)
         if importance:
             query["importance"] = importance
         if status_filter:
             query["status"] = status_filter
         if category:
             query["category"] = category
-
         if date_sent_from or date_sent_to:
             query["date_sent"] = {}
             if date_sent_from:
@@ -91,25 +83,22 @@ def get_all_requests(request):
                 query["date_sent"]["$lte"] = parse_datetime(date_sent_to)
 
         asks = list(dbcommands.requests.find(query))
-
         for ask in asks:
             ask["_id"] = str(ask["_id"])
             ask["date_sent"] = ask["date_sent"].isoformat()
 
         reverse = (order == "desc")
         if sort_by == "importance":
-            asks.sort(key=lambda x: importance_order.get(x.get("importance", "low"), 3), reverse=reverse)
+            importance_order = {"high": 1, "medium": 2, "low": 3}
+            asks.sort(key=lambda x: importance_order.get(x.get("importance", "low"), 4), reverse=reverse)
         elif sort_by == "date":
             asks.sort(key=lambda x: x.get("date_sent"), reverse=reverse)
 
         return Response(asks)
-
     except Exception as e:
         return Response({"error": str(e)}, status=400)
 
-
-
-# --- POST: Add a note (appended to ask text) ---
+# --- POST: Add a note ---
 @api_view(["POST"])
 def add_note_to_ask(request, ask_id):
     try:
@@ -117,17 +106,10 @@ def add_note_to_ask(request, ask_id):
         note = request.data.get("note", "").strip()
         if not note:
             return Response({"error": "Empty note"}, status=400)
-
-        existing_ask = dbcommands.requests.find_one({"_id": ask_id})
-        if not existing_ask:
-            return Response({"error": "Ask not found"}, status=404)
-
-        updated_text = existing_ask.get("text", "") + f"\n{note}"
-        dbcommands.requests.update_one(
-            {"_id": ask_id},
-            {"$set": {"text": updated_text}}
-        )
-        return Response({"message": "Note appended to ask text."})
+        success = dbcommands.append_note_to_ask(ask_id, note)
+        if success:
+            return Response({"message": "Note added."})
+        return Response({"error": "Ask not found or update failed."}, status=404)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
 
@@ -140,7 +122,6 @@ def get_full_student_summary(request, student_id):
         if not profile:
             return Response({"error": f"User ID {student_id} is not a student."}, status=404)
 
-        # Fetch courses
         course_ids = dbcommands.get_all_courses(student_id)
         courses = []
         for cid in course_ids:
@@ -153,7 +134,6 @@ def get_full_student_summary(request, student_id):
                     "grade": dbcommands.get_grade(student_id, cid)
                 })
 
-        # Fetch requests
         ask_ids = dbcommands.get_student_asks(student_id)
         asks = [dbcommands.get_ask_by_id(aid) for aid in ask_ids if dbcommands.get_ask_by_id(aid)]
 

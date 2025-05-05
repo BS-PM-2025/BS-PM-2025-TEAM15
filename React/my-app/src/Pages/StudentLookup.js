@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+
 import RequestModal from "../Components/RequestModal";
 
 function StudentLookup() {
@@ -17,8 +18,23 @@ function StudentLookup() {
   const [sortOrder, setSortOrder] = useState("asc");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const admin_id = parseInt(localStorage.getItem("user_id")); // force int
 
-  const currentUserId = 2;
+  useEffect(() => {
+    fetch("http://localhost:8000/admins/")
+      .then(res => res.json())
+      .then(data => {
+        setAdmins(data);
+        const current = data.find(admin => parseInt(admin.user_id) === admin_id);
+        setCurrentUserName(current?.name || "Unknown Admin");
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Failed to fetch admin list");
+      });
+  }, [admin_id]); // <- only runs once
+  
+
 
   const fetchStudentDetails = () => {
     const parsedId = parseInt(studentId);
@@ -40,17 +56,6 @@ function StudentLookup() {
       })
       .finally(() => setLoading(false));
 
-    fetch("http://localhost:8000/admins/")
-      .then(res => res.json())
-      .then(data => {
-        const current = data.find(admin => admin.user_id === currentUserId);
-        setCurrentUserName(current?.name || "Unknown Admin");
-        setAdmins(data);
-      })
-      .catch(err => {
-        console.error(err);
-        alert("Failed to fetch admin list");
-      });
   };
 
   const refreshStudent = () => fetchStudentDetails();
@@ -209,7 +214,7 @@ function StudentLookup() {
           <RequestModal
             ask={selectedAsk}
             onClose={() => setSelectedAsk(null)}
-            currentUserId={currentUserId}
+            admin_id={admin_id}
             currentUserName={currentUserName}
             admins={admins}
             refreshAsks={refreshStudent}
