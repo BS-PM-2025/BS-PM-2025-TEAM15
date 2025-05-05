@@ -91,11 +91,42 @@ class Student_personal_requests(APIView):
                 data["text"],
                 data["title"],
                 file_url_res,
-                data["department"]
+                data["department"],
+                data["category"]
             )
             return Response({"success": True, "data": {"_id": str(inserted)}}, status=201)
         else:
             return Response({"success": False, "errors": serializer.errors}, status=400)
+
+    def get(self,request):
+        try : 
+            
+            student_id = request.query_params.get('_id')
+            if not student_id:
+                return Response({'error': 'Missing student_id'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Get related course IDs for the student
+            course_ids = db.get_all_courses(student_id)  
+            if not course_ids:
+                return Response({'courses': []}, status=status.HTTP_200_OK)
+
+            # Fetch full course data from the `courses` collection
+            course_docs = db.courses.find({
+                "_id": { "$in": [ObjectId(cid) for cid in course_ids] }
+            })
+
+            # Convert ObjectId to str for JSON serialization
+            courses = []
+            for course in course_docs:
+                print("\n",course)
+                course['_id'] = str(course['_id'])
+                courses.append(course)
+            
+
+            return Response({'courses': courses}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         #סטטוס בקשות 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -180,10 +211,12 @@ class GetUserNameView(APIView):
             print("user_id =", user_id)
             print("===================================")
 
-            found_user = db.get_user_name_by_id(user_id);
+            found_user = db.get_user_name_by_id(user_id)
             if found_user:
                 return Response({'name': found_user}, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    
