@@ -12,7 +12,6 @@
     border-radius: 12px;
     box-shadow: 3;
     background-color: white;
-    
     height: 600px;
     display: flex;
     flex-direction: "column";
@@ -40,7 +39,7 @@
         box-shadow: 3;
         background-color: white(242, 241, 241);
         
-        height: 600px;
+        height: 400px;
         display: flex;
         flex-direction: column;
         gap: 2;
@@ -54,6 +53,20 @@
         margin-left: 400px;
         height: 300px;
         width: 600px;
+    }
+    .profile_student{
+
+        width: 650px;
+        margin-left: 1px;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 3;
+        background-color: white(242, 241, 241);
+        margin-top:25px;
+        height: 400px;
+        display: flex;
+        flex-direction: column;
+        gap: 2;
     }
 }
 
