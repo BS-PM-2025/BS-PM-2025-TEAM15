@@ -36,6 +36,12 @@ class StudentRequestSerializer(serializers.Serializer):
 
 
 class UserSignUpSerializer(serializers.ModelSerializer):
+    # Student-specific fields added manually
+    department = serializers.CharField(required=True)
+    status = serializers.CharField(required=False)
+    sum_points = serializers.IntegerField(required=False)
+    average = serializers.IntegerField(required=False)
+
     class Meta:
         model = users
         fields = '__all__'
@@ -46,8 +52,15 @@ class UserSignUpSerializer(serializers.ModelSerializer):
 #Course - get all Courses.
 
 class CourseSerializer(serializers.Serializer):
-    _id = serializers.CharField()
+    _id = serializers.CharField() #object id
     name = serializers.CharField()
     lecturer = serializers.IntegerField()
     department = serializers.CharField()
     points = serializers.IntegerField()
+
+class StudentSerializer(serializers.ModelSerializer):
+    user_id = serializers.IntegerField()
+    department = serializers.CharField()
+    status = serializers.CharField()
+    sum_points = serializers.IntegerField()
+    average = serializers.IntegerField()

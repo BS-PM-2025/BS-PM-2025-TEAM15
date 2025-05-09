@@ -11,6 +11,7 @@ function LoginPage() {
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupId, setSignupId] = useState("");
+  const [signupDepartment, setSignupDepartment] = useState("");
 
   const handleLogin = async (e) => { //part that will handle login
     e.preventDefault();
@@ -34,12 +35,16 @@ function LoginPage() {
   const handleSignup = async (e) => { //part that will handle signup
     e.preventDefault();
     try {
-      const res = await axios.post( BASE_URL_SignUp, {
+      const res = await axios.post( BASE_URL_SignUp, { //the post commend will send to the view
         _id: parseInt(signupId),
         email: signupEmail,
         name: signupName,
         password: signupPassword,
         type: "Student",
+        department: signupDepartment,
+        status: "Active",
+        sum_points: 0,
+        average: 0
       });
       alert(res.data.message);
     } catch (err) {
@@ -326,6 +331,15 @@ function LoginPage() {
                   type="text"
                   value={signupId}
                   onChange={(e) => setSignupId(e.target.value)}
+                  required
+                  />
+                  <input
+                  className="flip-card__input"
+                  name="Department"
+                  placeholder="Department"
+                  type="text"
+                  value={signupDepartment}
+                  onChange={(e) => setSignupDepartment(e.target.value)}
                   required
                   />
                   <button className="flip-card__btn" type="submit">

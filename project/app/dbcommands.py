@@ -59,6 +59,16 @@ def set_user(user_id, user_name, user_email, user_password, user_type):
     return users.insert_one(new_user).inserted_id
 
 # === Student Info ===
+def set_Student(user_id, department, status, sum_points, average):
+    new_Student = {
+        "user_id": to_int(user_id),
+        "department": department,
+        "status": status,
+        "sum_points": sum_points,
+        "average": average
+    }
+    return students.insert_one(new_Student).inserted_id
+
 def get_full_student_profile(student_id):
     user = users.find_one({"_id": to_int(student_id)})
     student_data = students.find_one({"user_id": to_int(student_id)})
