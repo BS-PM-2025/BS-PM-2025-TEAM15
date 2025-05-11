@@ -22,43 +22,11 @@ class ReactView(APIView):
   
     serializer_class = ReactSerializer
 
-    # def get(self, request):
-    #     detail = [ {"name": detail.name,"detail": detail.detail} 
-    #     for detail in React.objects.all()]
-    #     return Response(detail)
-
-    # def post(self, request):
-
-    #     serializer = ReactSerializer(data=request.data)
-    #     if serializer.is_valid(raise_exception=True):
-    #         serializer.save()
-    #         return  Response(serializer.data)
-        
-# class Student_personal_requests(APIView):
-#     # @transaction.atomic
-  
-#     def get_next_sequence(self, name):
-#         counter = db.counters.find_one_and_update(
-#             {"_id": name},
-#             {"$inc": {"seq": 1}},
-#             upsert=True,
-#             return_document=ReturnDocument.AFTER
-#         )
-#         return counter["seq"]
+    #deleted commented code
 
 from .serializer import YourRequestSerializer  # ודא/י שאת מייבאת את הסריאלייזר המתאים
 
 class Student_personal_requests(APIView):
-    # @transaction.atomic
-   
-    # def get_next_sequence(self, name):
-    #     counter = db.counters.find_one_and_update(
-    #         {"_id": name},
-    #         {"$inc": {"seq": 1}},
-    #         upsert=True,
-    #         return_document=ReturnDocument.AFTER
-    #     )
-    #     return counter["seq"]
 
     def filehandle(self,request):
         file = request.FILES.get('documents')
@@ -182,6 +150,15 @@ class SignUpView(APIView):
                     data["password"],
                     data["type"]
                 );
+                if data["type"] == "Student":
+                    db.set_Student(
+                        data["_id"],
+                        data["department"],
+                        data["status"],
+                        data["sum_points"],
+                        data["average"]
+                    );
+
                 return Response({'message': 'Signup successful'}, status=status.HTTP_201_CREATED)
             else:
                 print(serializer.errors)
