@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@xyflow/react": "^12.6.0",
     "react-select": "^5.10.1"
   }
 }
