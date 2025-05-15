@@ -3,7 +3,9 @@ from . import views
 from .adminviews import is_admin,get_all_requests,reassign_ask,update_ask_status,get_all_admins,add_note_to_ask,get_full_student_summary
 from .views import  ReactView,Student_personal_requests,RequestStatusView,SignUpView,LoginView,GetUserNameView
 from django.conf.urls.static import static
-from django.conf import settings
+from django.conf import settings 
+from .views import StudentStatsView
+
 
 urlpatterns = [
    
@@ -20,6 +22,8 @@ urlpatterns = [
     path("admins/", get_all_admins),
     path("asks/<str:ask_id>/add_note/", add_note_to_ask),
     path("studentlookup/<int:student_id>/", get_full_student_summary),
+    path('api/stats/<int:student_id>', StudentStatsView.as_view(), name='student-stats'),
+
     
 
     #to check if the user is admin
