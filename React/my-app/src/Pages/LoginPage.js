@@ -8,10 +8,11 @@ function LoginPage() {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [signupName, setSignupName] = useState("");
-  const [signupEmail, setSignupEmail] = useState("");
+  const [signupEmail, setSignupEmail] = useState(""); 
   const [signupPassword, setSignupPassword] = useState("");
   const [signupId, setSignupId] = useState("");
   const [signupDepartment, setSignupDepartment] = useState("");
+  //const [signupType, setSignupType] = useState("");
 
   const handleLogin = async (e) => { //part that will handle login
     e.preventDefault();

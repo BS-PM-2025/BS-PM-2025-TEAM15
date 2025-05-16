@@ -3,20 +3,23 @@ from rest_framework import status
 from bson import ObjectId
 from app import dbcommands as db  
 from django.shortcuts import render
+from rest_framework.views import APIView
+from .models import *
+from rest_framework.response import Response
+from .serializer import *
+from django.contrib.auth.hashers import make_password, check_password
+#from .models import users, courses, studcourses
+#from .serializer import UserSignUpSerializer, StudentSerializer, CourseSerializer, StudCourseSerializer
+import json
+#from .models import YourRequestModel
+#from .serializer import YourRequestSerializer
+from . import dbcommands as dbcom 
+#from .models import Counter
+
 
 # Create your views here.
 def home(request):
     return render(request, 'home.html')
-
-from .models import Counter
-
-#react
-from django.shortcuts import render
-from django.shortcuts import render
-from rest_framework.views import APIView
-from . models import *
-from rest_framework.response import Response
-from . serializer import *
 
 class ReactView(APIView):
   
@@ -96,22 +99,12 @@ class Student_personal_requests(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         #סטטוס בקשות 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-#from .models import YourRequestModel
-from .serializer import YourRequestSerializer
-from . import dbcommands as dbcom 
 
 class RequestStatusView(APIView):
     def get(self, request):
         requests = dbcom.get_pending_asks_for_admin(2)  # אם צריך לפי משתמש, סנן לפי `request.user`
         serializer = RequestStatusserializer(requests, many=True)
         return Response(serializer.data)
-
-from django.contrib.auth.hashers import make_password, check_password
-from .models import users
-from .serializer import UserSignUpSerializer
-import json
 
 # SIGN UP View
 class SignUpView(APIView):
@@ -171,8 +164,8 @@ class LoginView(APIView):
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-
+       
+#Home view
 class GetUserNameView(APIView):
     def post(self, request):
         try:
@@ -196,4 +189,19 @@ class GetUserNameView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    
+#Student Dash view
+class GetStudentCourseInfoView(APIView):
+        def get(self, request):
+            try:
+                #user_id = request.data.get('_id') used in post not get
+                user_id = request.query_params.get('user_id')
+                student = users.objects.get(_id=user_id)
+                department = student.department
+                courses = courses.objects.filter(department=department)
+                serializer = CourseSerializer(courses, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        
+            except users.DoesNotExist:
+                    return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                    return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

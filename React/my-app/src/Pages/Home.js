@@ -23,9 +23,9 @@ function Home_test() {
 
   return (
     <div>
-      <h1>Welcome to the Home Page!{userId},</h1>
+      <h1>Welcome to the Home Page!</h1>
       {userName ? (
-        <h2>Hello,{userId}, {userName} 👋</h2>
+        <h2>Hello, {userName} 👋</h2>
       ) : (
         <h2>Loading user name...</h2>
       )}

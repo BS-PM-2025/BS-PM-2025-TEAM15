@@ -1,3 +1,4 @@
+########In here we will translate data from python to JSON###########
 from rest_framework import serializers
 from . models import *
 from .models import Counter  # החליפי בשם של המודל שלך
@@ -64,3 +65,10 @@ class StudentSerializer(serializers.ModelSerializer):
     status = serializers.CharField()
     sum_points = serializers.IntegerField()
     average = serializers.IntegerField()
+
+class StudCourseSerializer(serializers.ModelSerializer):
+  id_student=serializers.IntegerField()
+  id_course=serializers.CharField()
+  grade=serializers.IntegerField()
+  start=serializers.DateField()
+  finish=serializers.BooleanField()
