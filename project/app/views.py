@@ -22,34 +22,15 @@ class ReactView(APIView):
   
     serializer_class = ReactSerializer
 
-    # def get(self, request):
-    #     detail = [ {"name": detail.name,"detail": detail.detail} 
-    #     for detail in React.objects.all()]
-    #     return Response(detail)
-
-    # def post(self, request):
-
-    #     serializer = ReactSerializer(data=request.data)
-    #     if serializer.is_valid(raise_exception=True):
-    #         serializer.save()
-    #         return  Response(serializer.data)
-        
-# class Student_personal_requests(APIView):
-#     # @transaction.atomic
-  
-#     def get_next_sequence(self, name):
-#         counter = db.counters.find_one_and_update(
-#             {"_id": name},
-#             {"$inc": {"seq": 1}},
-#             upsert=True,
-#             return_document=ReturnDocument.AFTER
-#         )
-#         return counter["seq"]
+    #deleted commented code
 
 from .serializer import YourRequestSerializer  # ודא/י שאת מייבאת את הסריאלייזר המתאים
 
 class Student_personal_requests(APIView):
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main
 
     def filehandle(self,request):
         file = request.FILES.get('documents')
@@ -82,11 +63,42 @@ class Student_personal_requests(APIView):
                 data["text"],
                 data["title"],
                 file_url_res,
-                data["department"]
+                data["department"],
+                data["category"]
             )
             return Response({"success": True, "data": {"_id": str(inserted)}}, status=201)
         else:
             return Response({"success": False, "errors": serializer.errors}, status=400)
+
+    def get(self,request):
+        try : 
+            
+            student_id = request.query_params.get('_id')
+            if not student_id:
+                return Response({'error': 'Missing student_id'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Get related course IDs for the student
+            course_ids = db.get_all_courses(student_id)  
+            if not course_ids:
+                return Response({'courses': []}, status=status.HTTP_200_OK)
+
+            # Fetch full course data from the `courses` collection
+            course_docs = db.courses.find({
+                "_id": { "$in": [ObjectId(cid) for cid in course_ids] }
+            })
+
+            # Convert ObjectId to str for JSON serialization
+            courses = []
+            for course in course_docs:
+                print("\n",course)
+                course['_id'] = str(course['_id'])
+                courses.append(course)
+            
+
+            return Response({'courses': courses}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         #סטטוס בקשות 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -94,13 +106,29 @@ from django.http import JsonResponse
 from .serializer import YourRequestSerializer
 
 from . import dbcommands as dbcom 
+from . import dbcommands
 
 class RequestStatusView(APIView):
     def get(self, request):
-        requests = dbcom.get_pending_asks_for_admin(2)  # אם צריך לפי משתמש, סנן לפי `request.user`
-        serializer = RequestStatusserializer(requests, many=True)
-        return Response(serializer.data)
+        student_id = request.query_params.get('user_id')
+        if not student_id:
+            return Response({'error': 'Missing user_id'}, status=status.HTTP_400_BAD_REQUEST)
 
+        try:
+            ask_ids = dbcommands.get_student_asks(student_id)
+            print("\n",student_id)
+            # שימוש ב get_ask_by_id כמו שהוא
+            asks = []
+            for aid in ask_ids:
+                ask = dbcommands.get_ask_by_id(aid)
+                if ask:
+                    asks.append(ask)
+
+            return Response(asks, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 from django.contrib.auth.hashers import make_password, check_password
 from .models import users,SearchModel
 from .serializer import UserSignUpSerializer, SearchSerializer,Graph_courses
@@ -127,6 +155,15 @@ class SignUpView(APIView):
                     data["password"],
                     data["type"]
                 );
+                if data["type"] == "Student":
+                    db.set_Student(
+                        data["_id"],
+                        data["department"],
+                        data["status"],
+                        data["sum_points"],
+                        data["average"]
+                    );
+
                 return Response({'message': 'Signup successful'}, status=status.HTTP_201_CREATED)
             else:
                 print(serializer.errors)
@@ -172,7 +209,7 @@ class GetUserNameView(APIView):
             print("user_id =", user_id)
             print("===================================")
 
-            found_user = db.get_user_name_by_id(user_id);
+            found_user = db.get_user_name_by_id(user_id)
             if found_user:
                 return Response({'name': found_user}, status=status.HTTP_200_OK)
             else:

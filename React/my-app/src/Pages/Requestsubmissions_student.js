@@ -6,7 +6,7 @@ console.log("✅ Requestsubmissions_student loaded");
 
 // To what endpoint to send
  const BASE_URL = 'http://localhost:8000/api/studentrequests/';
-
+ const user_id  = localStorage.getItem('user_id');
 function Requestsubmissions_student() {
   const [quote, setQuote] = useState("");
   const [subject, setSubject] = useState("");
@@ -14,6 +14,8 @@ function Requestsubmissions_student() {
   const [attachment, setAttachment] = useState(null);
   const [progress, setProgress] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
+  const [relatedCourse, setRelatedCourse] = useState(null);
+  const [courseOptions, setCourseOptions] = useState([]);
 
   
   const handleSubmit = (event) => {
@@ -24,19 +26,36 @@ function Requestsubmissions_student() {
       return;
     }
     alert(`Type: ${request_type}\nSubject: ${subject}\nFile: ${attachment?.name || "None"}`);
-    console.log("Subject:", subject);
+    console.log("Subject:", subject); //category.
     console.log("Quote:", quote);
     console.log("File:", attachment);
+    
 
     setProgress(0);
     setShowProgress(true);
     const formData = new FormData();
-
-    formData.append("id_sending", 1);
-    formData.append("id_receiving", 2);
+    formData.append("id_sending", user_id);
+    //add logic of to which to send.
+    if (request_type === "Course-related" || request_type === "grade-related" ) {
+      if (!relatedCourse) {
+        alert("Please select a course first.");
+        return;
+      }
+      formData.append("id_receiving", relatedCourse.lecturer);
+      formData.append("course_id", relatedCourse.value); // optional: pass the selected course
+    } else if (request_type === "Medical") {
+      formData.append("id_receiving", 2);
+    } else if (request_type === "financial") {
+      formData.append("id_receiving", 4);
+    }
+    //logic importance. depend on the type of the request.
     formData.append("importance", "high");
     formData.append("title", subject);
     formData.append("text", quote);
+    formData.append("category",request_type);
+
+    //add logic of department.
+
     formData.append("department", "2");
   
     if (attachment) {
@@ -84,6 +103,9 @@ function Requestsubmissions_student() {
     return () => clearInterval(interval);
   }, [showProgress]);
 
+  useEffect(() => {
+    console.log("Changed request_type to:", request_type);
+  }, [request_type]);
 
   const options = [
     { value: "Medical", label: "Medical Request" },
@@ -92,28 +114,58 @@ function Requestsubmissions_student() {
     {value : "Course-related", label :"Course-related Request"}
   ];
 
+  useEffect(() => {
+    const user_id = localStorage.getItem('user_id');
+  
+    axios.get(`http://localhost:8000/api/studentrequests/`, {
+      params: { _id: user_id }
+    })
+    .then((response) => {
+      const courses = response.data.courses || [];
+  
+      // Transform each course to { value, label } format
+      const formatted = courses.map(course => ({
+        value: course._id, 
+        label: `${course.name} (${course.points} pts)`,
+        lecturer: course.lecturer 
+      }));
+  
+      setCourseOptions(formatted);
+    })
+    .catch((error) => {
+      console.error("Error fetching courses:", error);
+    });
+  }, []);
+  
+  // const courseOptions = [
+  //   { value: 'cs101', label: 'CS101 - Introduction to Computer Science' },
+  //   { value: 'cs102', label: 'CS102 - Data Structures and Algorithms' },
+  //   { value: 'math201', label: 'MATH201 - Linear Algebra' },
+  //   { value: 'math202', label: 'MATH202 - Calculus II' },
+  //   { value: 'phys101', label: 'PHYS101 - General Physics I' },
+  //   { value: 'eng301', label: 'ENG301 - Academic Writing' },
+  //   { value: 'cs303', label: 'CS303 - Operating Systems' },
+  //   { value: 'cs304', label: 'CS304 - Databases' },
+  //   { value: 'cs305', label: 'CS305 - Computer Networks' },
+  //   { value: 'cs306', label: 'CS306 - Software Engineering' },
+  // ];
+
+  console.log("Selected type:", request_type);
   return (
     <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh",
-        backgroundColor: "#f0f2f5",
-        padding: "20px",
-        fontFamily: "Arial, sans-serif",
-        boxSizing: "border-box",
-        width: "50vw",
-      }}
+      
     >
       <div
         className="form-container"
         style={{
           backgroundColor: "#0c1c33",
+          marginLeft: "300px",
+          marginTop : "50px",
           padding: "30px",
           borderRadius: "10px",
-          maxWidth: "600px",
-          width: "100%",
+         // maxWidth: "600px",
+          width: "1000ppx",
+          height: "820px",
           boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
           boxSizing: "border-box",
           overflow: "hidden",
@@ -131,18 +183,42 @@ function Requestsubmissions_student() {
               onChange={(selected) => setRequest_type(selected.value)}
               styles={{
                 control: (base) => ({
+                  
                   ...base,
                   borderRadius: "5px",
                   borderColor: "#ccc",
+                  
                   fontSize: "14px",
+                 
                 }),
                 menu: (base) => ({
                   ...base,
                   zIndex: 9999,
                 }),
+                option: (base, state) => ({
+                  ...base,
+                  color: 'black', 
+                  backgroundColor: state.isFocused ? '#f0f0f0' : 'white',
+                }),
               }}
             />
           </div>
+          <div>
+              {(request_type?.toLowerCase() === 'course-related' || request_type?.toLowerCase() === 'grade-related' )  && (
+            <div style={{ marginTop: '1px' }}>
+              <h4>Select Related Course:</h4>
+              <Select
+                options={courseOptions}
+                onChange={(selected) => setRelatedCourse(selected)}
+                styles={{
+                  option: (base) => ({ ...base, color: 'black' }),
+                  singleValue: (base) => ({ ...base, color: 'black' }),
+                }}
+              />
+            </div>
+          )}
+        </div>
+  
 
           {/* נושא */}
           <label style={{ fontWeight: "bold", color: "white" }}>Request Subject:</label>
@@ -157,7 +233,7 @@ function Requestsubmissions_student() {
               border: "1px solid #ccc",
               marginTop: "10px",
               marginBottom: "20px",
-              width: "100%",
+              width: "600px",
             }}
           />
 
@@ -174,7 +250,7 @@ function Requestsubmissions_student() {
               borderRadius: "5px",
               border: "1px solid #ccc",
               marginTop: "10px",
-              width: "100%",
+              width: "900px",
             }}
           />
 
@@ -189,6 +265,7 @@ function Requestsubmissions_student() {
                 display: "inline-block",
                 padding: "10px 15px",
                 backgroundColor: "#6c63ff",
+                width: "300px",
                 color: "white",
                 borderRadius: "5px",
                 cursor: "pointer",
@@ -205,7 +282,7 @@ function Requestsubmissions_student() {
               style={{ display: "none" }}
             />
             {attachment && (
-              <div style={{ color: "white", fontSize: "14px", marginTop: "10px" }}>
+              <div style={{ color: "white", fontSize: "18px", marginTop: "12px" }}>
                 Selected File: {attachment.name}
               </div>
             )}
@@ -220,6 +297,9 @@ function Requestsubmissions_student() {
               backgroundColor: "#6c63ff",
               color: "white",
               border: "none",
+              marginLeft: "300px",
+              marginTop:"25px",
+              width: "300px",
               borderRadius: "5px",
               cursor: "pointer",
               fontWeight: "bold",

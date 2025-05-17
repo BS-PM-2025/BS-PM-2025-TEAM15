@@ -30,11 +30,18 @@ class StudentRequestSerializer(serializers.Serializer):
     importance = serializers.CharField()
     text = serializers.CharField()
     title = serializers.CharField()
-    department = serializers.CharField()  # 🔥 should be CharField, not IntegerField!
+    department = serializers.CharField()  
     documents = serializers.FileField(required=False)
+    category = serializers.CharField()
 
 
 class UserSignUpSerializer(serializers.ModelSerializer):
+    # Student-specific fields added manually
+    department = serializers.CharField(required=True)
+    status = serializers.CharField(required=False)
+    sum_points = serializers.IntegerField(required=False)
+    average = serializers.IntegerField(required=False)
+
     class Meta:
         model = users
         fields = '__all__'
@@ -42,12 +49,26 @@ class UserSignUpSerializer(serializers.ModelSerializer):
             'idr': {'read_only': True}
         }
 
+<<<<<<< HEAD
 class SearchSerializer(serializers.Serializer):
     _id = serializers.CharField()
+=======
+#Course - get all Courses.
+
+class CourseSerializer(serializers.Serializer):
+    _id = serializers.CharField() #object id
+    name = serializers.CharField()
+    lecturer = serializers.IntegerField()
+    department = serializers.CharField()
+    points = serializers.IntegerField()
+
+class StudentSerializer(serializers.ModelSerializer):
+>>>>>>> origin/main
     user_id = serializers.IntegerField()
     department = serializers.CharField()
     status = serializers.CharField()
     sum_points = serializers.IntegerField()
+<<<<<<< HEAD
     average = serializers.IntegerField()
 
 class Graph_courses(serializers.Serializer):
@@ -60,3 +81,6 @@ class Graph_courses(serializers.Serializer):
 class grades_graph(serializers.Serializer):
         grade =serializers.IntegerField()
         name = serializers.CharField()
+=======
+    average = serializers.IntegerField()
+>>>>>>> origin/main

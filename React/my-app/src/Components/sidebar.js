@@ -199,6 +199,7 @@ export default function Sidebar() {
         <ul class="sub-menu">
           <div>
            <li><Link to="/Requestsubmissions_student">Pending Requests</Link></li>
+           <li><Link to ="/asks">View Requests</Link></li>
             <li><a href="/Student_status_request">Past Requests</a></li>
            
           </div>
