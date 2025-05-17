@@ -8,11 +8,13 @@ import Course_tree from "../Components/Course_tree";
 console.log("✅ Requestsubmissions_student loaded");
 // To what endpoint to send
  const BASE_URL = 'http://localhost:8000/api/?/';
+ const user_id = localStorage.getItem('user_id');
 
  function Med_student_status() {
     return (
         <div>
-          <Course_tree />
+           {/* userId = is used to get the corrent user_id */}
+          <Course_tree userId={user_id} />
         </div>
     );
   }

@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import "../Components_css/StudentStatusEditor.css"
+import Course_tree from "../Components/Course_tree";
 
 
 
@@ -161,7 +162,7 @@ function StudentLookup() {
             <div className="profile_student">
                   <Box >
                     {/* <Typography  color="black" variant="h3">👤 Student Details</Typography> */}
-                    <Typography color="black" variant="h6"><strong>User Id:</strong>  {studentData.info.name}</Typography>
+                    <Typography color="black" variant="h6"><strong>User Id:</strong>  {studentData.info.user_id}</Typography>
                     <Typography color = "black" variant="h6"><strong>Email: </strong>{studentData.info.email}</Typography>
                     <Typography color="black" variant="h6" ><strong>Department:</strong> {studentData.info.department}</Typography>
                     <Typography color="black" variant="h6"><strong>Status:</strong> {studentData.info.status}</Typography>
@@ -217,13 +218,16 @@ function StudentLookup() {
             <div>
               <h3>Enrolled Courses</h3>
               <ul>
-                {studentData.courses.map(course => (
+                <Course_tree userId = {studentId}/>
+                {/* {studentData.courses.map(course => (
                   <li key={course.course_id}>
                     {course.name} (Points: {course.points}) - Grade: {course.grade ?? "Not graded"}
                   </li>
                 ))}
               </ul>
               <p><strong>Average:</strong> {studentData.average}</p>
+            </div> */}
+            </ul>
             </div>
           )}
 

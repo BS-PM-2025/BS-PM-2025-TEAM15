@@ -1,10 +1,10 @@
 {
   "dependencies": {
-<<<<<<< HEAD
+
     "@xyflow/react": "^12.6.0",
-=======
+
     "@mui/icons-material": "^7.0.2",
->>>>>>> origin/main
+
     "react-select": "^5.10.1"
   }
 }

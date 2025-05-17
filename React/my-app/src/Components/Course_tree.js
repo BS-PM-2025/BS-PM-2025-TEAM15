@@ -40,20 +40,20 @@ const CourseCardNode = ({ data }) => (
 );
 
 // 🔸 Main Component
-export default function Course_tree() {
+export default function Course_tree({ userId: propUserId }) {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
 
   const nodeTypes = { courseCard: CourseCardNode };
   const edgeTypes = { custom: CustomEdge };
   const user_id = localStorage.getItem('user_id');
-  
+  const [noCourses, setNoCourses] = useState(false);
     
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const user_id = localStorage.getItem('user_id');
+        const user_id =  propUserId  
         console.log(user_id)
         const response = await axios.get('http://localhost:8000/api/graph/', {
           params: { user_id },
@@ -64,9 +64,14 @@ export default function Course_tree() {
       const userResponse = await axios.post('http://localhost:8000/api/graph/',null, {
         params: { user_id },
       });
-        alert("Got Courses");
         const data = response.data.courses;
-  
+       
+        if (Object.keys(data).length === 0) {
+          setNoCourses(true);
+        } else {
+          setNoCourses(false);
+        }
+        console.log("wl",noCourses)
         const spacingX = 250;              // horizontal spacing between courses
         const spacingY = 60;               // vertical spacing between course rows
         const semesterSpacingY = 300;      // vertical spacing between semesters
@@ -167,6 +172,7 @@ export default function Course_tree() {
         setNodes(newNodes);
         setEdges(newEdges);
       } catch (error) {
+        setNoCourses(true);
         console.error('Error fetching course data:', error);
       }
     };
@@ -181,45 +187,50 @@ export default function Course_tree() {
   
   return (
     <div className="course-tree-wrapper">
-      <div className="course-tree-inner">
-        <h2 className="course-tree-title">Course Tree</h2>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          edgeTypes={edgeTypes}
-          nodeTypes={nodeTypes}
-          fitView
-          defaultViewport={{ x: 0, y: 0, zoom: 1 }}
-          fitViewOptions={{ padding: 0.5, includeHiddenNodes: false }}
-          className="flow-grid"
-          panOnDrag={true}
-          zoomOnScroll={true}
-          zoomOnPinch={true}
-          panOnScroll={true}
-          nodesDraggable={false}
-          nodesConnectable={false}
-          elementsSelectable={false}
-        >
-     <svg>
-    <defs>
-      <marker
-        id="arrowhead"
-        markerWidth="10"
-        markerHeight="7"
-        refX="10"
-        refY="3.5"
-        orient="auto"
-        markerUnits="strokeWidth"
-      >
-        <path d="M0,0 L10,3.5 L0,7" fill="#555" />
-      </marker>
-    </defs>
-  </svg>
-          <Controls/>
-          <Background />
-        </ReactFlow>
+  <div className="course-tree-inner">
+    {noCourses ? (
+      <div style={{ padding: "20px", color: "red", fontWeight: "bold" }}>
+        ⚠️ No courses found for this user.
       </div>
-    </div>
+    ) : (
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        edgeTypes={edgeTypes}
+        nodeTypes={nodeTypes}
+        fitView
+        defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+        fitViewOptions={{ padding: 0.5, includeHiddenNodes: false }}
+        className="flow-grid"
+        panOnDrag={false}
+        zoomOnScroll={true}
+        zoomOnPinch={false}
+        panOnScroll={true}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        elementsSelectable={false}
+        translateExtent={[[0, -80], [1500, 3050]]}
+      >
+        <svg>
+          <defs>
+            <marker
+              id="arrowhead"
+              markerWidth="10"
+              markerHeight="7"
+              refX="10"
+              refY="3.5"
+              orient="auto"
+              markerUnits="strokeWidth"
+            >
+              <path d="M0,0 L10,3.5 L0,7" fill="#555" />
+            </marker>
+          </defs>
+        </svg>
+        <Background />
+      </ReactFlow>
+    )}
+  </div>
+</div>
   );
 }
 
