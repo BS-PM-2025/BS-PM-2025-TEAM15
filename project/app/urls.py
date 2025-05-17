@@ -20,14 +20,9 @@ urlpatterns = [
     path("admins/", get_all_admins),
     path("asks/<str:ask_id>/add_note/", add_note_to_ask),
     path("studentlookup/<int:student_id>/", get_full_student_summary),
-<<<<<<< HEAD
     path('api/search/', Searchview.as_view(), name="search"),
     path('api/update_status/',Searchview.as_view()),
     path('api/graph/',graphs.as_view()),
-=======
-    
-
->>>>>>> origin/main
     #to check if the user is admin
     path('api/isadmin/',is_admin)
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

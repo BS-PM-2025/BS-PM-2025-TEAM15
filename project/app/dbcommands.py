@@ -63,13 +63,11 @@ def set_user(user_id, user_name, user_email, user_password, user_type):
     return users.insert_one(new_user).inserted_id
 
 # === Student Info ===
-<<<<<<< HEAD
 def get_all_students():
     students_cursor = students.find()
     return list(students_cursor)  
 
 
-=======
 def set_Student(user_id, department, status, sum_points, average):
     new_Student = {
         "user_id": to_int(user_id),
@@ -79,7 +77,6 @@ def set_Student(user_id, department, status, sum_points, average):
         "average": average
     }
     return students.insert_one(new_Student).inserted_id
->>>>>>> origin/main
 
 def get_full_student_profile(student_id):
     user = users.find_one({"_id": to_int(student_id)})
@@ -227,19 +224,10 @@ def change_ask_status(ask_id, new_status):
     result = requests.update_one({"_id": ask_id}, {"$set": {"status": new_status}})
     return result.modified_count > 0
 
-<<<<<<< HEAD
-def change_student_status_by_id(user_id,status):
-    return students.update_one({"user_id":user_id},
-                                {"$set": {"status":status}})
-     
-
-def add_ask(id_sending, id_receiving, importance, text, title, documents, department):
-=======
 def add_ask(id_sending, id_receiving, importance, text, title, documents, department,category):
     last_doc = db.requests.find_one({}, {'idr': 1}, sort=[('idr', -1)])
     last_idr = int(last_doc['idr']) if last_doc and 'idr' in last_doc else 0
     new_idr = last_idr + 1   
->>>>>>> origin/main
     ask = {
         "id_sending": to_int(id_sending),
         "id_receiving": to_int(id_receiving),
@@ -289,12 +277,14 @@ def update_ask_status_by_idr(idr, new_status, new_admin_id=None):
 
 def append_note_to_ask(idr, note_text):
     ask = requests.find_one({"idr": to_int(idr)})
-<<<<<<< HEAD
-    if ask:
-        ask["_id"] = str(ask.get("_id", ""))
-        ask["date_sent"] = ask["date_sent"].isoformat()
-    return ask
-
+    if not ask:
+        return False
+    new_text = ask.get("text", "") + f"\n{note_text}"
+    result = requests.update_one(
+        {"idr": to_int(idr)},
+        {"$set": {"text": new_text}}
+    )
+    return result.modified_count > 0
 
 #departements
 
@@ -335,13 +325,3 @@ def get_course_by_oid(course_id):
     entry = courses.find_one({"_id": to_int(course_id)})
   
     return entry['name']
-=======
-    if not ask:
-        return False
-    new_text = ask.get("text", "") + f"\n{note_text}"
-    result = requests.update_one(
-        {"idr": to_int(idr)},
-        {"$set": {"text": new_text}}
-    )
-    return result.modified_count > 0
->>>>>>> origin/main

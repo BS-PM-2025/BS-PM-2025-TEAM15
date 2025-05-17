@@ -27,10 +27,6 @@ class ReactView(APIView):
 from .serializer import YourRequestSerializer  # ודא/י שאת מייבאת את הסריאלייזר המתאים
 
 class Student_personal_requests(APIView):
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/main
 
     def filehandle(self,request):
         file = request.FILES.get('documents')
