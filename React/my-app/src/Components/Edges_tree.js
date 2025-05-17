@@ -1,16 +1,20 @@
 import { BaseEdge, getBezierPath } from 'reactflow';
 import "../Components_css/Course_tree.css"
 
-const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY }) => {
+const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY ,data}) => {
   const [edgePath] = getBezierPath({ sourceX, sourceY, targetX, targetY });
-
+  const color = data?.type === 'strong' ? 'red' : 'blue';
   return (
-    <BaseEdge
+    <path
       id={id}
-      path={edgePath}
-      className="custom-edge"
+      d={edgePath}
+      fill="none"
+      stroke="#555"
+      strokeWidth={2}
+      markerEnd="url(#arrowhead)" // ✅ arrow!
     />
   );
 };
 
 export default CustomEdge;
+

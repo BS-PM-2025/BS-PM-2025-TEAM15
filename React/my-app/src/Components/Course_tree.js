@@ -1,227 +1,228 @@
-// import React from 'react';
-// import 'react-flow-renderer/dist/style.css';
-// import { Card, CardContent, CardActions, Typography, Button } from '@mui/material';
-// import { useState, useCallback } from 'react';
-// import ReactFlow, { Background, Controls } from 'react-flow-renderer';
-// import 'react-flow-renderer/dist/style.css';
 
 
-// const CourseCardNode = ({ data }) => {
-//   return (
-//     <Card
-//       sx={{
-//         width: 200,
-//         padding: 1,
-//         backgroundColor:
-//           data.status === 'Completed'
-//             ? '#d0f0c0'
-//             : data.status === 'In Progress'
-//             ? '#fff3cd'
-//             : '#f8d7da',
-//       }}
-//     >
-//       <CardContent>
-//         <Typography variant="h6">{data.title}</Typography>
-//         <Typography variant="body2">Status: {data.status}</Typography>
-//         <Typography variant="body2">Grade: {data.grade}</Typography>
-//       </CardContent>
-//       <CardActions>
-//         <Button size="small" onClick={() => alert(`More info about ${data.title}`)}>
-//           Learn More
-//         </Button>
-//       </CardActions>
-//     </Card>
-//   );
-// };
-
-
-// export default  function Course_tree() {
-//     const nodeTypes = {
-//       courseCard: CourseCardNode,
-//     };
-//   // Demo statuses to cycle through
-// const statusOptions = ['Completed', 'In Progress', 'Locked'];
-// const gradeOptions = ['A', 'B+', '-', '-', '-', 'C'];
-
-// // 🔸 Generate 20 nodes
-// const nodes = Array.from({ length: 20 }, (_, i) => ({
-//   id: `${i + 1}`,
-//   type: 'courseCard',
-//   data: {
-//     title: `Course ${i + 1}`,
-//     status: statusOptions[i % statusOptions.length],
-//     grade: gradeOptions[i % gradeOptions.length],
-//   },
-//   position: {
-//     x: (i % 5) * 250, // 5 per row
-//     y: Math.floor(i / 5) * 250,
-//   },
-// }));
-
-// // 🔸 Connect each course to the next to simulate progression
-// // const edges = Array.from({ length: 19 }, (_, i) => ({
-// //   id: `e${i + 1}-${i + 2}`,
-// //   source: `${i + 1}`,
-// //   target: `${i + 2}`,
-// // }));
-
-// const edges = [
-//   { id: 'e1-2', source: '1', target: '2' },
-//   { id: 'e2-3', source: '2', target: '3', animated: true, color:'red'},
-// ];
-
-//   return (
-//     <div>
-//     <div style={{ width: '1500px', height: '1000px', border: '3px solid blue' }}>
-//     <div style={{ marginLeft: '1px', width: '100%', height: '100%' }}>
-//     <h2 style={{ color: 'red' }}>Hello from Course Tree</h2>  {/* TEST MARKER */}
-//     <div style={{ height: '100%' }}>
-//       <ReactFlow
-//         nodes={nodes}
-//         edges={edges}
-//         fitView
-//       >
-//         <Background />
-//         <Controls />
-//       </ReactFlow>
-
-//     </div>
-//     </div>
-// </div>
-// </div>
-      
-//   );
-// }
-
-
-
-import React from 'react';
-import ReactFlow, { Background, Controls,Handle,Position } from 'react-flow-renderer';
-import 'react-flow-renderer/dist/style.css';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import ReactFlow, { Background, Handle, Position,Controls } from 'react-flow-renderer';
 import { Card, CardContent, CardActions, Typography, Button } from '@mui/material';
-import { ClassNames } from '@emotion/react';
-import "../Components_css/Course_tree.css"
+import '../Components_css/Course_tree.css';
 import CustomEdge from './Edges_tree';
 
-
-// 🔹 Custom node: displays course card
-const CourseCardNode = ({ data }) => {
-  return (
-    <Card
-      sx={{
-        width: 200,
-        padding: 1,
-        backgroundColor:
-          data.status === 'Completed'
-            ? '#d0f0c0'
-            : data.status === 'In Progress'
-            ? '#fff3cd'
-            : '#f8d7da',
-      }}
-    >
-
-      <Handle type="target" position={Position.Top} />
-
-      <CardContent>
-        <Typography variant="h6">{data.title}</Typography>
-        <Typography variant="body2">Status: {data.status}</Typography>
-        <Typography variant="body2">Grade: {data.grade}</Typography>
-      </CardContent>
-
-      <CardActions>
-        <Button size="small" onClick={() => alert(`More info about ${data.title}`)}>
-          Learn More
-        </Button>
-      </CardActions>
-
-      {/* 🔴 Outgoing edge handle */}
-      <Handle type="source" position={Position.Bottom} />
-    </Card>
-  );
-};
-
-const nodeTypes = {
-  courseCard: CourseCardNode,
-};
-
-export default function Course_tree() {
-  const nodeTypes = {
-    courseCard: CourseCardNode,
-  };
-
-  // Demo statuses to cycle through
-const statusOptions = ['Completed', 'In Progress', 'Locked'];
-const gradeOptions = ['A', 'B+', '-', '-', '-', 'C'];
-
-// const courseData = [
-//   { id: '1', title: 'Math 101', status: 'Completed', grade: 'A' },
-//   { id: '2', title: 'Physics 101', status: 'In Progress', grade: 'B+' },
-//   { id: '3', title: 'Chemistry 101', status: 'Locked', grade: '-' },
-// ]
-// 🔸 Generate 20 nodes
-// const nodes = courseData.map((course, i) => ({
-//   id: `${course.id}`,   // or just `i + 1` if no ID
-//   type: 'courseCard',
-//   data: {
-//     title: course.title,
-//     status: course.status,
-//     grade: course.grade,
-//   },
-//   position: {
-//     x: (i % 5) * 250,
-//     y: Math.floor(i / 5) * 250,
-//   },
-// }));
-
-const nodes = Array.from({ length: 20 }, (_, i) => ({
-  id: `${i + 1}`,  // ✅ string ID
-  type: 'courseCard',
-  data: {
-    title: `Course ${i + 1}`,  // ✅ properly interpolated string
-    status: statusOptions[i % statusOptions.length],
-    grade: gradeOptions[i % gradeOptions.length],
-  },
-  position: {
-    x: (i % 5) * 250,
-    y: Math.floor(i / 5) * 250,
-  },
-}));
-
-const edgeTypes = {
-  custom: CustomEdge,
-};
-// 🔸 Connect each course to the next to simulate progression
-const edges = [
+// 🔹 Custom Node Component
+const CourseCardNode = ({ data }) => (
   
-  { id: 'e1-2', source: '1', target: '2', type:'custom' },
-  { id: 'e2-3', source: '2', target: '4', animated: true , type:'custom'},
-];
-console.log("well")
-console.log("Edges being passed to ReactFlow:", edges);
-return (
-  <div className="course-tree-wrapper">
-    <div className="course-tree-inner">
-      <h2 className="course-tree-title">Hello from Course Tree</h2>
-
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        fitView
-        fitViewOptions={{ padding: 0.5, includeHiddenNodes: false }}
-        className="flow-grid"
-        panOnDrag={false}
-        zoomOnScroll={false}
-        zoomOnPinch={false}
-        panOnScroll={false}
-        nodesDraggable={false}
-        nodesConnectable={false}
-        elementsSelectable={false}
-      >
-        <Background />
-        <Controls />
-      </ReactFlow>
-    </div>
-  </div>
+  <Card sx={{
+    width: 200,
+    padding: 1,
+    zIndex: 10, // 👈 brings the card above all edges
+    position: 'relative',
+    backgroundColor:
+      
+      data.status === 'Completed'
+        ? '#d0f0c0'
+        : data.status === 'In Progress'
+        ? '#fff3cd'
+        : '#f8d7da',
+  }}>
+    
+    <Handle type="target" position={Position.Top} />
+    <CardContent>
+      <Typography variant="h6">{data.title}</Typography>
+      <Typography variant="body2">Status: {data.status}</Typography>
+      <Typography variant="body2">Grade: {data.grade}</Typography>
+      <Typography variant="body2">Year: {data.year}</Typography>
+      <Typography variant="body2">semester: {data.semester}</Typography>
+      <Typography variant="body2">dep: {data.depend_on}</Typography>
+      {/* <Typography variant="body2">Grade: {data.grade}</Typography> */}
+    </CardContent>
+    
+    <Handle type="source" position={Position.Bottom} />
+  </Card>
 );
+
+// 🔸 Main Component
+export default function Course_tree() {
+  const [nodes, setNodes] = useState([]);
+  const [edges, setEdges] = useState([]);
+
+  const nodeTypes = { courseCard: CourseCardNode };
+  const edgeTypes = { custom: CustomEdge };
+  const user_id = localStorage.getItem('user_id');
+  
+    
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const user_id = localStorage.getItem('user_id');
+        console.log(user_id)
+        const response = await axios.get('http://localhost:8000/api/graph/', {
+          params: { user_id },
+        });
+        
+         // Get user's course progress (this assumes a working endpoint)
+      
+      const userResponse = await axios.post('http://localhost:8000/api/graph/',null, {
+        params: { user_id },
+      });
+        alert("Got Courses");
+        const data = response.data.courses;
+  
+        const spacingX = 250;              // horizontal spacing between courses
+        const spacingY = 60;               // vertical spacing between course rows
+        const semesterSpacingY = 300;      // vertical spacing between semesters
+        const yearPadding = 100;           // space between years
+        const semesterOrder = ["first", "second"];
+        const userCourses = userResponse.data.courses; // Assuming response has a key called "courses"
+        const userCourseMap = {};
+        
+        userCourses.forEach(c => {
+          userCourseMap[c.name] = {
+            grade: c.grade,
+            status:
+              c.grade == null
+                ? 'In Progress'
+                : c.grade >= 60
+                ? 'Completed'
+                : 'Failed',
+          };
+        });
+        let nodeId = 1;
+        let newNodes = [];
+        let newEdges = [];
+        let courseIdMap = {};
+        let yearOffsetY = 0;
+  
+        Object.entries(data).forEach(([year, semesters], yearIndex) => {
+          let maxSemesterHeight = 0;
+          
+          semesterOrder.forEach((semester, semIndex) => {
+            const courses = semesters[semester] || [];
+            const rows = Math.ceil(courses.length / 6);
+            const semesterHeight = semesterSpacingY + rows * spacingY;
+            newNodes.push({
+              id: `label-${year}-${semester}`,
+              type: 'default',
+              data: { label: `Year ${year} - ${semester}` },
+              position: { x: -220, y: yearOffsetY + semIndex * semesterSpacingY  },
+              draggable: false,
+              selectable: false,
+              style: {
+                background: 'transparent',
+                border: 'none',
+                color: 'black',
+                fontWeight: 'bold',
+                fontSize: '16px',       
+              }
+            });
+            courses.forEach((course, i) => {
+              const id = `${nodeId++}`;
+              courseIdMap[course.name] = id;
+  
+              const row = Math.floor(i / 6);
+              const col = i % 6;
+              const x = col * spacingX;
+              const y = yearOffsetY + semIndex * semesterSpacingY + row * spacingY;
+              
+              const userData = userCourseMap[course.name] || {};
+              const status = userData.status || 'Locked';
+              const grade = userData.grade ?? '-';  
+              newNodes.push({
+                id,
+                type: 'courseCard',
+                position: { x, y },
+                data: {
+                  title: course.name,
+                  year: course.year,
+                  semester: course.semester,
+                  status: status,
+                  grade: grade,
+                  depend_on: course.depend_on || null
+                }
+              });
+  
+              if (course.depend_on && courseIdMap[course.depend_on]) {
+                newEdges.push({
+                  id: `e-${courseIdMap[course.depend_on]}-${id}`,
+                  source: courseIdMap[course.depend_on],
+                  target: id,
+                  
+                  type: 'smoothstep',
+                  style: {
+                    strokeWidth: 2,
+                    stroke: '#555',
+                    markerEnd: 'url(#arrowhead)' // 👈 this adds the arrow
+                  },
+                  data: { type: 'strong' }
+                });
+              }
+            });
+  
+            maxSemesterHeight += semesterHeight;
+          });
+  
+          yearOffsetY += maxSemesterHeight + yearPadding;
+        });
+  
+        console.log(newNodes);
+        setNodes(newNodes);
+        setEdges(newEdges);
+      } catch (error) {
+        console.error('Error fetching course data:', error);
+      }
+    };
+  
+    fetchData();
+  }, []);
+
+
+
+
+
+  
+  return (
+    <div className="course-tree-wrapper">
+      <div className="course-tree-inner">
+        <h2 className="course-tree-title">Course Tree</h2>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          edgeTypes={edgeTypes}
+          nodeTypes={nodeTypes}
+          fitView
+          defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+          fitViewOptions={{ padding: 0.5, includeHiddenNodes: false }}
+          className="flow-grid"
+          panOnDrag={true}
+          zoomOnScroll={true}
+          zoomOnPinch={true}
+          panOnScroll={true}
+          nodesDraggable={false}
+          nodesConnectable={false}
+          elementsSelectable={false}
+        >
+     <svg>
+    <defs>
+      <marker
+        id="arrowhead"
+        markerWidth="10"
+        markerHeight="7"
+        refX="10"
+        refY="3.5"
+        orient="auto"
+        markerUnits="strokeWidth"
+      >
+        <path d="M0,0 L10,3.5 L0,7" fill="#555" />
+      </marker>
+    </defs>
+  </svg>
+          <Controls/>
+          <Background />
+        </ReactFlow>
+      </div>
+    </div>
+  );
 }
+
+
+
+
