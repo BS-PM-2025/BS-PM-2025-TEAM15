@@ -45,3 +45,10 @@ class users(models.Model):
     name = models.CharField(max_length=200)
     password = models.CharField(max_length=50)
     type = models.CharField(max_length=20,default="Student")
+
+class SearchModel(models.Model):
+    _id = models.IntegerField()
+    user_id = models.IntegerField()
+    name = models.CharField(max_length=200)
+    department = models.IntegerField()
+    status = models.CharField(max_length=200)

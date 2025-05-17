@@ -49,6 +49,10 @@ class UserSignUpSerializer(serializers.ModelSerializer):
             'idr': {'read_only': True}
         }
 
+<<<<<<< HEAD
+class SearchSerializer(serializers.Serializer):
+    _id = serializers.CharField()
+=======
 #Course - get all Courses.
 
 class CourseSerializer(serializers.Serializer):
@@ -59,8 +63,24 @@ class CourseSerializer(serializers.Serializer):
     points = serializers.IntegerField()
 
 class StudentSerializer(serializers.ModelSerializer):
+>>>>>>> origin/main
     user_id = serializers.IntegerField()
     department = serializers.CharField()
     status = serializers.CharField()
     sum_points = serializers.IntegerField()
+<<<<<<< HEAD
     average = serializers.IntegerField()
+
+class Graph_courses(serializers.Serializer):
+    name = serializers.CharField()
+    status = serializers.CharField()
+    year = serializers.CharField()
+    semester = serializers.CharField()
+    depend_on = serializers.CharField()
+
+class grades_graph(serializers.Serializer):
+        grade =serializers.IntegerField()
+        name = serializers.CharField()
+=======
+    average = serializers.IntegerField()
+>>>>>>> origin/main

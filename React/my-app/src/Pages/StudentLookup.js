@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from "react";
 
 import RequestModal from "../Components/RequestModal";
+import {
+  Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+   Box, Typography,TextField,Button,Select,MenuItem,
+   FormControl,
+   InputLabel
+} from "@mui/material";
+import axios from "axios";
+import "../Components_css/StudentStatusEditor.css"
+
+
+
 
 function StudentLookup() {
   const [studentId, setStudentId] = useState("");
@@ -9,6 +20,8 @@ function StudentLookup() {
   const [selectedAsk, setSelectedAsk] = useState(null);
   const [admins, setAdmins] = useState([]);
   const [currentUserName, setCurrentUserName] = useState("Admin");
+  const [Statuschange,setStatusChagne] = useState("")
+  
   const [loading, setLoading] = useState(false);
 
   const [importance, setImportance] = useState("");
@@ -36,7 +49,46 @@ function StudentLookup() {
   }, [admin_id]); // <- only runs once
   
 
+  const options = [
+    "Medical","Army","Active"
 
+  ];
+  const handleApprove = (e) => {
+    update_status(e);
+    alert("Approved!");
+  };
+
+  const handleChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setStatusChagne(
+      // On autofill we get a stringified value.
+      typeof value === 'string' ? value.split(',') : value,
+    );
+  };
+
+  const update_status = (event) =>{
+    event.preventDefault();
+    const formData = new FormData();
+
+    formData.append("user_id",studentId);
+    formData.append("Statuschange", Statuschange);
+
+    axios.post('http://localhost:8000/api/update_status/',formData,{
+      headers: {
+        "Content-Type": "multipart/form-data",
+      }, 
+    })
+    .then((response) => {
+      console.log("Request sent successfully:", response.data);
+      fetchStudentDetails();
+  })
+  .catch((error) => {
+    console.error("Error sending request:", error.response?.data || error.message);  })
+  }
+
+  
   const fetchStudentDetails = () => {
     const parsedId = parseInt(studentId);
     if (isNaN(parsedId)) {
@@ -106,15 +158,59 @@ function StudentLookup() {
           </div>
 
           {activeTab === "info" && (
-            <div>
-              <h3>Student Information</h3>
-              <p><strong>Name:</strong> {studentData.info.name}</p>
-              <p><strong>Email:</strong> {studentData.info.email}</p>
-              <p><strong>Department:</strong> {studentData.info.department}</p>
-              <p><strong>Status:</strong> {studentData.info.status}</p>
-              <p><strong>Points:</strong> {studentData.info.sum_points}</p>
-              <p><strong>Average:</strong> {studentData.info.average}</p>
-            </div>
+            <div className="profile_student">
+                  <Box >
+                    {/* <Typography  color="black" variant="h3">👤 Student Details</Typography> */}
+                    <Typography color="black" variant="h6"><strong>User Id:</strong>  {studentData.info.name}</Typography>
+                    <Typography color = "black" variant="h6"><strong>Email: </strong>{studentData.info.email}</Typography>
+                    <Typography color="black" variant="h6" ><strong>Department:</strong> {studentData.info.department}</Typography>
+                    <Typography color="black" variant="h6"><strong>Status:</strong> {studentData.info.status}</Typography>
+                    <Typography color="black" variant="h6"><strong>Sum points:</strong> {studentData.info.sum_points}</Typography>
+                    <Typography color="black" variant="h6"><strong>Average:</strong> {studentData.info.average}</Typography>
+                    <br/>
+                    <div className="statusoptionchanger">
+                      <FormControl>
+                        <InputLabel id="demo-simple-select-helper-label" >Status Changer</InputLabel>
+                        <Select
+                         options={options}
+                          value={Statuschange}
+                          label="Status Changer"
+                          onChange={handleChange}
+                          className="mySelect"
+                         
+                         
+                        >
+                          {options.map((options) => (
+                        <MenuItem
+                          key={options}
+                          value={options}
+                        >
+                          {options}
+                        </MenuItem> 
+                          ))}
+                        </Select>
+                        
+                      </FormControl>
+                      </div>
+                        
+                      <br/>
+                    <Box sx={{ display: "flex", gap: 2, marginTop: 2 }}>
+                   
+                      
+                    <Button variant="contained" color="success" onClick={handleApprove}>✅ Approve</Button>
+                      {/* <Button variant="outlined" onClick={() => setSelectedStudent(null)}>🔙 Back</Button> */}
+                    </Box>
+                  </Box>
+                  </div>
+            // <div>
+            //   <h3>Student Information</h3>
+            //   <p><strong>Name:</strong> {studentData.info.name}</p>
+            //   <p><strong>Email:</strong> {studentData.info.email}</p>
+            //   <p><strong>Department:</strong> {studentData.info.department}</p>
+            //   <p><strong>Status:</strong> {studentData.info.status}</p>
+            //   <p><strong>Points:</strong> {studentData.info.sum_points}</p>
+            //   <p><strong>Average:</strong> {studentData.info.average}</p>
+            // </div>
           )}
 
           {activeTab === "courses" && (

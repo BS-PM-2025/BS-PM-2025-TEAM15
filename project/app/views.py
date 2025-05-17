@@ -27,6 +27,10 @@ class ReactView(APIView):
 from .serializer import YourRequestSerializer  # ודא/י שאת מייבאת את הסריאלייזר המתאים
 
 class Student_personal_requests(APIView):
+<<<<<<< HEAD
+
+=======
+>>>>>>> origin/main
 
     def filehandle(self,request):
         file = request.FILES.get('documents')
@@ -98,8 +102,9 @@ class Student_personal_requests(APIView):
         #סטטוס בקשות 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-#from .models import YourRequestModel
+from django.http import JsonResponse
 from .serializer import YourRequestSerializer
+
 from . import dbcommands as dbcom 
 from . import dbcommands
 
@@ -125,8 +130,8 @@ class RequestStatusView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 from django.contrib.auth.hashers import make_password, check_password
-from .models import users
-from .serializer import UserSignUpSerializer
+from .models import users,SearchModel
+from .serializer import UserSignUpSerializer, SearchSerializer,Graph_courses
 import json
 
 # SIGN UP View
@@ -212,4 +217,126 @@ class GetUserNameView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class Searchview(APIView):
+    def get(self, request):
+        query = request.GET.get("query", "")
+        if not query:
+            return Response([])
+
+        documents = dbcom.get_all_students()
+
+        student_list = []
+        for doc in documents:
+            doc['_id'] = str(doc['_id'])  # Convert ObjectId
+            student_list.append(doc)
+        
+        print(student_list[0])
+
+        serializer = SearchSerializer(student_list, many=True)
+        return Response(serializer.data)
+    def post(self,request):
+        try:
+            user_id = int(request.data.get('user_id'))
+            status_change = request.data.get('Statuschange')
+            print("The User is ",user_id)
+            print("The wanted Status:",status_change)
+
+            if(dbcom.change_student_status_by_id(user_id,status_change)):
+                return Response({"success": True},status=status.HTTP_200_OK)
+            else:
+                return Response({"success": False,'error': 'Cant change Status ,try again please'}, status=status.HTTP_404_NOT_FOUND)
     
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+class graphs(APIView):
+    def get(self, request):
+
+        try:
+            user_id = request.GET.get("user_id")
+
+            if not user_id:
+                return Response({"success": False, "error": "Missing user_id"}, status=status.HTTP_400_BAD_REQUEST)
+            print("📥 Received GET to /api/graph with user_id =", request.GET.get("user_id"))
+            users_dep = dbcom.get_student_department_by_id(user_id)
+            if not users_dep:
+                
+                return Response({"success": False, "error": "Student not found or no department associated."}, status=status.HTTP_404_NOT_FOUND)
+            print("users_dep",users_dep)
+            course_data = dbcom.get_courses_grouped_by_year_and_semester(users_dep)
+
+            print("course_data",course_data)
+            if course_data:
+                serialized_data = {}
+
+                for year, semesters in course_data.items():
+                    serialized_data[year] = {}
+                    for semester, course_list in semesters.items():
+                        course_dicts = [
+                            {
+                                "name": course.get("name"),
+                                "status": course.get("status", "Locked"),
+                                "year": year,
+                                "semester": semester,
+                                "depend_on": course.get("depend_on")
+                            }
+                            for course in course_list
+                        ]
+                        serializer = Graph_courses(course_dicts, many=True)
+                        serialized_data[year][semester] = serializer.data
+                  
+                return Response({"success": True, "courses": serialized_data}, status=status.HTTP_200_OK)
+
+            return Response({"success": False, "error": "No courses found for the department."}, status=status.HTTP_404_NOT_FOUND)
+
+        except Exception as e:
+
+            print("ERROR:", str(e))
+            return Response({"success": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+    def post(self,request):
+        print("📥 Received post to /api/graph with user_id =", request.GET.get("user_id"))
+
+        try:  
+            user_id = request.GET.get("user_id")
+            if not user_id:
+                    print("ERROR:", str(e))
+                    return Response({"success": False, "error": "Missing user_id"}, status=status.HTTP_400_BAD_REQUEST)
+            
+           
+            user_courses_grades = []
+
+            grade = 0
+            serialized_data = {}
+            user_courses = dbcom.get_all_courses(user_id)
+            print("usercourse",user_courses)
+            course_ids = []
+            for raw_course in user_courses:
+                if isinstance(raw_course, dict) and '$oid' in raw_course:
+                    course_ids.append(ObjectId(raw_course['$oid']))
+                else:
+                    # fallback: if it's already ObjectId or string
+                    course_ids.append(ObjectId(str(raw_course)))
+                    
+            for course in course_ids:
+                string_id = str(course)
+
+                grade = dbcom.find_courses_with_nested_id(string_id,user_id)
+                name_course = dbcom.get_course_by_oid(course)
+                print("name",name_course)
+                print("grade::",grade)
+                user_courses_grades.append({
+                    "name": name_course,
+                    "grade": grade if grade is not None else 'None'
+                })
+                serializer = grades_graph(user_courses_grades,many=True)
+                serialized_data = serializer.data
+            print(user_courses_grades)
+            return Response({"success": True, "courses": serialized_data}, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            print("ERROR:", str(e))
+            return Response({"success": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
