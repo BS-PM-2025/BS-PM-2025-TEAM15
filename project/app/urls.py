@@ -14,7 +14,7 @@ urlpatterns = [
     path('api/users/SignUp',SignUpView.as_view(),name = "Signup"),
     path('api/request_status/',RequestStatusView.as_view(),name ="request_status"),
     path('api/users/Home', GetUserNameView.as_view(), name='get_user_name'),
-    path('api/student/courses', GetStudentCourseInfoView.as_view() ,name="Student_Dashboard"),
+    path('api/student/dashboard', GetStudentCourseInfoView.as_view() ,name="Student_Dashboard"),
     path("asks/", get_all_requests),
     path("asks/<str:ask_id>/reassign/", reassign_ask),
     path("asks/<str:ask_id>/update_status/", update_ask_status),
