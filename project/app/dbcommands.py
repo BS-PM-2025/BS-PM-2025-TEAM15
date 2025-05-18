@@ -121,8 +121,12 @@ def get_admin_role_by_id(user_id):
     return admin.get("role") if admin else None
 
 # === Courses ===
-def get_all_courses(student_id):
+def get_all_courses(student_id): #get courses for student
     return [entry["id_course"] for entry in studcourses.find({"id_student": to_int(student_id)})]
+
+def get_courses_in_list(student_id):
+    return list(studcourses.find({"id_student": to_int(student_id)}))
+
 
 def get_grade(student_id, course_id):
     entry = studcourses.find_one({"id_student": to_int(student_id), "id_course":(course_id)}) 
@@ -207,6 +211,17 @@ def update_grade(student_id, course_id, grade):
 def get_course_info(course_id):
     return courses.find_one({"_id": course_id})  # don't cast to int
 
+def get_course_full_info(course_id):
+    try:
+        if isinstance(course_id, dict) and "$oid" in course_id:
+            course_id = ObjectId(course_id["$oid"])
+        elif isinstance(course_id, str):
+            course_id = ObjectId(course_id)
+        return courses.find_one({"_id": course_id})
+    except Exception as e:
+        print(f"Error in get_course_info: {e}")
+        return None
+
 # === Requests / Asks ===
 def get_student_asks(student_id):
     return [ask["idr"] for ask in requests.find({"id_sending": to_int(student_id)})]
@@ -254,9 +269,7 @@ def get_ask_by_id(idr):
         ask["date_sent"] = ask["date_sent"].isoformat()
     return ask
 
-
 # === Requests / Ask Updates ===
-
 def reassign_ask_by_idr(idr, new_admin_id):
     return requests.update_one(
         {"idr": to_int(idr)},

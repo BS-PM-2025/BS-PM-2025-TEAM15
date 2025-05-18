@@ -118,13 +118,15 @@ def add_note_to_ask(request, ask_id):
 def get_full_student_summary(request, student_id):
     try:
         student_id = int(student_id)
+        print(student_id)
         profile = dbcommands.get_full_student_profile(student_id)
         if not profile:
             return Response({"error": f"User ID {student_id} is not a student."}, status=404)
-
+       
         course_ids = dbcommands.get_all_courses(student_id)
         courses = []
         for cid in course_ids:
+           
             course = dbcommands.get_course_info(cid)
             if course:
                 courses.append({
@@ -133,10 +135,10 @@ def get_full_student_summary(request, student_id):
                     "points": course["points"],
                     "grade": dbcommands.get_grade(student_id, cid)
                 })
-
+        
         ask_ids = dbcommands.get_student_asks(student_id)
         asks = [dbcommands.get_ask_by_id(aid) for aid in ask_ids if dbcommands.get_ask_by_id(aid)]
-
+        
         return Response({
             "info": {
                 "name": profile.get("name"),

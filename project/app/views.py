@@ -1,22 +1,24 @@
 from rest_framework.decorators import api_view
 from rest_framework import status
 from bson import ObjectId
-from app import dbcommands as db  
+from app import dbcommands as db
 from django.shortcuts import render
+from rest_framework.views import APIView
+from .models import *
+from rest_framework.response import Response
+from .serializer import *
+from django.contrib.auth.hashers import make_password, check_password
+#from .models import users, courses, studcourses
+#from .serializer import UserSignUpSerializer, StudentSerializer, CourseSerializer, StudCourseSerializer
+import json
+#from .models import YourRequestModel
+#from .serializer import YourRequestSerializer
+from . import dbcommands as dbcom 
+#from .models import Counter
 
 # Create your views here.
 def home(request):
     return render(request, 'home.html')
-
-from .models import Counter
-
-#react
-from django.shortcuts import render
-from django.shortcuts import render
-from rest_framework.views import APIView
-from . models import *
-from rest_framework.response import Response
-from . serializer import *
 
 class ReactView(APIView):
   
@@ -188,8 +190,8 @@ class LoginView(APIView):
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-
+       
+#Home view
 class GetUserNameView(APIView):
     def post(self, request):
         try:
@@ -244,8 +246,6 @@ class Searchview(APIView):
     
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-
 
 class graphs(APIView):
     def get(self, request):
@@ -336,3 +336,63 @@ class graphs(APIView):
         except Exception as e:
             print("ERROR:", str(e))
             return Response({"success": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+#StudentDash view
+class GetStudentCourseInfoView(APIView):
+    def get(self, request):
+        try:
+            user_id_ = int(request.query_params.get('user_id'))
+            if not user_id_:
+                return Response({"error": "Missing user_id"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            student = db.get_full_student_profile(user_id_)
+
+            student_courses = db.get_courses_in_list(user_id_)
+            
+            total_earned_credits = 0.0
+            completed_courses = []
+            courses_details = []
+            completed_amount = 0
+
+            print("######Check######")
+            print("Student check: " + str(student))
+            print("student courses check: " + str(student_courses))
+
+            for course in student_courses:
+                course_id = course["id_course"]
+                grade = course["grade"]
+                finished = course["finish"]
+
+                print("Course_id check: " + str(course_id))
+                print("grade check: " + str(grade))
+                print("finished check: " + str(finished))
+
+                course_info = db.get_course_full_info(course_id)
+
+                print("Course info check:" + str(course_info))
+
+                if finished:
+                    total_earned_credits += float(course_info["points"])
+                    completed_amount = completed_amount+1
+                courses_details.append({
+                    "name": course_info.get("name"),
+                    "lecturer": course_info.get("lecturer"),
+                    "department": course_info.get("department"),
+                    "points": course_info.get("points"),
+                    "grade": grade,
+                    "finished": finished
+                })
+
+            TOTAL_REQUIRED_CREDITS = 160
+            remaining_credits = max(0, TOTAL_REQUIRED_CREDITS - total_earned_credits)
+
+            return Response({
+                "total_earned_credits": total_earned_credits,
+                "credits_remaining": remaining_credits,
+                "courses": courses_details,
+                "amount_completed":completed_amount,
+            }, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            print("ERROR:", str(e))
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

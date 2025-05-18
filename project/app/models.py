@@ -1,3 +1,4 @@
+######In here we will add the database stuctures#######
 from django.db import models
 #פונקציה שמחזירה ערך רץ 
 #from .models import Counter
@@ -7,7 +8,6 @@ from django.db import transaction
 from django.db import models
 
 # Create your models here.
-
 
 class React(models.Model):
     name = models.CharField(max_length=30)
@@ -45,6 +45,37 @@ class users(models.Model):
     name = models.CharField(max_length=200)
     password = models.CharField(max_length=50)
     type = models.CharField(max_length=20,default="Student")
+
+#Student class
+class students(models.Model):
+    user_id = models.IntegerField()
+    department = models.CharField(max_length=100)
+    status = models.CharField(max_length=50)
+    sum_points = models.IntegerField()
+    average = models.FloatField()
+
+#course class 
+class courses(models.Model):
+    name = models.CharField(max_length=200)
+    lecturer = models.IntegerField()
+    department = models.CharField(max_length=100)
+    points = models.FloatField()
+
+#StudentCourse class
+class studcourses(models.Model):
+    id_student = models.IntegerField()
+    id_course = models.CharField(max_length=100)
+    grade = models.IntegerField()
+    start = models.DateField()
+    finish = models.BooleanField()
+
+#Department class
+class departments(models.Model):
+    department = models.CharField(max_length=100)
+    name = models.CharField(max_length=100)
+    year = models.IntegerField()
+    depand_on = models.CharField(max_length=200)
+    semester = models.CharField(max_length=50)
 
 class SearchModel(models.Model):
     _id = models.IntegerField()
