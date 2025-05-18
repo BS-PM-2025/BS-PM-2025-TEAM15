@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
+const user_id  = localStorage.getItem('user_id');  
+
 const StudentStatusRequest = () => {
     const [requests, setRequests] = useState([]);
 
     useEffect(() => {
-        axios.get("http://127.0.0.1:8000/api/request_status/")
+        axios.get(`http://127.0.0.1:8000/api/request_status/?user_id=${user_id}`)
             .then(res => setRequests(res.data))
             .catch(err => console.log(err));
     }, []);

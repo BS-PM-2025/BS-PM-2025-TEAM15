@@ -76,3 +76,10 @@ class departments(models.Model):
     year = models.IntegerField()
     depand_on = models.CharField(max_length=200)
     semester = models.CharField(max_length=50)
+
+class SearchModel(models.Model):
+    _id = models.IntegerField()
+    user_id = models.IntegerField()
+    name = models.CharField(max_length=200)
+    department = models.IntegerField()
+    status = models.CharField(max_length=200)

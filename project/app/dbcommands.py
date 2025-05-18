@@ -1,6 +1,9 @@
 from pymongo import MongoClient, ReturnDocument
 from datetime import datetime
+from django.http import JsonResponse
+from collections import defaultdict
 from bson import ObjectId
+
 
 # MongoDB Setup
 client = MongoClient("mongodb+srv://admin:123456!@db.hsm1joq.mongodb.net/")
@@ -13,7 +16,7 @@ administrators = db["administrators"]
 requests = db["requests"]
 courses = db["courses"]
 studcourses = db["studcourses"]
-
+departments = db["departments"]
 # Helper
 def to_int(x):
     try:
@@ -60,6 +63,11 @@ def set_user(user_id, user_name, user_email, user_password, user_type):
     return users.insert_one(new_user).inserted_id
 
 # === Student Info ===
+def get_all_students():
+    students_cursor = students.find()
+    return list(students_cursor)  
+
+
 def set_Student(user_id, department, status, sum_points, average):
     new_Student = {
         "user_id": to_int(user_id),
@@ -86,6 +94,8 @@ def get_student_department_by_id(user_id):
 def get_student_status_by_id(user_id):
     student = students.find_one({"user_id": to_int(user_id)})
     return student.get("status") if student else None
+
+
 
 def get_student_sum_points_by_id(user_id):
     student = students.find_one({"user_id": to_int(user_id)})
@@ -116,8 +126,60 @@ def get_all_courses(student_id): #get courses for student
     return list(studcourses.find({"id_student": to_int(student_id)}))
 
 def get_grade(student_id, course_id):
-    entry = studcourses.find_one({"id_student": to_int(student_id), "id_course": to_int(course_id)})
+    entry = studcourses.find_one({"id_student": to_int(student_id), "id_course":(course_id)}) 
     return entry.get("grade") if entry else None
+
+def find_courses_with_nested_id(target_course_id_str,user_id):
+    print(f"Looking for entries with course ID $oid: {target_course_id_str}")
+    
+    
+    # Initialize counters and result list
+    total_checked = 0
+    matches_found = 0
+    matching_entries = []
+    grade = 0
+    # Get all entries
+    all_entries = studcourses.find()
+    
+    # Iterate through each entry
+    for entry in all_entries:
+        total_checked += 1
+        
+        # Extract the course ID from the nested structure
+        entry_course_id = None
+        id_course_field = entry.get('id_course')
+        
+        # Handle different possible structures
+        if isinstance(id_course_field, dict) and '$oid' in id_course_field:
+            entry_course_id = id_course_field['$oid']
+        elif hasattr(id_course_field, 'id') and hasattr(id_course_field.id, 'hex'):
+            # If it's an ObjectId directly
+            entry_course_id = str(id_course_field)
+        else:
+            # Try string conversion as fallback
+            entry_course_id = str(id_course_field)
+        
+        # Check for match
+        if entry_course_id and target_course_id_str in entry_course_id:
+        
+                matches_found += 1
+                matching_entries.append(entry)
+                if(entry["id_student"],user_id):
+                    print("std",entry["id_student"])
+                    print("grade?",entry["grade"])
+                    grade = entry["grade"]
+                    return grade
+                # Display the matching entry
+                print(f"\nMatch #{matches_found} found:")
+                for key, value in entry.items():
+                    print(f"  {key}: {value}")
+
+    # Print summary
+    print(f"\nChecked {total_checked} entries in total")
+    print(f"Found {matches_found} entries with course ID $oid matching {target_course_id_str}")
+    
+    return matching_entries
+
 
 def get_average(student_id):
     grades = [get_grade(student_id, cid) for cid in get_all_courses(student_id)]
@@ -232,3 +294,43 @@ def append_note_to_ask(idr, note_text):
         {"$set": {"text": new_text}}
     )
     return result.modified_count > 0
+
+#departements
+
+#get all courses of a departments
+def get_courses_grouped_by_year_and_semester(department_name):
+    query = {"department": department_name}
+    all_courses = departments.find(query)
+
+    result = defaultdict(lambda: defaultdict(list))
+
+    for course in all_courses:
+        year = course.get("year")
+        semester = course.get("semester")
+
+        if not year or not semester or not course.get("name"):
+            continue
+
+        course_info = {
+            "name": course.get("name"),
+            "year": year,
+            "semester": semester,
+            "status": course.get("status", "Locked"),
+            "grade": course.get("grade", "-"),
+            "depend_on": course.get("depand_on")
+        }
+
+        result[year][semester].append(course_info)
+
+    # Ensure both semesters exist for every year
+    semester_names = ["First", "Second"]
+    for year in result:
+        for semester in semester_names:
+            result[year][semester] = result[year].get(semester, [])
+    print(dict(result))
+    return dict(result)
+
+def get_course_by_oid(course_id):
+    entry = courses.find_one({"_id": to_int(course_id)})
+  
+    return entry['name']

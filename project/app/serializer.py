@@ -50,6 +50,8 @@ class UserSignUpSerializer(serializers.ModelSerializer):
             'idr': {'read_only': True}
         }
 
+class SearchSerializer(serializers.Serializer):
+    _id = serializers.CharField()
 #Course - get all Courses.
 
 class CourseSerializer(serializers.Serializer):
@@ -72,3 +74,15 @@ class StudCourseSerializer(serializers.ModelSerializer):
   grade=serializers.IntegerField()
   start=serializers.DateField()
   finish=serializers.BooleanField()
+
+class Graph_courses(serializers.Serializer):
+    name = serializers.CharField()
+    status = serializers.CharField()
+    year = serializers.CharField()
+    semester = serializers.CharField()
+    depend_on = serializers.CharField()
+
+class grades_graph(serializers.Serializer):
+        grade =serializers.IntegerField()
+        name = serializers.CharField()
+        #average = serializers.IntegerField()

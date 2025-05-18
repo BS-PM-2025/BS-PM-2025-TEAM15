@@ -1,6 +1,10 @@
 {
   "dependencies": {
+
+    "@xyflow/react": "^12.6.0",
+
     "@mui/icons-material": "^7.0.2",
+
     "react-select": "^5.10.1"
   }
 }
