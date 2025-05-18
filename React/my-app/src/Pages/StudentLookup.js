@@ -113,7 +113,7 @@ function StudentLookup() {
   };
 
   const refreshStudent = () => fetchStudentDetails();
-
+  console.log("well",studentId)
   const applyAskFilters = () => {
     if (!studentData) return [];
 

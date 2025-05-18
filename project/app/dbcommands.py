@@ -122,8 +122,11 @@ def get_admin_role_by_id(user_id):
 
 # === Courses ===
 def get_all_courses(student_id): #get courses for student
-    #return [entry["id_course"] for entry in studcourses.find({"id_student": to_int(student_id)})]
+    return [entry["id_course"] for entry in studcourses.find({"id_student": to_int(student_id)})]
+
+def get_courses_in_list(student_id):
     return list(studcourses.find({"id_student": to_int(student_id)}))
+
 
 def get_grade(student_id, course_id):
     entry = studcourses.find_one({"id_student": to_int(student_id), "id_course":(course_id)}) 
@@ -206,7 +209,9 @@ def update_grade(student_id, course_id, grade):
     return result.modified_count > 0
 
 def get_course_info(course_id):
-    #return courses.find_one({"_id": course_id})  # don't cast to int
+    return courses.find_one({"_id": course_id})  # don't cast to int
+
+def get_course_full_info(course_id):
     try:
         if isinstance(course_id, dict) and "$oid" in course_id:
             course_id = ObjectId(course_id["$oid"])
@@ -216,7 +221,6 @@ def get_course_info(course_id):
     except Exception as e:
         print(f"Error in get_course_info: {e}")
         return None
-
 
 # === Requests / Asks ===
 def get_student_asks(student_id):
