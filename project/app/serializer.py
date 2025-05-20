@@ -1,3 +1,4 @@
+########In here we will translate data from python to JSON###########
 from rest_framework import serializers
 from . models import *
 from .models import Counter  # החליפי בשם של המודל שלך
@@ -36,6 +37,12 @@ class StudentRequestSerializer(serializers.Serializer):
 
 
 class UserSignUpSerializer(serializers.ModelSerializer):
+    # Student-specific fields added manually
+    department = serializers.CharField(required=True)
+    status = serializers.CharField(required=False)
+    sum_points = serializers.IntegerField(required=False)
+    average = serializers.IntegerField(required=False)
+
     class Meta:
         model = users
         fields = '__all__'
@@ -43,11 +50,39 @@ class UserSignUpSerializer(serializers.ModelSerializer):
             'idr': {'read_only': True}
         }
 
+class SearchSerializer(serializers.Serializer):
+    _id = serializers.CharField()
 #Course - get all Courses.
 
 class CourseSerializer(serializers.Serializer):
-    _id = serializers.CharField()
+    _id = serializers.CharField() #object id
     name = serializers.CharField()
     lecturer = serializers.IntegerField()
     department = serializers.CharField()
     points = serializers.IntegerField()
+
+class StudentSerializer(serializers.ModelSerializer):
+    user_id = serializers.IntegerField()
+    department = serializers.CharField()
+    status = serializers.CharField()
+    sum_points = serializers.IntegerField()
+    average = serializers.IntegerField()
+
+class StudCourseSerializer(serializers.ModelSerializer):
+  id_student=serializers.IntegerField()
+  id_course=serializers.CharField()
+  grade=serializers.IntegerField()
+  start=serializers.DateField()
+  finish=serializers.BooleanField()
+
+class Graph_courses(serializers.Serializer):
+    name = serializers.CharField()
+    status = serializers.CharField()
+    year = serializers.CharField()
+    semester = serializers.CharField()
+    depend_on = serializers.CharField()
+
+class grades_graph(serializers.Serializer):
+        grade =serializers.IntegerField()
+        name = serializers.CharField()
+        #average = serializers.IntegerField()

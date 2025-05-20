@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from . import dbcommands
 from django.utils.dateparse import parse_datetime
+from bson import ObjectId
 
 # --- GET all admins ---
 @api_view(["GET"])
@@ -118,13 +119,15 @@ def add_note_to_ask(request, ask_id):
 def get_full_student_summary(request, student_id):
     try:
         student_id = int(student_id)
+        print(student_id)
         profile = dbcommands.get_full_student_profile(student_id)
         if not profile:
             return Response({"error": f"User ID {student_id} is not a student."}, status=404)
-
+       
         course_ids = dbcommands.get_all_courses(student_id)
         courses = []
         for cid in course_ids:
+           
             course = dbcommands.get_course_info(cid)
             if course:
                 courses.append({
@@ -133,10 +136,10 @@ def get_full_student_summary(request, student_id):
                     "points": course["points"],
                     "grade": dbcommands.get_grade(student_id, cid)
                 })
-
+        
         ask_ids = dbcommands.get_student_asks(student_id)
         asks = [dbcommands.get_ask_by_id(aid) for aid in ask_ids if dbcommands.get_ask_by_id(aid)]
-
+        
         return Response({
             "info": {
                 "name": profile.get("name"),
@@ -152,3 +155,77 @@ def get_full_student_summary(request, student_id):
         })
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
+@api_view(["POST"])
+def enroll_course(request):
+    try:
+        user_id = int(request.data.get("user_id"))
+        course_id = request.data.get("course_id")
+        if not user_id or not course_id:
+            return Response({"error": "Missing user_id or course_id"}, status=400)
+
+        course_oid = ObjectId(course_id)
+        success = dbcommands.enroll_student(user_id, course_oid)
+
+        if success:
+            return Response({"message": "Student enrolled successfully"})
+        else:
+            return Response({"message": "Student already enrolled"}, status=200)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+@api_view(["GET"])
+def get_available_courses_view(request, user_id):
+    try:
+        courses = dbcommands.get_available_courses(user_id)
+        result = []
+
+        for course in courses:
+            result.append({
+                "course_id": str(course["_id"]),
+                "name": course["name"],
+                "points": course.get("points", 0)
+            })
+
+        return Response(result)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+@api_view(["GET"])
+def professor_courses(request, professor_id):
+    print(f"📥 GET /api/professor_courses/{professor_id}/ called")
+    courses = dbcommands.get_courses_by_lecturer(professor_id)
+    print("🎓 Courses found:", courses)
+
+    # Convert ObjectId to str
+    for course in courses:
+        if "_id" in course:
+            course["_id"] = str(course["_id"])
+
+    return Response(courses)
+
+
+
+@api_view(["GET"])
+def students_in_course(request, course_id):
+    students = dbcommands.get_students_for_course(course_id)
+    return Response(students)
+
+@api_view(["POST"])
+def update_grade(request):
+    try:
+        print("📥 Grade update request:", request.data)
+        user_id = int(request.data.get("user_id"))
+        course_id = request.data.get("course_id")
+        new_grade = float(request.data.get("grade"))
+
+        updated = dbcommands.update_student_grade(user_id, course_id, new_grade)
+        print(f"✅ Updated records: {updated}")
+
+        return Response({"message": "Grade updated successfully"})
+
+    except Exception as e:
+        print("❌ Error:", e)
+        return Response({"error": str(e)}, status=400)
+

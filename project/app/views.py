@@ -1,64 +1,34 @@
 from rest_framework.decorators import api_view
 from rest_framework import status
 from bson import ObjectId
-from app import dbcommands as db  
+from app import dbcommands as db
 from django.shortcuts import render
+from rest_framework.views import APIView
+from .models import *
+from rest_framework.response import Response
+from .serializer import *
+from django.contrib.auth.hashers import make_password, check_password
+#from .models import users, courses, studcourses
+#from .serializer import UserSignUpSerializer, StudentSerializer, CourseSerializer, StudCourseSerializer
+import json
+#from .models import YourRequestModel
+#from .serializer import YourRequestSerializer
+from . import dbcommands as dbcom 
+#from .models import Counter
 
 # Create your views here.
 def home(request):
     return render(request, 'home.html')
 
-from .models import Counter
-
-#react
-from django.shortcuts import render
-from django.shortcuts import render
-from rest_framework.views import APIView
-from . models import *
-from rest_framework.response import Response
-from . serializer import *
-
 class ReactView(APIView):
   
     serializer_class = ReactSerializer
 
-    # def get(self, request):
-    #     detail = [ {"name": detail.name,"detail": detail.detail} 
-    #     for detail in React.objects.all()]
-    #     return Response(detail)
-
-    # def post(self, request):
-
-    #     serializer = ReactSerializer(data=request.data)
-    #     if serializer.is_valid(raise_exception=True):
-    #         serializer.save()
-    #         return  Response(serializer.data)
-        
-# class Student_personal_requests(APIView):
-#     # @transaction.atomic
-  
-#     def get_next_sequence(self, name):
-#         counter = db.counters.find_one_and_update(
-#             {"_id": name},
-#             {"$inc": {"seq": 1}},
-#             upsert=True,
-#             return_document=ReturnDocument.AFTER
-#         )
-#         return counter["seq"]
+    #deleted commented code
 
 from .serializer import YourRequestSerializer  # ודא/י שאת מייבאת את הסריאלייזר המתאים
 
 class Student_personal_requests(APIView):
-    # @transaction.atomic
-   
-    # def get_next_sequence(self, name):
-    #     counter = db.counters.find_one_and_update(
-    #         {"_id": name},
-    #         {"$inc": {"seq": 1}},
-    #         upsert=True,
-    #         return_document=ReturnDocument.AFTER
-    #     )
-    #     return counter["seq"]
 
     def filehandle(self,request):
         file = request.FILES.get('documents')
@@ -130,8 +100,9 @@ class Student_personal_requests(APIView):
         #סטטוס בקשות 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-#from .models import YourRequestModel
+from django.http import JsonResponse
 from .serializer import YourRequestSerializer
+
 from . import dbcommands as dbcom 
 from . import dbcommands
 
@@ -157,8 +128,8 @@ class RequestStatusView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 from django.contrib.auth.hashers import make_password, check_password
-from .models import users
-from .serializer import UserSignUpSerializer
+from .models import users,SearchModel
+from .serializer import UserSignUpSerializer, SearchSerializer,Graph_courses
 import json
 
 # SIGN UP View
@@ -182,6 +153,15 @@ class SignUpView(APIView):
                     data["password"],
                     data["type"]
                 );
+                if data["type"] == "Student":
+                    db.set_Student(
+                        data["_id"],
+                        data["department"],
+                        data["status"],
+                        data["sum_points"],
+                        data["average"]
+                    );
+
                 return Response({'message': 'Signup successful'}, status=status.HTTP_201_CREATED)
             else:
                 print(serializer.errors)
@@ -210,8 +190,8 @@ class LoginView(APIView):
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-
+       
+#Home view
 class GetUserNameView(APIView):
     def post(self, request):
         try:
@@ -248,6 +228,7 @@ class StudentStatsView(APIView):
         if not student_id:
             return Response({'error': 'Missing user_id'}, status=status.HTTP_400_BAD_REQUEST)
 
+<<<<<<< HEAD
         try:
             # שליפת כל הבקשות של המשתמש
             all_requests = dbcommands.get_student_asks(student_id)  # מחזיר רשימת IDs
@@ -296,3 +277,186 @@ class StudentStatsView(APIView):
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+=======
+class Searchview(APIView):
+    def get(self, request):
+        query = request.GET.get("query", "")
+        if not query:
+            return Response([])
+
+        documents = dbcom.get_all_students()
+
+        student_list = []
+        for doc in documents:
+            doc['_id'] = str(doc['_id'])  # Convert ObjectId
+            student_list.append(doc)
+        
+        print(student_list[0])
+
+        serializer = SearchSerializer(student_list, many=True)
+        return Response(serializer.data)
+    def post(self,request):
+        try:
+            user_id = int(request.data.get('user_id'))
+            status_change = request.data.get('Statuschange')
+            print("The User is ",user_id)
+            print("The wanted Status:",status_change)
+
+            if(dbcom.change_student_status_by_id(user_id,status_change)):
+                return Response({"success": True},status=status.HTTP_200_OK)
+            else:
+                return Response({"success": False,'error': 'Cant change Status ,try again please'}, status=status.HTTP_404_NOT_FOUND)
+    
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class graphs(APIView):
+    def get(self, request):
+
+        try:
+            user_id = request.GET.get("user_id")
+
+            if not user_id:
+                return Response({"success": False, "error": "Missing user_id"}, status=status.HTTP_400_BAD_REQUEST)
+            print("📥 Received GET to /api/graph with user_id =", request.GET.get("user_id"))
+            users_dep = dbcom.get_student_department_by_id(user_id)
+            if not users_dep:
+                
+                return Response({"success": False, "error": "Student not found or no department associated."}, status=status.HTTP_404_NOT_FOUND)
+            print("users_dep",users_dep)
+            course_data = dbcom.get_courses_grouped_by_year_and_semester(users_dep)
+
+            print("course_data",course_data)
+            if course_data:
+                serialized_data = {}
+
+                for year, semesters in course_data.items():
+                    serialized_data[year] = {}
+                    for semester, course_list in semesters.items():
+                        course_dicts = [
+                            {
+                                "name": course.get("name"),
+                                "status": course.get("status", "Locked"),
+                                "year": year,
+                                "semester": semester,
+                                "depend_on": course.get("depend_on")
+                            }
+                            for course in course_list
+                        ]
+                        serializer = Graph_courses(course_dicts, many=True)
+                        serialized_data[year][semester] = serializer.data
+                  
+                return Response({"success": True, "courses": serialized_data}, status=status.HTTP_200_OK)
+
+            return Response({"success": False, "error": "No courses found for the department."}, status=status.HTTP_404_NOT_FOUND)
+
+        except Exception as e:
+
+            print("ERROR:", str(e))
+            return Response({"success": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+    def post(self,request):
+        print("📥 Received post to /api/graph with user_id =", request.GET.get("user_id"))
+
+        try:  
+            user_id = request.GET.get("user_id")
+            if not user_id:
+                    print("ERROR:", str(e))
+                    return Response({"success": False, "error": "Missing user_id"}, status=status.HTTP_400_BAD_REQUEST)
+            
+           
+            user_courses_grades = []
+
+            grade = 0
+            serialized_data = {}
+            user_courses = dbcom.get_all_courses(user_id)
+            print("usercourse",user_courses)
+            course_ids = []
+            for raw_course in user_courses:
+                if isinstance(raw_course, dict) and '$oid' in raw_course:
+                    course_ids.append(ObjectId(raw_course['$oid']))
+                else:
+                    # fallback: if it's already ObjectId or string
+                    course_ids.append(ObjectId(str(raw_course)))
+                    
+            for course in course_ids:
+                string_id = str(course)
+
+                grade = dbcom.find_courses_with_nested_id(string_id,user_id)
+                name_course = dbcom.get_course_by_oid(course)
+                print("name",name_course)
+                print("grade::",grade)
+                user_courses_grades.append({
+                    "name": name_course,
+                    "grade": grade if grade is not None else 'None'
+                })
+                serializer = grades_graph(user_courses_grades,many=True)
+                serialized_data = serializer.data
+            print(user_courses_grades)
+            return Response({"success": True, "courses": serialized_data}, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            print("ERROR:", str(e))
+            return Response({"success": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+#StudentDash view
+class GetStudentCourseInfoView(APIView):
+    def get(self, request):
+        try:
+            user_id_ = int(request.query_params.get('user_id'))
+            if not user_id_:
+                return Response({"error": "Missing user_id"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            student = db.get_full_student_profile(user_id_)
+
+            student_courses = db.get_courses_in_list(user_id_)
+            
+            total_earned_credits = 0.0
+            completed_courses = []
+            courses_details = []
+            completed_amount = 0
+
+            print("######Check######")
+            print("Student check: " + str(student))
+            print("student courses check: " + str(student_courses))
+
+            for course in student_courses:
+                course_id = course["id_course"]
+                grade = course["grade"]
+                finished = course["finish"]
+
+                print("Course_id check: " + str(course_id))
+                print("grade check: " + str(grade))
+                print("finished check: " + str(finished))
+
+                course_info = db.get_course_full_info(course_id)
+
+                print("Course info check:" + str(course_info))
+
+                if finished:
+                    total_earned_credits += float(course_info["points"])
+                    completed_amount = completed_amount+1
+                courses_details.append({
+                    "name": course_info.get("name"),
+                    "lecturer": course_info.get("lecturer"),
+                    "department": course_info.get("department"),
+                    "points": course_info.get("points"),
+                    "grade": grade,
+                    "finished": finished
+                })
+
+            TOTAL_REQUIRED_CREDITS = 160
+            remaining_credits = max(0, TOTAL_REQUIRED_CREDITS - total_earned_credits)
+
+            return Response({
+                "total_earned_credits": total_earned_credits,
+                "credits_remaining": remaining_credits,
+                "courses": courses_details,
+                "amount_completed":completed_amount,
+            }, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            print("ERROR:", str(e))
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+>>>>>>> d154c55de72fc5aedf1582b8da770dea5633cd6d
