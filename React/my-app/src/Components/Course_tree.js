@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import ReactFlow, { Background, Handle, Position,Controls } from 'react-flow-renderer';
+import ReactFlow, { Background, Handle, Position,Controls } from 'reactflow';
 import { Card, CardContent, CardActions, Typography, Button } from '@mui/material';
 import '../Components_css/Course_tree.css';
 import CustomEdge from './Edges_tree';
