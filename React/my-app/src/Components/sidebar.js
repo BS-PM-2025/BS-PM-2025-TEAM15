@@ -93,7 +93,7 @@ export default function Sidebar() {
     
   }
  
-  if(!isAdmin){
+  if(!isAdmin){ /*not admins sidebar! */
   return (
     <div>
       <nav id="sidebar">
@@ -159,7 +159,7 @@ export default function Sidebar() {
    </div>
       );}
     
-    else{
+    else{ /*Admim's sidebar! */
       return (
       <div>
         

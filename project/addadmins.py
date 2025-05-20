@@ -1,29 +1,41 @@
 from pymongo import MongoClient
+from datetime import datetime, timedelta
+import random
 
 # --- Connect to MongoDB ---
-client = MongoClient("mongodb+srv://admin:123456!@db.hsm1joq.mongodb.net/")
+client = MongoClient("mongodb+srv://admin:123456%21@db.hsm1joq.mongodb.net/?retryWrites=true&w=majority")
 db = client["university_system"]
 requests_col = db["requests"]
 
-# --- Get all used idr values ---
-used_idrs = set()
-for doc in requests_col.find({"idr": {"$exists": True}}):
-    used_idrs.add(doc["idr"])
+# --- Example responses ---
+responses = [
+    "Your request has been approved.",
+    "Request was handled successfully.",
+    "Completed. No further action needed.",
+    "Check your email for final confirmation.",
+    "Admin processed your request."
+]
 
-# --- Function to find next available idr ---
-def get_next_idr():
-    current = 1
-    while current in used_idrs:
-        current += 1
-    used_idrs.add(current)
-    return current
+# --- Update all documents if fields are missing ---
+all_docs = requests_col.find({})
 
-# --- Assign missing idr values ---
-updated = 0
-for doc in requests_col.find({"idr": {"$exists": False}}):
-    new_idr = get_next_idr()
-    requests_col.update_one({"_id": doc["_id"]}, {"$set": {"idr": new_idr}})
-    print(f"Updated document {doc['_id']} with idr={new_idr}")
-    updated += 1
+updated_count = 0
 
-print(f"\n✅ Done. Assigned idr to {updated} request(s).")
+for doc in all_docs:
+    update_fields = {}
+
+    if 'done_date' not in doc:
+        update_fields['done_date'] = datetime.utcnow() - timedelta(days=random.randint(1, 10))
+
+    if 'response_text' not in doc:
+        update_fields['response_text'] = random.choice(responses)
+
+    if update_fields:
+        requests_col.update_one(
+            { "_id": doc["_id"] },
+            { "$set": update_fields }
+        )
+        updated_count += 1
+
+print(f"\n✅ Updated {updated_count} documents with missing fields.")
+
