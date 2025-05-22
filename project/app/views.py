@@ -56,7 +56,7 @@ class Student_personal_requests(APIView):
             file_url_res = self.filehandle(request)
             inserted = db.add_ask(
                 data["id_sending"],
-                data["id_receiving"],
+                data["id_receiving"], ########adding check
                 data["importance"],
                 data["text"],
                 data["title"],
@@ -276,6 +276,7 @@ class StudentStatsView(APIView):
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
 class Searchview(APIView):
     def get(self, request):
         query = request.GET.get("query", "")

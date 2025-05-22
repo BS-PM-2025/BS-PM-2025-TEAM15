@@ -153,13 +153,13 @@ function Requestsubmissions_student() {
   console.log("Selected type:", request_type);
   return (
     <div
-      
+
     >
       <div
         className="form-container"
         style={{
-          backgroundColor: "#0c1c33",
-          marginLeft: "300px",
+          backgroundColor: "#FFFFFF",
+          marginLeft: "3s00px",
           marginTop : "50px",
           padding: "30px",
           borderRadius: "10px",
