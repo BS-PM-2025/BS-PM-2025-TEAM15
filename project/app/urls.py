@@ -24,7 +24,7 @@ urlpatterns = [
     path("studentlookup/<int:student_id>/", get_full_student_summary),
     path('api/search/', Searchview.as_view(), name="search"),
     path('api/update_status/',Searchview.as_view()),
-    #path('api/graph/',graphs.as_view()),
+    path('api/graph/',graphs.as_view()),
     path('api/enroll_course/', enroll_course),
     path("api/available_courses/<int:user_id>/", get_available_courses_view),
     path("api/professor_courses/<int:professor_id>/", professor_courses),
