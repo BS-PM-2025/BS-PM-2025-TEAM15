@@ -7,15 +7,14 @@ import Wel from "./Pages/Wel";
 import StudentLookup from "./Pages/StudentLookup";
 import Viewasks_admin from "./Pages/Viewasks_admin";
 import Requestsubmissions_student from "./Pages/Requestsubmissions_student";
-
 import StudentStatusRequest from "./Pages/student_status_request";
-
+import Med_student_status from "./Pages/med_student_status";
 import Navbar from "./Components/Navbar";
 import Sidebar from "./Components/sidebar";
 import Layout from "./Components/layout";
 import LoginPage from "./Pages/LoginPage";
-
-
+import Updategrades from "./Pages/updategrades";
+import Student_Dashboard from "./Pages/Student_Dashboard";
 
 function App() {
   
@@ -49,6 +48,9 @@ function App() {
           <Route path="/studentlookup" element={<StudentLookup />}/>
           <Route path="/Requestsubmissions_student" element={<Requestsubmissions_student />} />
           <Route path="/Student_status_request" element={<StudentStatusRequest />} />
+          <Route path="/Student_Dashboard" element={<Student_Dashboard />} />
+          <Route path ="/professor-grade-update" element= {<Updategrades/>}/>        
+          <Route path ="/Med_student_status" element= {<Med_student_status/>}/>
           
         </Route>
         </Routes>

@@ -15,3 +15,10 @@ all the dependencies we need.
 Connting to Django and React : 
 "pip install django-cors-headers"
 "python3 -m pip install djangorestframework"
+
+Icons addons:
+npm install @mui/material @emotion/react @emotion/styled
+npm install @mui/icons-material
+npm install react-flow-renderer
+npm install react-flow-renderer@10.3.17
+npm install react-flow-renderer@10.3.17 --legacy-peer-deps
