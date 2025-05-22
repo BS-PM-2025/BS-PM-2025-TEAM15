@@ -228,7 +228,6 @@ class StudentStatsView(APIView):
         if not student_id:
             return Response({'error': 'Missing user_id'}, status=status.HTTP_400_BAD_REQUEST)
 
-<<<<<<< HEAD
         try:
             # שליפת כל הבקשות של המשתמש
             all_requests = dbcommands.get_student_asks(student_id)  # מחזיר רשימת IDs
@@ -277,7 +276,6 @@ class StudentStatsView(APIView):
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-=======
 class Searchview(APIView):
     def get(self, request):
         query = request.GET.get("query", "")
@@ -459,4 +457,3 @@ class GetStudentCourseInfoView(APIView):
         except Exception as e:
             print("ERROR:", str(e))
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
->>>>>>> d154c55de72fc5aedf1582b8da770dea5633cd6d
