@@ -44,9 +44,9 @@ function Requestsubmissions_student() {
       formData.append("id_receiving", relatedCourse.lecturer);
       formData.append("course_id", relatedCourse.value); // optional: pass the selected course
     } else if (request_type === "Medical") {
-      formData.append("id_receiving", 2);
+      formData.append("id_receiving", 2); //getting sent to the medical admin responsible 
     } else if (request_type === "financial") {
-      formData.append("id_receiving", 4);
+      formData.append("id_receiving", 4); //getting sent to the financial admin responsible 
     }
     //logic importance. depend on the type of the request.
     formData.append("importance", "high");
@@ -172,9 +172,7 @@ function Requestsubmissions_student() {
     flexDirection: "column",
     justifyContent: "space-between", // if needed
   }}
->
-
-      
+>  
         <form onSubmit={handleSubmit}>
           <h2 style={{ marginBottom: "20px", color: "#6c63ff" }}>Submit a Request</h2>
 
@@ -225,7 +223,7 @@ function Requestsubmissions_student() {
   
 
           {/* נושא */}
-          <label style={{ fontWeight: "bold", color: "white" }}>Request Subject:</label>
+          <label style={{ fontWeight: "bold", color: "white" }}>Request Subject: </label>
           <input
             type="text"
             value={subject}
@@ -242,6 +240,7 @@ function Requestsubmissions_student() {
           />
 
           {/* פירוט */}
+          <br />
           <label style={{ fontWeight: "bold", color: "white" }}>Details:</label>
           <br />
           <textarea
