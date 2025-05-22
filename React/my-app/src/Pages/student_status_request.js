@@ -17,16 +17,18 @@ const StudentStatusRequest = () => {
 
     const styles = {
         page: {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '100vh',
-            background: 'linear-gradient(to right, #00c6ff, #7a00ff)',
-            color: 'white',
-            fontFamily: 'Arial, sans-serif',
-            padding: '20px'
-        },
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-start', // ✅ right-align content
+      justifyContent: 'flex-start',
+      minHeight: '100vh',
+      width: '100%',
+      padding: '40px',
+      backgroundColor: 'rgba(128, 128, 128, 0.5)', // ✅ transparent gray
+      color: 'white',
+      fontFamily: 'Arial, sans-serif',
+      boxSizing: 'border-box',
+    },
         title: {
             fontSize: '2.2em',
             fontWeight: 'bold',

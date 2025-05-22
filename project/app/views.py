@@ -8,15 +8,15 @@ from .models import *
 from rest_framework.response import Response
 from .serializer import *
 from django.contrib.auth.hashers import make_password, check_password
-#from .models import users, courses, studcourses
-#from .serializer import UserSignUpSerializer, StudentSerializer, CourseSerializer, StudCourseSerializer
 import json
-#from .models import YourRequestModel
-#from .serializer import YourRequestSerializer
 from . import dbcommands as dbcom 
-#from .models import Counter
-
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from . import dbcommands  # חשוב!    
 # Create your views here.
+
+
 def home(request):
     return render(request, 'home.html')
 
@@ -215,61 +215,55 @@ class GetUserNameView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from . import dbcommands  # חשוב!        
+ 
+
 #ספירת בקשות ובדיקה כמה יש וכמה הסתיימו 
 class StudentStatsView(APIView):
-    def get(self, request,student_id):
-        print("--->>>",student_id)
-        #user_id = request.query_params.get(student_id)
-        
+    def get(self, request, student_id):
+        print("--->>>", student_id)
         if not student_id:
             return Response({'error': 'Missing user_id'}, status=status.HTTP_400_BAD_REQUEST)
 
-<<<<<<< HEAD
         try:
-            # שליפת כל הבקשות של המשתמש
-            all_requests = dbcommands.get_student_asks(student_id)  # מחזיר רשימת IDs
-            ask_ids = dbcommands.get_student_asks(student_id)
+            user_id = int(student_id)
+            is_admin_user = dbcommands.is_admin(user_id)
 
-
+            # Initialize counters
             total = 0
             pending = 0
             inprogress = 0
             approved = 0
             done = 0
 
-            for aid in ask_ids:
-                ask = dbcommands.get_ask_by_id(aid)
-                print("hello",aid)
+            if is_admin_user:
+                # Admin/professor: get requests they received
+                all_requests = db.requests.find({ "id_receiving": user_id })
+            else:
+                # Student: get requests they sent
+                ask_ids = dbcommands.get_student_asks(user_id)
+                all_requests = [dbcommands.get_ask_by_id(aid) for aid in ask_ids]
+
+            # Count statuses
+            for ask in all_requests:
                 if ask:
                     total += 1
                     status_val = ask.get("status", "").lower()
-                    print("the status is ", status_val)
-                    
+
                     if status_val == "pending":
                         pending += 1
                     elif status_val == "approved":
-                        
                         approved += 1
                     elif status_val == "done":
-                        print("yesss")
                         done += 1
-                    elif "בטיפול" in status_val:
-                        print("yes, status contains בטיפול")
+                    elif "בטיפול" in status_val or "in progress" in status_val:
                         inprogress += 1
-                        
-                    
 
-            # נניח שאתה שומר הודעות לא נקראות באוסף messages
-            # ואם לא - אפשר פשוט לשים 0
+            # Optional: unread messages
             new_messages = dbcommands.count_unread_messages(user_id) if hasattr(dbcommands, 'count_unread_messages') else 0
-            print("amount of done",done)
+
             return Response({
                 "totalRequests": total,
-                "IN_progress" : inprogress,
+                "IN_progress": inprogress,
                 "pendingRequests": pending,
                 "doneRequests": done,
                 "newMessages": new_messages
@@ -277,7 +271,8 @@ class StudentStatsView(APIView):
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-=======
+
+
 class Searchview(APIView):
     def get(self, request):
         query = request.GET.get("query", "")
@@ -459,4 +454,3 @@ class GetStudentCourseInfoView(APIView):
         except Exception as e:
             print("ERROR:", str(e))
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
->>>>>>> d154c55de72fc5aedf1582b8da770dea5633cd6d

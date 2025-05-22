@@ -3,14 +3,9 @@ from . import views
 from .adminviews import is_admin,get_all_requests,reassign_ask,update_ask_status,get_all_admins,add_note_to_ask,get_full_student_summary,enroll_course,get_available_courses_view
 from .views import  ReactView,Student_personal_requests,RequestStatusView,SignUpView,LoginView,GetUserNameView, GetStudentCourseInfoView,Searchview,graphs
 from django.conf.urls.static import static
-<<<<<<< HEAD
 from django.conf import settings 
 from .views import StudentStatsView
-
-=======
-from django.conf import settings
 from .adminviews import update_grade,students_in_course,professor_courses
->>>>>>> d154c55de72fc5aedf1582b8da770dea5633cd6d
 
 urlpatterns = [
    
@@ -28,20 +23,17 @@ urlpatterns = [
     path("admins/", get_all_admins),
     path("asks/<str:ask_id>/add_note/", add_note_to_ask),
     path("studentlookup/<int:student_id>/", get_full_student_summary),
-<<<<<<< HEAD
     path('api/stats/<int:student_id>', StudentStatsView.as_view(), name='student-stats'),
 
     
-=======
     path('api/search/', Searchview.as_view(), name="search"),
     path('api/update_status/',Searchview.as_view()),
-    #path('api/graph/',graphs.as_view()),
+    path('api/graph/',graphs.as_view()),
     path('api/enroll_course/', enroll_course),
     path("api/available_courses/<int:user_id>/", get_available_courses_view),
     path("api/professor_courses/<int:professor_id>/", professor_courses),
     path("api/students_in_course/<str:course_id>/", students_in_course),
     path("api/update_grade/", update_grade),
->>>>>>> d154c55de72fc5aedf1582b8da770dea5633cd6d
 
     #to check if the user is admin
     path('api/isadmin/',is_admin)
