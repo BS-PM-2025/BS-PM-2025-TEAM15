@@ -9,7 +9,7 @@ import Viewasks_admin from "./Pages/Viewasks_admin";
 import Requestsubmissions_student from "./Pages/Requestsubmissions_student";
 import StudentStatusRequest from "./Pages/student_status_request";
 import Med_student_status from "./Pages/med_student_status";
-import Navbar from "./Components/Navbar";
+//import Navbar from "./Components/Navbar";
 import Sidebar from "./Components/sidebar";
 import Layout from "./Components/layout";
 import LoginPage from "./Pages/LoginPage";

@@ -5,7 +5,7 @@ from .views import  ReactView,Student_personal_requests,RequestStatusView,SignUp
 from django.conf.urls.static import static
 from django.conf import settings 
 from .views import StudentStatsView
-
+from django.conf import settings
 from .adminviews import update_grade,students_in_course,professor_courses
 
 urlpatterns = [
