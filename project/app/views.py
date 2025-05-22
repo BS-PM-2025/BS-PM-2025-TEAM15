@@ -225,8 +225,9 @@ class StudentStatsView(APIView):
             return Response({'error': 'Missing user_id'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user_id = int(student_id)
-            is_admin_user = dbcommands.is_admin(user_id)
+            # שליפת כל הבקשות של המשתמש
+            all_requests = dbcommands.get_student_asks(student_id)  # מחזיר רשימת IDs
+            ask_ids = dbcommands.get_student_asks(student_id)
 
             # Initialize counters
             total = 0
