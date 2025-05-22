@@ -134,23 +134,25 @@ function ViewAsks() {
 
       {/* Ask Cards */}
       <div style={{
-        display: "flex",
-        flexWrap: "wrap",
-        
-       flexDirection: 'column',
-        gap: "20px",
-        maxHeight: "60vh",
-        overflowY: "auto",
-        padding: "10px"
-      }}>
+  display: "flex",
+  flexDirection: "column",
+  gap: "20px",
+  padding: "10px",
+  alignItems: "center",
+  maxHeight: "60vh",
+  overflowY: "auto"
+}}>
+
         {asks.map((ask) => (
           <div
             key={ask._id}
             onClick={() => setSelectedAsk(ask)}
             style={{
               cursor: "pointer",
-              width: "280px",
+              width: "90%",
               borderRadius: "12px",
+              display: "flex",
+              flexDirection:"column",
               padding: "15px",
               backgroundColor: "#f9f9f9",
               boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
@@ -171,6 +173,7 @@ function ViewAsks() {
             <span style={{
               padding: "4px 10px",
               borderRadius: "12px",
+            
               fontSize: "12px",
               fontWeight: "bold",
               color: "#fff",

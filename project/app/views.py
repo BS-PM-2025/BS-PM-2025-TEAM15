@@ -220,14 +220,12 @@ class GetUserNameView(APIView):
 #ספירת בקשות ובדיקה כמה יש וכמה הסתיימו 
 class StudentStatsView(APIView):
     def get(self, request, student_id):
-        print("--->>>", student_id)
-        if not student_id:
-            return Response({'error': 'Missing user_id'}, status=status.HTTP_400_BAD_REQUEST)
+        user_id = int(student_id)
+        print("--->>> Stats request for user:", user_id)
 
         try:
-            # שליפת כל הבקשות של המשתמש
-            all_requests = dbcommands.get_student_asks(student_id)  # מחזיר רשימת IDs
-            ask_ids = dbcommands.get_student_asks(student_id)
+            # Use your helper function to check admin status
+            is_admin_user = dbcommands.is_admin(user_id)
 
             # Initialize counters
             total = 0
@@ -237,7 +235,7 @@ class StudentStatsView(APIView):
             done = 0
 
             if is_admin_user:
-                # Admin/professor: get requests they received
+                # Admin: get requests they received
                 all_requests = db.requests.find({ "id_receiving": user_id })
             else:
                 # Student: get requests they sent
@@ -256,11 +254,14 @@ class StudentStatsView(APIView):
                         approved += 1
                     elif status_val == "done":
                         done += 1
-                    elif "בטיפול" in status_val or "in progress" in status_val:
+                    elif "in progress" in status_val or "בטיפול" in status_val:
                         inprogress += 1
 
-            # Optional: unread messages
-            new_messages = dbcommands.count_unread_messages(user_id) if hasattr(dbcommands, 'count_unread_messages') else 0
+            new_messages = (
+                dbcommands.count_unread_messages(user_id)
+                if hasattr(dbcommands, "count_unread_messages")
+                else 0
+            )
 
             return Response({
                 "totalRequests": total,
@@ -271,6 +272,7 @@ class StudentStatsView(APIView):
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
+            print("❌ Error in StudentStatsView:", e)
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -291,6 +293,7 @@ class Searchview(APIView):
 
         serializer = SearchSerializer(student_list, many=True)
         return Response(serializer.data)
+        
     def post(self,request):
         try:
             user_id = int(request.data.get('user_id'))
