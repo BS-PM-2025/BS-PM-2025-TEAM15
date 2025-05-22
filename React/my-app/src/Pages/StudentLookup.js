@@ -109,7 +109,6 @@ function StudentLookup() {
         alert("Student not found or invalid ID");
       })
       .finally(() => setLoading(false));
-
   };
 
   const refreshStudent = () => fetchStudentDetails();
