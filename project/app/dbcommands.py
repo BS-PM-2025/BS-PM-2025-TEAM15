@@ -201,13 +201,6 @@ def enroll_student(id_student, id_course):
     })
     return True
 
-def update_grade(student_id, course_id, grade):
-    result = studcourses.update_one(
-        {"id_student": to_int(student_id), "id_course": to_int(course_id)},
-        {"$set": {"grade": grade}}
-    )
-    return result.modified_count > 0
-
 def get_course_info(course_id):
     return courses.find_one({"_id": course_id})  # don't cast to int
 
@@ -338,3 +331,75 @@ def get_course_by_oid(course_id):
     entry = courses.find_one({"_id": to_int(course_id)})
   
     return entry['name']
+
+def get_available_courses(user_id):
+    student = students.find_one({"user_id": to_int(user_id)})
+    if not student:
+        return []
+
+    department = student.get("department")
+    if not department:
+        return []
+
+    # 1. Get all course names listed in the department
+    department_courses = departments.find({"department": department})
+    course_names = [c["name"] for c in department_courses if "name" in c]
+
+    # 2. Get all course docs with those names
+    course_docs = list(courses.find({"name": {"$in": course_names}}))
+
+    # 3. Get enrolled course IDs for this student
+    enrolled = studcourses.find({"id_student": to_int(user_id)})
+    enrolled_ids = {e["id_course"] for e in enrolled}
+
+    # 4. Filter out already enrolled courses
+    available_courses = [c for c in course_docs if c["_id"] not in enrolled_ids]
+
+    return available_courses
+
+def get_courses_by_lecturer(lecturer_id):
+    return list(db.courses.find({"lecturer": lecturer_id}))
+
+def get_students_for_course(course_id):
+    try:
+        print("🔍 get_students_for_course called with:", course_id)
+
+        # Convert to ObjectId
+        course_oid = ObjectId(course_id)
+
+        enrollments = list(db.studcourses.find({"id_course": course_oid}))
+        print("📚 Found enrollments:", enrollments)
+
+        results = []
+
+        for e in enrollments:
+            student = db.students.find_one({"user_id": e["id_student"]})
+            user = db.users.find_one({"_id": e["id_student"]})
+            print(f"👤 Fetching student {e['id_student']}: student={student}, user={user}")
+
+            if student and user:
+                results.append({
+                    "user_id": e["id_student"],
+                    "name": user.get("name", "Unknown"),
+                    "grade": e.get("grade", None)
+                })
+
+        print("✅ Final student list:", results)
+        return results
+
+    except Exception as e:
+        print("❌ Error in get_students_for_course:", e)
+        return []
+
+
+def update_student_grade(user_id, course_id, new_grade):
+    from bson import ObjectId
+    if isinstance(course_id, str):
+        course_id = ObjectId(course_id)
+
+    result = db.studcourses.update_one(
+        {"id_student": user_id, "id_course": course_id},
+        {"$set": {"grade": new_grade}}
+    )
+    print("🔄 update result:", result.modified_count)
+    return result.modified_count

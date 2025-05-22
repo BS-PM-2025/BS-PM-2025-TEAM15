@@ -93,7 +93,7 @@ export default function Sidebar() {
     
   }
  
-  if(!isAdmin){
+  if(!isAdmin){ /*not admins sidebar! */
   return (
     <div>
       <nav id="sidebar">
@@ -159,7 +159,7 @@ export default function Sidebar() {
    </div>
       );}
     
-    else{
+    else{ /*Admim's sidebar! */
       return (
       <div>
         
@@ -218,6 +218,15 @@ export default function Sidebar() {
           <span>Course management</span>
         </a>
       </li>
+      <li>
+  <Link to="/professor-grade-update">
+    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+      <path d="M480-160q-66 0-124.5-25T256-256q-44-44-69-102.5T160-480q0-66 25-124.5T256-709q44-44 102.5-69T480-803q66 0 124.5 25T709-709q44 44 69 102.5T803-480q0 66-25 124.5T709-256q-44 44-102.5 69T480-160Zm-80-160h160v-80H400v80Zm0-160h160v-240H400v240Z"/>
+    </svg>
+    <span>Update Grades</span>
+  </Link>
+</li>
+
       </ul>
       </nav> 
     </div>

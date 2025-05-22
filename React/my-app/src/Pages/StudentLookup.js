@@ -22,9 +22,8 @@ function StudentLookup() {
   const [admins, setAdmins] = useState([]);
   const [currentUserName, setCurrentUserName] = useState("Admin");
   const [Statuschange,setStatusChagne] = useState("")
-  
+  const [availableCourses, setAvailableCourses] = useState([]);
   const [loading, setLoading] = useState(false);
-
   const [importance, setImportance] = useState("");
   const [status, setStatus] = useState("");
   const [category, setCategory] = useState("");
@@ -87,9 +86,23 @@ function StudentLookup() {
   })
   .catch((error) => {
     console.error("Error sending request:", error.response?.data || error.message);  })
-  }
+  };
 
-  
+  const fetchAvailableCourses = () => {
+  if (!studentId) return;
+
+  fetch(`http://localhost:8000/api/available_courses/${studentId}/`)
+    .then(res => res.json())
+    .then(data => {
+      setAvailableCourses(data);
+    })
+    .catch(err => {
+      console.error("Failed to fetch courses:", err);
+      alert("Failed to load available courses.");
+    });
+};
+
+
   const fetchStudentDetails = () => {
     const parsedId = parseInt(studentId);
     if (isNaN(parsedId)) {
@@ -110,6 +123,38 @@ function StudentLookup() {
       })
       .finally(() => setLoading(false));
   };
+
+  const enrollInCourse = (courseId) => {
+  const payload = {
+    user_id: parseInt(studentId),
+    course_id: courseId,
+  };
+  axios.post("http://localhost:8000/api/enroll_course/", payload)
+    .then(() => {
+      alert("Student enrolled successfully!");
+      fetchStudentDetails();
+      fetchAvailableCourses();
+    })
+    .catch(err => {
+      console.error("Enrollment failed:", err);
+      alert("Enrollment failed.");
+    });
+};
+
+const clearAll = () => {
+  setStudentId("");
+  setStudentData(null);
+  setActiveTab("info");
+  setImportance("");
+  setStatus("");
+  setCategory("");
+  setSortBy("");
+  setSortOrder("asc");
+  setFromDate("");
+  setToDate("");
+  setSelectedAsk(null);
+};
+
 
   const refreshStudent = () => fetchStudentDetails();
   console.log("well",studentId)
@@ -146,7 +191,7 @@ function StudentLookup() {
         style={{ marginRight: "10px" }}
       />
       <button onClick={fetchStudentDetails}>Search</button>
-
+      <button onClick={clearAll} style={{ marginLeft: "10px" }}>Clear</button>
       {loading && <p>Loading student data...</p>}
 
       {studentData && !loading && (
@@ -155,13 +200,19 @@ function StudentLookup() {
             <button onClick={() => setActiveTab("info")}>Student Info</button>
             <button onClick={() => setActiveTab("courses")} style={{ marginLeft: "10px" }}>Courses & Average</button>
             <button onClick={() => setActiveTab("asks")} style={{ marginLeft: "10px" }}>Requests</button>
+            <button onClick={() => { setActiveTab("enroll"); fetchAvailableCourses(); }} style={{ marginLeft: "10px" }}>Enroll in Course</button>
+
           </div>
 
           {activeTab === "info" && (
             <div className="profile_student">
                   <Box >
                     {/* <Typography  color="black" variant="h3">👤 Student Details</Typography> */}
-                    <Typography color="black" variant="h6"><strong>User Id:</strong>  {studentData.info.user_id}</Typography>
+                   <Typography color="black" variant="h6">
+                    <strong>Name:</strong> {studentData.info.name} <br />
+                    <strong>User ID:</strong> {studentData.info.user_id}
+                   </Typography>
+
                     <Typography color = "black" variant="h6"><strong>Email: </strong>{studentData.info.email}</Typography>
                     <Typography color="black" variant="h6" ><strong>Department:</strong> {studentData.info.department}</Typography>
                     <Typography color="black" variant="h6"><strong>Status:</strong> {studentData.info.status}</Typography>
@@ -321,6 +372,33 @@ function StudentLookup() {
           />
         </div>
       )}
+      {activeTab === "enroll" && (
+  <div>
+    <h3>Available Courses for Enrollment</h3>
+    {availableCourses.length === 0 ? (
+      <p>No available courses or all already enrolled.</p>
+    ) : (
+      <ul>
+        {availableCourses.map(course => (
+          <li key={course.course_id} style={{ marginBottom: "10px" }}>
+            {course.name} ({course.points} points)
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={() => enrollInCourse(course.course_id)}
+              style={{ marginLeft: "10px" }}
+            >
+              Enroll
+            </Button>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+)}
+
+
+
     </div>
   );
 }
