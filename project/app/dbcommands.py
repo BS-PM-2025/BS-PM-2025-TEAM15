@@ -30,7 +30,12 @@ def login(email, password):
     return user["_id"] if user else None
 
 def is_admin(user_id):
-    return administrators.find_one({"user_id": to_int(user_id)}) is not None
+    uid = to_int(user_id)
+    return (
+        db.administrators.find_one({"user_id": uid}) is not None
+        or db.professors.find_one({"user_id": uid}) is not None
+    )
+
 
 # === User Info ===
 def get_user_info(user_id):
