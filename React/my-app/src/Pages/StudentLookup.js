@@ -181,187 +181,306 @@ const clearAll = () => {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Student Lookup</h2>
+   <div style={{
+  backgroundColor: "#f5f8ff",
+  padding: "30px",
+  borderRadius: "12px",
+  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+  marginBottom: "30px",
+  display: "flex",
+  flexDirection: "column",
+  gap: "20px"
+}}>
+  <h2 style={{
+    margin: 0,
+    fontSize: "24px",
+    color: "#134075",
+    fontWeight: 700
+  }}>
+    🔎 Search Student by ID
+  </h2>
 
-      <input
-        type="number"
-        value={studentId}
-        onChange={(e) => setStudentId(e.target.value)}
-        placeholder="Enter Student ID"
-        style={{ marginRight: "10px" }}
-      />
-      <button onClick={fetchStudentDetails}>Search</button>
-      <button onClick={clearAll} style={{ marginLeft: "10px" }}>Clear</button>
+  <div style={{
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "10px",
+    alignItems: "center"
+  }}>
+    <input
+      type="number"
+      value={studentId}
+      onChange={(e) => setStudentId(e.target.value)}
+      placeholder="Enter student ID"
+      style={{
+        flex: "1",
+        minWidth: "150px",
+        padding: "10px 15px",
+        borderRadius: "8px",
+        border: "1px solid #ccc",
+        fontSize: "16px"
+      }}
+    />
+    <button onClick={fetchStudentDetails} style={{
+      backgroundColor: "#134075",
+      color: "white",
+      border: "none",
+      padding: "10px 20px",
+      borderRadius: "8px",
+      fontSize: "16px",
+      cursor: "pointer"
+    }}>
+      Search
+    </button>
+    <button onClick={clearAll} style={{
+      backgroundColor: "#ddd",
+      color: "#333",
+      border: "none",
+      padding: "10px 20px",
+      borderRadius: "8px",
+      fontSize: "16px",
+      cursor: "pointer"
+    }}>
+      Clear
+    </button>
+  </div>
+
+
       {loading && <p>Loading student data...</p>}
 
       {studentData && !loading && (
-        <div style={{ marginTop: "20px" }}>
-          <div style={{ display: "flex", marginBottom: "10px" }}>
-            <button onClick={() => setActiveTab("info")}>Student Info</button>
-            <button onClick={() => setActiveTab("courses")} style={{ marginLeft: "10px" }}>Courses & Average</button>
-            <button onClick={() => setActiveTab("asks")} style={{ marginLeft: "10px" }}>Requests</button>
-            <button onClick={() => { setActiveTab("enroll"); fetchAvailableCourses(); }} style={{ marginLeft: "10px" }}>Enroll in Course</button>
 
-          </div>
+        
+       <div style={{ marginTop: "30px" }}>
+  {/* Tab Navigation */}
+  <div style={{
+    display: "flex",
+    gap: "15px",
+    marginBottom: "30px",
+    borderBottom: "2px solid #ccc",
+    paddingBottom: "10px"
+  }}>
+    {["info", "courses", "asks", "enroll"].map((tab) => (
+      <button
+        key={tab}
+        onClick={() => {
+          setActiveTab(tab);
+          if (tab === "enroll") fetchAvailableCourses();
+        }}
+        style={{
+          backgroundColor: activeTab === tab ? "#134075" : "transparent",
+          color: activeTab === tab ? "white" : "#134075",
+          border: "1px solid #134075",
+          padding: "10px 20px",
+          borderRadius: "20px",
+          cursor: "pointer",
+          fontWeight: 600,
+          transition: "all 0.3s"
+        }}
+      >
+        {{
+          info: "Student Info",
+          courses: "Courses & Average",
+          asks: "Requests",
+          enroll: "Enroll in Course"
+        }[tab]}
+      </button>
+    ))}
+  </div>
 
-          {activeTab === "info" && (
-            <div className="profile_student">
-                  <Box >
-                    {/* <Typography  color="black" variant="h3">👤 Student Details</Typography> */}
-                   <Typography color="black" variant="h6">
-                    <strong>Name:</strong> {studentData.info.name} <br />
-                    <strong>User ID:</strong> {studentData.info.user_id}
-                   </Typography>
+  {/* Student Info Tab */}
+  {activeTab === "info" && (
+    <div className="profile_student" style={{
+      backgroundColor: "#f5f7fb",
+      padding: "30px",
+      borderRadius: "15px",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)"
+    }}>
+      <Typography variant="h5" color="#134075" gutterBottom>
+        👤 Student Details
+      </Typography>
+      <Typography variant="body1" style={{ color: '#134075' }}><strong>Name:</strong> {studentData.info.name}</Typography>
+      <Typography variant="body1" style={{ color: '#134075' }}><strong>User ID:</strong> {studentData.info.user_id}</Typography>
+      <Typography variant="body1" style={{ color: '#134075' }}><strong>Email:</strong> {studentData.info.email}</Typography>
+      <Typography variant="body1" style={{ color: '#134075' }}><strong>Department:</strong> {studentData.info.department}</Typography>
+      <Typography variant="body1" style={{ color: '#134075' }}><strong>Status:</strong> {studentData.info.status}</Typography>
+      <Typography variant="body1" style={{ color: '#134075' }}><strong>Sum points:</strong> {studentData.info.sum_points}</Typography>
+      <Typography variant="body1" style={{ color: '#134075' }}><strong>Average:</strong> {studentData.info.average}</Typography>
 
-                    <Typography color = "black" variant="h6"><strong>Email: </strong>{studentData.info.email}</Typography>
-                    <Typography color="black" variant="h6" ><strong>Department:</strong> {studentData.info.department}</Typography>
-                    <Typography color="black" variant="h6"><strong>Status:</strong> {studentData.info.status}</Typography>
-                    <Typography color="black" variant="h6"><strong>Sum points:</strong> {studentData.info.sum_points}</Typography>
-                    <Typography color="black" variant="h6"><strong>Average:</strong> {studentData.info.average}</Typography>
-                    <br/>
-                    <div className="statusoptionchanger">
-                      <FormControl>
-                        <InputLabel id="demo-simple-select-helper-label" >Status Changer</InputLabel>
-                        <Select
-                         options={options}
-                          value={Statuschange}
-                          label="Status Changer"
-                          onChange={handleChange}
-                          className="mySelect"
-                         
-                         
-                        >
-                          {options.map((options) => (
-                        <MenuItem
-                          key={options}
-                          value={options}
-                        >
-                          {options}
-                        </MenuItem> 
-                          ))}
-                        </Select>
-                        
-                      </FormControl>
-                      </div>
-                        
-                      <br/>
-                    <Box sx={{ display: "flex", gap: 2, marginTop: 2 }}>
-                   
-                      
-                    <Button variant="contained" color="success" onClick={handleApprove}>✅ Approve</Button>
-                      {/* <Button variant="outlined" onClick={() => setSelectedStudent(null)}>🔙 Back</Button> */}
-                    </Box>
-                  </Box>
-                  </div>
-            // <div>
-            //   <h3>Student Information</h3>
-            //   <p><strong>Name:</strong> {studentData.info.name}</p>
-            //   <p><strong>Email:</strong> {studentData.info.email}</p>
-            //   <p><strong>Department:</strong> {studentData.info.department}</p>
-            //   <p><strong>Status:</strong> {studentData.info.status}</p>
-            //   <p><strong>Points:</strong> {studentData.info.sum_points}</p>
-            //   <p><strong>Average:</strong> {studentData.info.average}</p>
-            // </div>
-          )}
+      {/* Status Changer */}
+      <div style={{ marginTop: "20px" }}>
+        <FormControl fullWidth>
+          <InputLabel>Status Changer</InputLabel>
+          <Select
+            value={Statuschange}
+            label="Status Changer"
+            onChange={handleChange}
+          >
+            {options.map((opt) => (
+              <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </div>
 
-          {activeTab === "courses" && (
-            <div>
-              <h3>Enrolled Courses</h3>
-              <ul>
-                <Course_tree userId = {studentId}/>
-                {/* {studentData.courses.map(course => (
-                  <li key={course.course_id}>
-                    {course.name} (Points: {course.points}) - Grade: {course.grade ?? "Not graded"}
-                  </li>
-                ))}
-              </ul>
-              <p><strong>Average:</strong> {studentData.average}</p>
-            </div> */}
-            </ul>
-            </div>
-          )}
+      <Box sx={{ display: "flex", gap: 2, marginTop: 3 }}>
+        <Button variant="contained" color="success" onClick={handleApprove}>✅ Approve</Button>
+      </Box>
+    </div>
+  )}
 
-          {activeTab === "asks" && (
-            <div>
-              <h3>Requests</h3>
+  {/* Courses Tab */}
+  {activeTab === "courses" && (
+    <div style={{
+      backgroundColor: "#f5f7fb",
+      padding: "30px",
+      borderRadius: "15px",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)"
+    }}>
+      <Typography variant="h5" color="#134075" gutterBottom>
+        📚 Enrolled Courses
+      </Typography>
+      <Course_tree userId={studentId} />
+    </div>
+  )}
 
-              <div style={{ marginBottom: "15px", display: "flex", flexWrap: "wrap", gap: "50px", width: "100%", maxWidth: "1100px" }}>
-                <label>
-                  Importance:
-                  <select value={importance} onChange={e => setImportance(e.target.value)}>
-                    <option value="">..</option>
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
-                  </select>
-                </label>
 
-                <label>
-                  Status:
-                  <select value={status} onChange={e => setStatus(e.target.value)}>
-                    <option value="">..</option>
-                    <option value="pending">Pending</option>
-                    <option value="assigned to self">Assigned to Self</option>
-                    <option value="closed">Closed</option>
-                  </select>
-                </label>
 
-                <label>
-                  Category:
-                  <select value={category} onChange={e => setCategory(e.target.value)}>
-                    <option value="">..</option>
-                    <option value="financial">Financial</option>
-                    <option value="medical">Medical</option>
-                    <option value="course management">Course Management</option>
-                    <option value="grade">Grade</option>
-                    <option value="other">Other</option>
-                    <option value="army service">Army Service</option>
-                  </select>
-                </label>
+{activeTab === "asks" && (
+  <div>
+    <h3 style={{ color: "#134075", marginBottom: "10px" }}>📝 Filter Requests</h3>
 
-                <label>
-                  Sort by:
-                  <select value={sortBy} onChange={e => setSortBy(e.target.value)}>
-                    <option value="">..</option>
-                    <option value="importance">Importance</option>
-                    <option value="date">Date Sent</option>
-                  </select>
-                </label>
+    <div style={{
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "20px",
+      marginBottom: "30px",
+      background: "#f1f4ff",
+      padding: "15px",
+      borderRadius: "10px",
+      boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+    }}>
+      <label>
+        <span style={{ color: '#134075' }}>Importance:</span>
+        <select value={importance} onChange={e => setImportance(e.target.value)}>
+          <option value="">..</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+      </label>
 
-                <div>
-                  Order:
-                  <button onClick={() => setSortOrder("asc")} style={{ marginLeft: "5px" }}>⬆️</button>
-                  <button onClick={() => setSortOrder("desc")} style={{ marginLeft: "5px" }}>⬇️</button>
-                </div>
+      <label>
+        <span style={{ color: '#134075' }}>Status:</span>
+        <select value={status} onChange={e => setStatus(e.target.value)}>
+          <option value="">..</option>
+          <option value="pending">Pending</option>
+          <option value="assigned to self">Assigned to Self</option>
+          <option value="closed">Closed</option>
+        </select>
+      </label>
 
-                <label>
-                  From:
-                  <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} />
-                </label>
+      <label>
+        <span style={{ color: '#134075' }}>Category:</span>
+        <select value={category} onChange={e => setCategory(e.target.value)}>
+          <option value="">..</option>
+          <option value="financial">Financial</option>
+          <option value="medical">Medical</option>
+          <option value="course management">Course Management</option>
+          <option value="grade">Grade</option>
+          <option value="other">Other</option>
+          <option value="army service">Army Service</option>
+        </select>
+      </label>
 
-                <label>
-                  To:
-                  <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} />
-                </label>
-              </div>
+      <label>
+        <span style={{ color: '#134075' }}>Sort by:</span>
+        <select value={sortBy} onChange={e => setSortBy(e.target.value)}>
+          <option value="">..</option>
+          <option value="importance">Importance</option>
+          <option value="date">Date Sent</option>
+        </select>
+      </label>
 
-              <div style={{ maxHeight: "300px", overflowY: "auto", border: "1px solid #ccc", padding: "10px" }}>
-                <ul>
-                  {applyAskFilters().map(ask => (
-                    <li
-                      key={ask._id}
-                      onClick={() => setSelectedAsk(ask)}
-                      style={{ cursor: "pointer", marginBottom: "10px" }}
-                    >
-                      {new Date(ask.date_sent).toLocaleDateString()} - <strong>{ask.title}</strong><br />
-                      Status: {ask.status} | Category: {ask.category}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          )}
+      <div>
+        <span style={{ color: '#134075' }}>Order:</span>
+        <button onClick={() => setSortOrder("asc")} style={{ marginLeft: "5px" }}>⬆️</button>
+        <button onClick={() => setSortOrder("desc")} style={{ marginLeft: "5px" }}>⬇️</button>
+      </div>
+
+      <label>
+        <span style={{ color: '#134075' }}>From:</span>
+        <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} />
+      </label>
+
+      <label>
+        <span style={{ color: '#134075' }}>To:</span>
+        <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} />
+      </label>
+    </div>
+
+    <div style={{
+  maxHeight: "350px",
+  overflowY: "auto",
+  display: "flex",
+  flexDirection: "column",
+  gap: "16px",
+  paddingRight: "5px"
+}}>
+  {applyAskFilters().map((ask) => (
+    <div
+      key={ask._id}
+      onClick={() => setSelectedAsk(ask)}
+      style={{
+        cursor: "pointer",
+        borderRadius: "10px",
+        padding: "20px 30px",
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        backgroundColor: "#f9f9f9",
+        boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+        borderLeft: ask.importance === "high" ? "5px solid #d9534f" :
+                    ask.importance === "medium" ? "5px solid #f0ad4e" :
+                    "5px solid #5bc0de"
+      }}
+    >
+      <div style={{ flex: 2, display: "flex", flexDirection: "column", gap: "6px" }}>
+        <div style={{ fontSize: "14px", color: "#666" }}>
+          📅 {new Date(ask.date_sent).toLocaleDateString()}
+        </div>
+        <div style={{ fontSize: "16px", fontWeight: "bold", color: "#134075" }}>
+          📝 {ask.title}
+        </div>
+        <div style={{ fontSize: "14px", color: "#333" }}>
+          👤 Student ID: {ask.id_sending}
+        </div>
+      </div>
+
+      <div style={{
+        flex: 0,
+        backgroundColor:
+          ask.status?.toLowerCase().includes("pending") ? "#777" :
+          ask.status?.toLowerCase().includes("closed") ? "#28a745" :
+          ask.status?.toLowerCase().includes("assigned") || ask.status?.includes("בטיפול") ? "#f0ad4e" :
+          "#aaa",
+        color: "#fff",
+        borderRadius: "12px",
+        padding: "6px 16px",
+        fontSize: "13px",
+        fontWeight: "bold",
+        whiteSpace: "nowrap"
+      }}>
+        {ask.status}
+      </div>
+    </div>
+  ))}
+</div>
+
+       
+  </div>
+)}
+
 
           <RequestModal
             ask={selectedAsk}
@@ -397,9 +516,6 @@ const clearAll = () => {
     )}
   </div>
 )}
-
-
-
     </div>
   );
 }
