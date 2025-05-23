@@ -4,8 +4,7 @@ from .adminviews import is_admin,get_all_requests,reassign_ask,update_ask_status
 from .views import  ReactView,Student_personal_requests,RequestStatusView,SignUpView,LoginView,GetUserNameView, GetStudentCourseInfoView,Searchview,graphs
 from django.conf.urls.static import static
 from django.conf import settings 
-from .views import StudentStatsView
-from django.conf import settings
+from .views import StudentStatsView , edit_request_text
 from .adminviews import update_grade,students_in_course,professor_courses
 
 urlpatterns = [
@@ -25,6 +24,7 @@ urlpatterns = [
     path("asks/<str:ask_id>/add_note/", add_note_to_ask),
     path("studentlookup/<int:student_id>/", get_full_student_summary),
     path('api/stats/<int:student_id>', StudentStatsView.as_view(), name='student-stats'),
+    path("asks/<int:ask_id>/edit_text/", views.edit_request_text, name="edit_request_text"),
 
     
     path('api/search/', Searchview.as_view(), name="search"),
