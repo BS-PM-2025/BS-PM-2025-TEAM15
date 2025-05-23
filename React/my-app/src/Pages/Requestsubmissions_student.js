@@ -228,7 +228,19 @@ function Requestsubmissions_student() {
                 options={courseOptions}
                 onChange={(selected) => setRelatedCourse(selected)}
                 styles={{
-                  option: (base) => ({ ...base, color: 'black' }),
+                  control: (base) => ({
+                      ...base,
+                      border: "none",
+                      backgroundColor: "rgba(74, 144, 226, 0.10)",
+                      height: "45px", 
+                      fontSize: "14px",
+                      fontFamily: "Roboto",
+                  }),
+                  option: (base, state) => ({
+                      ...base,
+                      color: 'black',
+                      backgroundColor: state.isFocused ? 'rgba(74, 144, 226, 0.10)' : 'white',
+                  }),
                   singleValue: (base) => ({ ...base, color: 'black' }),
                 }}
               />
@@ -276,12 +288,11 @@ function Requestsubmissions_student() {
           <br />
           {/* העלאת קובץ */}
           <label style={{ fontWeight: "bold", color: "#2b8678" }}></label> 
-          <div style={{ marginTop: "10px", marginBottom: "20px" }}>
+          <div style={{ marginTop: "10px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "15px" }}>
             <label
               htmlFor="fileUpload"
               style={{
                 display: "flex",
-                justifyContent: "space-between",
                 alignItems: "center", 
                 padding: "10px 15px",
                 backgroundColor: "transparent",
@@ -293,6 +304,7 @@ function Requestsubmissions_student() {
                 cursor: "pointer",
                 fontWeight: "bold",
                 fontFamily: "Roboto",
+                justifyContent: "space-between"
               }}
             >
               Upload File 
@@ -323,7 +335,7 @@ function Requestsubmissions_student() {
             type="submit"
             value="Submit Request"
             style={{
-              padding: "12px 25px",
+              padding: "12px 10px",
               backgroundColor: "#4b596b",
               color: "white",
               border: "none",
