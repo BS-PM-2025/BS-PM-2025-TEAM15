@@ -458,3 +458,28 @@ class GetStudentCourseInfoView(APIView):
         except Exception as e:
             print("ERROR:", str(e))
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+from .models import StudentRequest
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def edit_request_text(request, ask_id):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            new_text = data.get("new_text", "").strip()
+
+            if not new_text:
+                return JsonResponse({"error": "Text cannot be empty."}, status=400)
+
+            req = StudentRequest.objects.get(id_sending=ask_id)
+            req.text = new_text
+            req.save()
+
+            return JsonResponse({"message": "Text updated successfully."}, status=200)
+        except StudentRequest.DoesNotExist:
+            return JsonResponse({"error": "Request not found."}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid method"}, status=405)

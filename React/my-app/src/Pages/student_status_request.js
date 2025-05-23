@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import RequestModal from '../Components/request_view'; // ודא שהנתיב נכון
 
 const StudentStatusRequest = () => {
   const user_id = localStorage.getItem('user_id');
   const [requests, setRequests] = useState([]);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+
 
   useEffect(() => {
     axios
@@ -47,7 +50,7 @@ const StudentStatusRequest = () => {
             <p><strong>Response:</strong> {req.response_text || 'No response provided'}</p>
           </>
         )}
-        <button className="view-btn">View</button>
+        <button className="view-btn" onClick={() => setSelectedRequest(req)}>View</button>
       </div>
     </div>
   );
@@ -68,7 +71,18 @@ const StudentStatusRequest = () => {
       <div className="request-list">
         {doneRequests.length ? doneRequests.map(renderCard) : <p>No completed requests found.</p>}
       </div>
-
+        {/* ✅ כאן נוסף ה-Modal */}
+      {selectedRequest && (
+        <RequestModal
+          ask={selectedRequest}
+          onClose={() => setSelectedRequest(null)}
+          refreshAsks={() => {
+            axios
+                .get(`http://127.0.0.1:8000/api/request_status/?user_id=${user_id}`)
+                .then((res) => setRequests(res.data));
+          }}
+        />
+      )}
       {/* Embedded CSS */}
       <style>{`
         .status-page {
