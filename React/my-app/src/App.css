@@ -297,6 +297,9 @@ html, body, #root {
   width: 100%;
   margin: 0;
   padding: 0;
+  overflow-y: auto;     /* גלילה אחת רגילה לדפדפן */
+  overflow-x: hidden;
+
 }
 body {
   
@@ -694,7 +697,7 @@ main p{
   justify-content: center;     /* aligns horizontally */
   align-items: flex-start;     /* aligns to top */
   padding: 40px;
-  overflow: auto;
+  overflow: visible;
   background-color: #f8f9fa;   /* או rgba(255,255,255,0.877) אם אתה מעדיף שקיפות */
   width: 1280px;
   height: 100%;
