@@ -340,7 +340,7 @@ function Requestsubmissions_student() {
               color: "white",
               border: "none",
               marginLeft: "300px",
-              marginTop:"25px",
+              marginTop:"10px",
               width: "300px",
               borderRadius: "5px",
               cursor: "pointer",
