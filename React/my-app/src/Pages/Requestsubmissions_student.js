@@ -292,6 +292,7 @@ function Requestsubmissions_student() {
                 border: "2px solid #4b596b",
                 cursor: "pointer",
                 fontWeight: "bold",
+                fontFamily: "Roboto",
               }}
             >
               Upload File 
@@ -301,6 +302,7 @@ function Requestsubmissions_student() {
             <path d="M2 13C2 12.4477 1.55228 12 1 12C0.447715 12 0 12.4477 0 13V17C0 17.7957 0.316071 18.5587 0.87868 19.1213C1.44129 19.6839 2.20435 20 3 20H17C17.7957 20 18.5587 19.6839 19.1213 19.1213C19.6839 18.5587 20 17.7957 20 17V13C20 12.4477 19.5523 12 19 12C18.4477 12 18 12.4477 18 13V17C18 17.2652 17.8946 17.5196 17.7071 17.7071C17.5196 17.8946 17.2652 18 17 18H3C2.73478 18 2.48043 17.8946 2.29289 17.7071C2.10536 17.5196 2 17.2652 2 17V13Z" fill="#2D3648"/>
             </svg>
             </label>
+            <label style={{fontFamily: "Roboto", color: "#4b596b"}}>**Only supports .pdf files.</label>
 
             <input
               id="fileUpload"
