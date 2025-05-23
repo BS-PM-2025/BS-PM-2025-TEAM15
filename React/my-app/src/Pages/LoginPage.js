@@ -68,6 +68,7 @@ function LoginPage() {
 
           .switch {
               transform: translateY(-200px);
+              
               position: relative;
               display: flex;
               flex-direction: column;

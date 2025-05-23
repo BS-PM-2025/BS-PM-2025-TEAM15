@@ -6,20 +6,27 @@ function RequestModal({ ask, onClose, admin_id, currentUserName, refreshAsks }) 
   const [newStatus, setNewStatus] = useState("..");
   const [selectedAdminId, setSelectedAdminId] = useState("");
   const [admins, setAdmins] = useState([]);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     fetch("http://localhost:8000/admins/")
       .then(res => res.json())
       .then(data => setAdmins(data));
+
+    // trigger open animation
+    setTimeout(() => setVisible(true), 10);
   }, []);
+
+  const closeWithAnimation = () => {
+    setVisible(false);
+    setTimeout(onClose, 200); // match transition duration
+  };
 
   const handleStatusChange = async () => {
     if (!ask || newStatus === "..") return;
-
     const update = {
       status: newStatus === "assigned to me" ? `בטיפול ${currentUserName}` : newStatus,
     };
-
     if (newStatus === "assigned to me") {
       update.id_receiving = parseInt(admin_id);
     }
@@ -30,7 +37,7 @@ function RequestModal({ ask, onClose, admin_id, currentUserName, refreshAsks }) 
       body: JSON.stringify(update),
     });
 
-    await refreshAsks(); // keep modal open
+    await refreshAsks();
   };
 
   const handleReassign = async () => {
@@ -42,8 +49,8 @@ function RequestModal({ ask, onClose, admin_id, currentUserName, refreshAsks }) 
       body: JSON.stringify({ new_admin_id: parseInt(selectedAdminId) }),
     });
 
-    await refreshAsks(); // reflect changes
-    setSelectedAdminId(""); // optional: clear selection
+    await refreshAsks();
+    setSelectedAdminId("");
   };
 
   const handleAddNote = async () => {
@@ -56,7 +63,7 @@ function RequestModal({ ask, onClose, admin_id, currentUserName, refreshAsks }) 
 
     alert("Note added");
     setNoteText("");
-    await refreshAsks(); // update ask text
+    await refreshAsks();
   };
 
   const handleSendEmail = () => {
@@ -71,43 +78,80 @@ function RequestModal({ ask, onClose, admin_id, currentUserName, refreshAsks }) 
       <div
         style={{
           position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: "rgba(0,0,0,0.5)", zIndex: 999
+          backgroundColor: "rgba(0,0,0,0.5)",
+          zIndex: 999,
+          opacity: visible ? 1 : 0,
+          transition: "opacity 0.2s ease"
         }}
+        onClick={closeWithAnimation}
       />
       <div
         style={{
-          position: "fixed", top: "50%", left: "50%",
-          transform: "translate(-50%, -50%)",
-          background: "white", padding: "25px", borderRadius: "10px",
-          zIndex: 1000, width: "90%", maxWidth: "600px", color: "#222"
+          position: "fixed",
+          top: "50%", left: "50%",
+          transform: visible ? "translate(-50%, -50%) scale(1)" : "translate(-50%, -50%) scale(0.9)",
+          transition: "transform 0.2s ease, opacity 0.2s ease",
+          background: "#fff",
+          borderRadius: "16px",
+          padding: "25px",
+          width: "90%", maxWidth: "520px",
+          maxHeight: "90vh",
+          overflowY: "auto",
+          zIndex: 1000,
+          boxShadow: "0 8px 20px rgba(0,0,0,0.12)",
+          fontFamily: "sans-serif",
+          color: "#1a1a1a",
+          opacity: visible ? 1 : 0
         }}
       >
-        <h3>{ask.title}</h3>
-        <p><strong>Text:</strong></p>
-        <div style={{ whiteSpace: "pre-wrap", marginBottom: "10px" }}>
-          {ask.text}
+        <h2 style={{ color: "#134075", marginBottom: "10px" }}>{ask.title}</h2>
+        <div style={{ marginBottom: "15px" }}>
+          <strong>Text:</strong>
+          <p style={{
+            background: "#f5f7fa",
+            padding: "12px",
+            borderRadius: "10px",
+            whiteSpace: "pre-wrap",
+            marginTop: "5px"
+          }}>{ask.text}</p>
         </div>
 
         <p><strong>Importance:</strong> {ask.importance}</p>
         <p><strong>Date Sent:</strong> {new Date(ask.date_sent).toLocaleDateString()}</p>
         <p><strong>Status:</strong> {ask.status}</p>
 
-        <div style={{ marginTop: "15px" }}>
+        <hr style={{ margin: "20px 0" }} />
+
+        {/* Change Status */}
+        <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "15px" }}>
           <label><strong>Change Status:</strong></label>
-          <select value={newStatus} onChange={e => setNewStatus(e.target.value)} style={{ marginLeft: "10px" }}>
+          <select
+            value={newStatus}
+            onChange={e => setNewStatus(e.target.value)}
+            style={{
+              ...selectStyle,
+              backgroundColor: newStatus === ".." ? "#e8f0fe" : "white"
+            }}
+          >
             <option value="..">..</option>
             <option value="pending">Pending</option>
             <option value="assigned to me">בטיפול {currentUserName}</option>
             <option value="closed">Closed</option>
           </select>
-          <button onClick={handleStatusChange} style={{ marginLeft: "10px" }}>
-            Change
-          </button>
+          <button onClick={handleStatusChange} style={buttonStyle}>Change</button>
         </div>
 
-        <div style={{ marginTop: "15px" }}>
+        {/* Reassign */}
+        <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "15px" }}>
           <label><strong>Reassign Ask:</strong></label>
-          <select value={selectedAdminId} onChange={e => setSelectedAdminId(e.target.value)} style={{ marginLeft: "10px" }}>
+          <select
+            value={selectedAdminId}
+            onChange={e => setSelectedAdminId(e.target.value)}
+            style={{
+              ...selectStyle,
+              backgroundColor: selectedAdminId === "" ? "#e8f0fe" : "white"
+            }}
+          >
             <option value="">..</option>
             {admins.map(admin => (
               <option key={admin.user_id} value={admin.user_id}>
@@ -115,37 +159,68 @@ function RequestModal({ ask, onClose, admin_id, currentUserName, refreshAsks }) 
               </option>
             ))}
           </select>
-          <button onClick={handleReassign} style={{ marginLeft: "10px" }}>Reassign</button>
+          <button onClick={handleReassign} style={buttonStyle}>Reassign</button>
         </div>
 
-        <div style={{ marginTop: "15px" }}>
+        {/* Note */}
+        <div style={{ marginBottom: "15px" }}>
           <label><strong>Add Note:</strong></label><br />
           <input
             type="text"
             value={noteText}
             onChange={e => setNoteText(e.target.value)}
-            style={{ width: "80%", marginRight: "10px" }}
+            placeholder="Type a note..."
+            style={{
+              width: "100%", padding: "10px",
+              borderRadius: "10px", border: "1px solid #ccc",
+              backgroundColor: noteText.trim() === "" ? "#e8f0fe" : "white"
+            }}
           />
-          <button onClick={handleAddNote}>Add Note</button>
+          <button onClick={handleAddNote} style={{ ...buttonStyle, marginTop: "5px" }}>Add Note</button>
         </div>
 
-        <div style={{ marginTop: "15px" }}>
+        {/* Email */}
+        <div style={{ marginBottom: "15px" }}>
           <label><strong>Email Response:</strong></label><br />
           <textarea
-            rows={3}
+            rows={4}
             value={emailBack}
             onChange={e => setEmailBack(e.target.value)}
-            style={{ width: "100%", marginTop: "5px" }}
+            placeholder="Type your email response here..."
+            style={{
+              width: "100%", padding: "10px",
+              borderRadius: "10px", border: "1px solid #ccc",
+              marginTop: "5px",
+              backgroundColor: emailBack.trim() === "" ? "#e8f0fe" : "white"
+            }}
           />
-          <button onClick={handleSendEmail} style={{ marginTop: "5px" }}>Send Email</button>
+          <button onClick={handleSendEmail} style={{ ...buttonStyle, marginTop: "5px" }}>Send Email</button>
         </div>
 
-        <div style={{ textAlign: "right", marginTop: "20px" }}>
-          <button onClick={onClose}>Close</button>
+        {/* Close */}
+        <div style={{ textAlign: "right" }}>
+          <button onClick={closeWithAnimation} style={{ ...buttonStyle, backgroundColor: "#e0e0e0", color: "#333" }}>
+            Close
+          </button>
         </div>
       </div>
     </>
   );
 }
+
+const buttonStyle = {
+  padding: "8px 14px",
+  backgroundColor: "#134075",
+  color: "white",
+  border: "none",
+  borderRadius: "8px",
+  cursor: "pointer"
+};
+
+const selectStyle = {
+  padding: "8px",
+  borderRadius: "8px",
+  border: "1px solid #ccc"
+};
 
 export default RequestModal;
