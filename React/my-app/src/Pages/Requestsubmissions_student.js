@@ -156,21 +156,25 @@ function Requestsubmissions_student() {
       
     >
       <div
-        className="form-container"
-        style={{
-          backgroundColor: "#0c1c33",
-          marginLeft: "300px",
-          marginTop : "50px",
-          padding: "30px",
-          borderRadius: "10px",
-         // maxWidth: "600px",
-          width: "1000ppx",
-          height: "820px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-          boxSizing: "border-box",
-          overflow: "hidden",
-        }}
-      >
+        
+  className="form-container"
+  style={{
+    backgroundColor: "#0c1c33",
+    height: "100%",
+    width: "100%",
+    maxWidth: "1000px",
+    margin: "0 auto",
+    padding: "30px",
+    borderRadius: "10px",
+    boxSizing: "border-box",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between", // if needed
+  }}
+>
+
+      
         <form onSubmit={handleSubmit}>
           <h2 style={{ marginBottom: "20px", color: "#6c63ff" }}>Submit a Request</h2>
 
