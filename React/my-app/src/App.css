@@ -125,6 +125,22 @@
   color: rgb(113, 255, 24);
 }
 
+.layout {
+  background-color: rgba(255, 0, 0, 0.2); /* Red */
+}
+
+.app-wrapper {
+  background-color: rgba(0, 255, 0, 0.2); /* Green */
+}
+
+.content-wrapper {
+  background-color: rgba(0, 0, 255, 0.2); /* Blue */
+}
+
+.sidebar {
+  background-color: rgba(255, 255, 0, 0.2); /* Yellow */
+}
+
 
 
 .App-link {
@@ -276,19 +292,19 @@
   font-family: 'Poppins', sans-serif;
 }
 
-html, body, #root {
-  height: 100%;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;  
+body, html {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
 }
+
 body {
   
   margin: 0;
   padding-top: 60px; /* גובה הסרגל העליון */
   min-height: 100vh;
-  
   display: flex;
   flex-direction: column;
   font-family: 'Poppins', sans-serif;
