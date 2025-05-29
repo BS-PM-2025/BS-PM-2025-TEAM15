@@ -296,6 +296,18 @@ def append_note_to_ask(idr, note_text):
         {"$set": {"text": new_text}}
     )
     return result.modified_count > 0
+def append_text(idr, note_text):
+    ask = requests.find_one({"idr": int(idr)})
+    if not ask:
+        return False
+
+    new_text = note_text
+
+    result = requests.update_one(
+        {"idr": int(idr)},
+        {"$set": {"text": new_text}}
+    )
+    return result.modified_count > 0
 
 #departements
 

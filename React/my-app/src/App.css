@@ -125,22 +125,6 @@
   color: rgb(113, 255, 24);
 }
 
-.layout {
-  background-color: rgba(255, 0, 0, 0.2); /* Red */
-}
-
-.app-wrapper {
-  background-color: rgba(0, 255, 0, 0.2); /* Green */
-}
-
-.content-wrapper {
-  background-color: rgba(0, 0, 255, 0.2); /* Blue */
-}
-
-.sidebar {
-  background-color: rgba(255, 255, 0, 0.2); /* Yellow */
-}
-
 
 
 .App-link {
@@ -297,12 +281,14 @@ html, body, #root {
   width: 100%;
   margin: 0;
   padding: 0;
+  overflow: hidden;  
 }
 body {
   
   margin: 0;
   padding-top: 60px; /* גובה הסרגל העליון */
   min-height: 100vh;
+  
   display: flex;
   flex-direction: column;
   font-family: 'Poppins', sans-serif;
@@ -312,7 +298,6 @@ body {
 
 .container{
   width: 100%;
-  max-width: none;
   background: #fff;
   padding: 25px 40px 10px 40px;
   margin: 0;
@@ -630,8 +615,8 @@ main p{
   padding: 40px;
   overflow: auto;
   background-color: #f8f9fa;   /* או rgba(255,255,255,0.877) אם אתה מעדיף שקיפות */
-  width: 1280px;
-  height: 100%;
+  width: 100%;
+  min-height: 100vh;
   box-sizing: border-box;
   
 }

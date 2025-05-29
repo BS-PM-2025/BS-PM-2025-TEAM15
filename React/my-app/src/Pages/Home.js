@@ -151,7 +151,7 @@ function Home_test() {
 const styles = {
   heroContainer: {
   width: '100%',
-  height: '500px',
+  height: '200px',
 backgroundImage: `
   radial-gradient(ellipse at center, transparent 60%, rgb(192, 192, 192) 100%),
   url(${toplayer})`,
@@ -243,19 +243,20 @@ buttonContainer: {
 
 
 
- container: {
-  minHeight: '100vh',
+container: {
+  width: '100%',                      // ✅ fix typo
+                 // ✅ fix case
   padding: '40px',
   background: 'linear-gradient(to right, rgba(223, 226, 238, 0.19), rgb(255, 255, 255))',
-color: '#134075',
+  color: '#134075',
   fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
   justifyContent: 'flex-start',
   position: 'relative',
-  overflowY: 'auto' // ✅ ADD THIS
 },
+
 
   heroOverlay: {
     position: 'absolute',

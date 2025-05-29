@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import RequestModal from '../Components/request_view'; // ודא שהנתיב נכון
+import Request_view from "../Components/Request_view"; // ודא שהנתיב נכון
 
-const StudentStatusRequest = () => {
+const Student_status_request = () => {
   const user_id = localStorage.getItem('user_id');
   const [requests, setRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -38,7 +38,7 @@ const StudentStatusRequest = () => {
       style={{ backgroundColor: getStatusColor(req.status) }}
     >
       <div className="card-header">
-        <strong>Request ID: {req.id_sending}</strong>
+        <strong>Request ID: {req.idr}</strong>
         <span>{new Date(req.done_date || req.created_at).toLocaleDateString()}</span>
       </div>
       <div className="card-body">
@@ -56,33 +56,39 @@ const StudentStatusRequest = () => {
   );
 
   return (
-    <div className="status-page">
-      <h1 className="page-title">My Requests Status</h1>
-      <p className="subtitle">
-        Here you can track the status of your submitted requests. Click "View" to see full details.
-      </p>
+  <div className="status-page">
+    <h1 className="page-title">My Requests Status</h1>
+    <p className="subtitle">
+      Here you can track the status of your submitted requests. Click "View" to see full details.
+    </p>
 
-      <h2 className="section-title">Pending / In Progress Requests</h2>
-      <div className="request-list">
-        {otherRequests.length ? otherRequests.map(renderCard) : <p>No pending requests found.</p>}
-      </div>
+    <h2 className="section-title">Pending / In Progress Requests</h2>
+    <div className="request-list">
+      {otherRequests.length ? otherRequests.map(renderCard) : <p>No pending requests found.</p>}
+    </div>
 
-      <h2 className="section-title">Completed Requests</h2>
-      <div className="request-list">
-        {doneRequests.length ? doneRequests.map(renderCard) : <p>No completed requests found.</p>}
-      </div>
-        {/* ✅ כאן נוסף ה-Modal */}
-      {selectedRequest && (
-        <RequestModal
-          ask={selectedRequest}
-          onClose={() => setSelectedRequest(null)}
-          refreshAsks={() => {
-            axios
-                .get(`http://127.0.0.1:8000/api/request_status/?user_id=${user_id}`)
-                .then((res) => setRequests(res.data));
-          }}
-        />
-      )}
+    <h2 className="section-title">Completed Requests</h2>
+    <div className="request-list">
+      {doneRequests.length ? doneRequests.map(renderCard) : <p>No completed requests found.</p>}
+    </div>
+
+    {/* ✅ Modal for viewing/editing a request */}
+    {selectedRequest && (
+      <Request_view
+        ask={selectedRequest}
+        onClose={() => setSelectedRequest(null)}
+        refreshAsks={async () => {
+          try {
+            const res = await axios.get(
+              `http://127.0.0.1:8000/api/request_status/?user_id=${user_id}`
+            );
+            setRequests(res.data);
+          } catch (err) {
+            console.error("🔴 Failed to refresh requests:", err);
+          }
+        }}
+      />
+    )}
       {/* Embedded CSS */}
       <style>{`
         .status-page {
@@ -138,6 +144,13 @@ const StudentStatusRequest = () => {
         .card-body p {
           margin: 5px 0;
         }
+         
+        .scrollable-list {
+         max-height: 400px; /* or any value that fits your layout */
+         overflow-y: auto;
+         padding-right: 8px; /* for scrollbar spacing */
+        }
+
 
         .view-btn {
           margin-top: 10px;
@@ -157,4 +170,4 @@ const StudentStatusRequest = () => {
   );
 };
 
-export default StudentStatusRequest;
+export default Student_status_request;
