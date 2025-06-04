@@ -36,6 +36,11 @@ def is_admin(user_id):
         or db.professors.find_one({"user_id": uid}) is not None
     )
 
+def is_prof(user_id):
+    uid = to_int(user_id)
+    return db.professors.find_one({"user_id": uid}) is not None
+      
+
 
 # === User Info ===
 def get_user_info(user_id):
@@ -233,9 +238,6 @@ def get_pending_asks_for_admin(admin_id):
 def department_asks(dept_name):
     return [ask["_id"] for ask in requests.find({"department": dept_name})]
 
-def change_ask_status(ask_id, new_status):
-    result = requests.update_one({"_id": ask_id}, {"$set": {"status": new_status}})
-    return result.modified_count > 0
 
 def add_ask(id_sending, id_receiving, importance, text, title, documents, department,category):
     last_doc = db.requests.find_one({}, {'idr': 1}, sort=[('idr', -1)])
@@ -278,13 +280,26 @@ def reassign_ask_by_idr(idr, new_admin_id):
     ).modified_count > 0
 
 def update_ask_status_by_idr(idr, new_status, new_admin_id=None):
-    update_fields = {"status": new_status}
+    ask = requests.find_one({"idr": to_int(idr)})
+    if not ask:
+        return False
+
+    # Prepare updated fields
+    update_fields = {
+        "status": new_status,
+        "text": ask.get("text", "") + "\n-statuschanged: " + new_status
+    }
+
     if new_admin_id is not None:
         update_fields["id_receiving"] = to_int(new_admin_id)
-    return requests.update_one(
+
+    # Perform update
+    result = requests.update_one(
         {"idr": to_int(idr)},
         {"$set": update_fields}
-    ).modified_count > 0
+    )
+    return result.modified_count > 0
+
 
 def append_note_to_ask(idr, note_text):
     ask = requests.find_one({"idr": to_int(idr)})
@@ -293,6 +308,19 @@ def append_note_to_ask(idr, note_text):
     new_text = ask.get("text", "") + f"\n{note_text}"
     result = requests.update_one(
         {"idr": to_int(idr)},
+        {"$set": {"text": new_text}}
+    )
+    return result.modified_count > 0
+
+def append_text(idr, note_text):
+    ask = requests.find_one({"idr": int(idr)})
+    if not ask:
+        return False
+
+    new_text = note_text
+
+    result = requests.update_one(
+        {"idr": int(idr)},
         {"$set": {"text": new_text}}
     )
     return result.modified_count > 0
