@@ -169,6 +169,7 @@ backgroundImage: `
   marginBottom: '60px',     // space below hero
   position: 'relative',     // ❗ DO NOT use fixed or sticky here
   zIndex: 0,
+   
 
 },
 
@@ -178,7 +179,7 @@ askLayer: {
   gap: '10px',
   width: '40%',
   height: '100px',          // ✅ fixed height
-  overflowY: 'auto',        // ✅ enable vertical scroll
+  overflowY: 'visible',        // ✅ enable vertical scroll
   paddingRight: '5px' ,      // optional: prevents scrollbar overlap
 
 },
@@ -260,6 +261,7 @@ container: {
   alignItems: 'flex-start',
   justifyContent: 'flex-start',
   position: 'relative',
+
 },
 
 
