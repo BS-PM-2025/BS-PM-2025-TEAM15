@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import toplayer from './pics/toplayer.png';
 import RequestModal from '../Components/RequestModal';
+import Request_view from "../Components/Request_view";
 
 function Home_test() {
   const [userName, setUserName] = useState('');
@@ -95,18 +96,13 @@ function Home_test() {
         <h3 style={styles.sectionTitle}>📝 Latest Requests</h3>
         <div style={styles.askLayer}>
           {latestAsks.map((ask) =>
-            isAdmin ? (
+            
               <div key={ask._id} style={{ ...styles.askCard, cursor: 'pointer' }} onClick={() => setSelectedAsk(ask)}>
                 <div style={styles.askTitle}>{ask.title}</div>
                 <div style={styles.askStatus}>Status: {ask.status}</div>
               </div>
-            ) : (
-              <div key={ask._id} style={styles.askCard}>
-                {/* // to be filled */}
-                <div style={styles.askTitle}>{ask.title}</div>
-                <div style={styles.askStatus}>Status: {ask.status}</div>
-              </div>
-            )
+           
+            
           )}
         </div>
         <div style={styles.buttonContainer}>
@@ -122,17 +118,9 @@ function Home_test() {
         </div>
       </div>
 
-      <button
-        style={styles.logoutButton}
-        onClick={() => {
-          localStorage.removeItem('user_id');
-          window.location.href = "/";
-        }}
-      >
-        Logout
-      </button>
+    
 
-      {isAdmin && (
+      {isAdmin && selectedAsk&&(
         <RequestModal
           ask={selectedAsk}
           onClose={() => setSelectedAsk(null)}
@@ -142,10 +130,27 @@ function Home_test() {
           refreshAsks={() => {}}
         />
       )}
-    </div>
+    
+
+    {!isAdmin && selectedAsk && (
+  <Request_view
+    ask={selectedAsk}
+    onClose={() => setSelectedAsk(null)}
+    refreshAsks={async () => {
+      try {
+        const res = await axios.get(
+          `http://127.0.0.1:8000/api/request_status/?user_id=${userId}`
+        );
+        setLatestAsks(res.data.slice(0, 4));
+      } catch (err) {
+        console.error("🔴 Failed to refresh requests:", err);
+      }
+    }}
+  />
+)}
+</div>
   );
 }
-
 
 
 const styles = {
@@ -360,20 +365,7 @@ container: {
   pointerEvents: 'none' // makes sure it doesn't block clicks
 },
 
-  /*logoutButton: {
-    marginTop: '20px',
-    backgroundColor: '#ff4d4f',
-    color: 'white',
-    padding: '12px 30px',
-    border: 'none',
-    borderRadius: '30px',
-    fontSize: '1rem',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    transition: 'background-color 0.3s ease',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
-  }
-  */
+  
 };
 
 export default Home_test;

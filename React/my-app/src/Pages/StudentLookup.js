@@ -125,6 +125,13 @@ function StudentLookup() {
 
   };
 
+  const fetchAskDetails = async (idr) => {
+  const res = await fetch(`http://localhost:8000/asks/${idr}/`);
+  const data = await res.json();
+  setSelectedAsk(data); // 👈 re-set modal data with fresh info
+};
+
+
   const enrollInCourse = (courseId) => {
   const payload = {
     user_id: parseInt(studentId),
@@ -274,7 +281,8 @@ const clearAll = () => {
           borderRadius: "20px",
           cursor: "pointer",
           fontWeight: 600,
-          transition: "all 0.3s"
+          transition: "all 0.3s",
+        
         }}
       >
         {{
@@ -334,7 +342,9 @@ const clearAll = () => {
       backgroundColor: "#f5f7fb",
       padding: "30px",
       borderRadius: "15px",
-      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)"
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+      maxHeight: "400px",         // NEW
+      overflowY: "auto" 
     }}>
       <Typography variant="h5" color="#134075" gutterBottom>
         📚 Enrolled Courses
@@ -482,19 +492,29 @@ const clearAll = () => {
 )}
 
 
-          <RequestModal
-            ask={selectedAsk}
-            onClose={() => setSelectedAsk(null)}
-            admin_id={admin_id}
-            currentUserName={currentUserName}
-            admins={admins}
-            refreshAsks={refreshStudent}
-          />
+          {selectedAsk && (
+  <RequestModal
+    ask={selectedAsk}
+    onClose={() => setSelectedAsk(null)}
+    admin_id={admin_id}
+    currentUserName={currentUserName}
+    admins={admins}
+    refreshAsks={() => fetchAskDetails(selectedAsk.idr)} // 👈 wrap it here
+  />
+)}
+
         </div>
       )}
-      {activeTab === "enroll" && (
-  <div>
-    <h3>Available Courses for Enrollment</h3>
+     {activeTab === "enroll" && (
+  <div style={{
+    backgroundColor: "#f5f7fb",
+    padding: "30px",
+    borderRadius: "15px",
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+    maxHeight: "400px",        // ✅ enable vertical scroll
+    overflowY: "auto"
+  }}>
+    <h3 style={{ color: "#134075" }}>📥 Available Courses for Enrollment</h3>
     {availableCourses.length === 0 ? (
       <p>No available courses or all already enrolled.</p>
     ) : (
@@ -516,6 +536,7 @@ const clearAll = () => {
     )}
   </div>
 )}
+
     </div>
   );
 }

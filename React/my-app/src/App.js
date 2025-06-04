@@ -19,20 +19,6 @@ import Student_Dashboard from "./Pages/Student_Dashboard";
 function App() {
   
   return (
-  //   <Router>
-  //     <div className="app-layout">
-  //       <Sidebar /> 
-  //       <div className="main-content">
-  //         <Navbar />
-  //         <Routes>
-  //           <Route path="/Home" element={<Home />} />
-  //           <Route path="/Wel" element={<Wel />} />
-  //           <Route path="/Requestsubmissions_student" element={<Requestsubmissions_student />} />
-  //         </Routes>
-  //       </div>
-  //     </div>
-  //   </Router>
-  // );
 
 <Router>
   {/* Check this current conflict when merging with the main */}

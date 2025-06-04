@@ -23,22 +23,33 @@ function RequestModal({ ask, onClose, admin_id, currentUserName, refreshAsks }) 
   };
 
   const handleStatusChange = async () => {
-    if (!ask || newStatus === "..") return;
-    const update = {
-      status: newStatus === "assigned to me" ? `בטיפול ${currentUserName}` : newStatus,
-    };
-    if (newStatus === "assigned to me") {
-      update.id_receiving = parseInt(admin_id);
-    }
+  if (!ask || newStatus === "..") return;
 
-    await fetch(`http://localhost:8000/asks/${ask.idr}/update_status/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(update),
-    });
+  const updatedStatus = newStatus === "assigned to me"
+    ? `בטיפול ${currentUserName}`
+    : newStatus;
 
+  const update = { status: updatedStatus };
+  if (newStatus === "assigned to me") {
+    update.id_receiving = parseInt(admin_id);
+  }
+
+  // Send update to backend
+  const res = await fetch(`http://localhost:8000/asks/${ask.idr}/update_status/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(update),
+  });
+
+  if (res.ok) {
+    // 🟢 Update UI immediately
     await refreshAsks();
-  };
+   
+  }
+
+  
+};
+
 
   const handleReassign = async () => {
     if (!selectedAdminId) return;
@@ -178,6 +189,24 @@ function RequestModal({ ask, onClose, admin_id, currentUserName, refreshAsks }) 
           />
           <button onClick={handleAddNote} style={{ ...buttonStyle, marginTop: "5px" }}>Add Note</button>
         </div>
+
+{ask.documents && ask.documents.length > 0 ? (
+  <div style={{ marginBottom: "15px" }}>
+    <button
+      onClick={() => {
+        window.open(`http://localhost:8000/asks/${ask.idr}/download_documents/`, '_blank');
+      }}
+      style={{ ...buttonStyle, backgroundColor: "#4CAF50" }}
+    >
+      📁 Download All Files
+    </button>
+  </div>
+) : (
+  <p style={{ fontStyle: "italic", color: "gray", marginBottom: "15px" }}>
+    No documents available to download.
+  </p>
+)}
+
 
         {/* Email */}
         <div style={{ marginBottom: "15px" }}>
