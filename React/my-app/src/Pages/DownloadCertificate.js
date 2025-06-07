@@ -4,36 +4,39 @@ function DownloadCertificate() {
   const [selectedDoc, setSelectedDoc] = useState("study");
 
   const handleDownload = async () => {
+      const userId = localStorage.getItem("user_id");
+      if (!userId) {
+    alert("User not logged in.");
+    return;
+      }
     try {
-      const response = await fetch(`/Student/DownloadCertificatePdf?type=${selectedDoc}`, {
-        method: 'POST',
-      });
+      const response = await fetch(`http://localhost:8000/api/study-certificate/${userId}/`);
 
-      if (!response.ok) throw new Error('Failed to download document');
+    if (!response.ok) throw new Error('Failed to download document');
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
 
-      const fileName =
-        selectedDoc === "study"
-          ? "Study_Certificate.pdf"
-          : selectedDoc === "medical"
-          ? "Medical_Certificate.pdf"
-          : "Document.pdf";
+    const fileName =
+      selectedDoc === "study"
+        ? "Study_Certificate.pdf"
+        : selectedDoc === "medical"
+        ? "Medical_Certificate.pdf"
+        : "Document.pdf";
 
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', fileName);
-      document.body.appendChild(link);
-      link.click();
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', fileName);
+    document.body.appendChild(link);
+    link.click();
 
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred while downloading the document.');
-    }
-  };
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Error:', error);
+    alert('An error occurred while downloading the document.');
+  }
+};
 
   const styles = {
     container: {

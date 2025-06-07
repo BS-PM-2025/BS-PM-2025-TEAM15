@@ -485,3 +485,56 @@ def edit_request_text(request, ask_id):
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid method"}, status=405)
+
+from PyPDF2 import PdfReader, PdfWriter
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from io import BytesIO
+from datetime import datetime
+from django.http import FileResponse
+import os
+from django.conf import settings
+from django.utils.encoding import smart_str
+
+
+def generate_certificate(student_name, student_id):
+    template_path = os.path.join(settings.MEDIA_ROOT, 'documents', 'המכללה האקדמית להנדסה ExampleTech.pdf')
+
+
+    packet = BytesIO()
+    can = canvas.Canvas(packet, pagesize=A4)
+    can.drawString(210, 720, f"תאריך: {datetime.today().strftime('%d/%m/%Y')}")
+    can.drawString(220, 590, f"{student_name}")
+    can.drawString(240, 570, f"ת.ז: {student_id}")
+    can.save()
+
+    packet.seek(0)
+    overlay_pdf = PdfReader(packet)
+    template_pdf = PdfReader(template_path)
+    output_pdf = PdfWriter()
+
+    base_page = template_pdf.pages[0]
+    base_page.merge_page(overlay_pdf.pages[0])
+    output_pdf.add_page(base_page)
+
+    # שמירה לקובץ פיזי בתוך media/documents/
+    output_path = os.path.join(settings.MEDIA_ROOT, 'documents', f'Study_Certificate_{student_id}.pdf')
+    with open(output_path, 'wb') as out_file:
+        output_pdf.write(out_file)
+
+    return output_path  # מחזיר את הנתיב לקובץ שנשמר
+
+class DownloadCertificateView(APIView):
+    def get(self, request, student_id):
+        try:
+            student = db.get_user_name_by_id(student_id)
+            if not student:
+                return Response({'error': 'Student not found'}, status=404)
+
+            file_path = generate_certificate(student_name=student, student_id=student_id)
+            file_handle = open(file_path, 'rb')
+            return FileResponse(file_handle, as_attachment=True, filename=smart_str(os.path.basename(file_path)))
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
+
