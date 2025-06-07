@@ -15,6 +15,8 @@ import Layout from "./Components/layout";
 import LoginPage from "./Pages/LoginPage";
 import Updategrades from "./Pages/updategrades";
 import Student_Dashboard from "./Pages/Student_Dashboard";
+import DownloadCertificate from './components/DownloadCertificate'; // הנתיב בהתאם למיקום שלך
+
 
 function App() {
   
@@ -51,6 +53,8 @@ function App() {
           <Route path="/Student_Dashboard" element={<Student_Dashboard />} />
           <Route path ="/professor-grade-update" element= {<Updategrades/>}/>        
           <Route path ="/Med_student_status" element= {<Med_student_status/>}/>
+          <Route path="/DownloadCertificate" element={<DownloadCertificate />} />
+
           
         </Route>
         </Routes>

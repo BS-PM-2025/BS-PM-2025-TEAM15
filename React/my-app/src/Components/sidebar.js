@@ -154,6 +154,15 @@ export default function Sidebar() {
         <span>Exams</span>
       </Link>
     </li>
+    <li>
+      <Link to="/DownloadCertificate">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+        <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h320q17 0 28.5 11.5T560-800q0 17-11.5 28.5T520-760H200v560h560v-200q0-17 11.5-28.5T800-440q17 0 28.5 11.5T840-400v200q0 33-23.5 56.5T760-120H200Zm226-160-43-43q-11-11-11-28t11-28l214-214q12-12 28-11.5t28 12.5q11 12 11 28t-11 28L467-280h193q17 0 28.5 11.5T700-240q0 17-11.5 28.5T660-200H400q-17 0-28.5-11.5T360-240q0-17 11.5-28.5T400-280h26Z"/>
+        </svg>
+        <span>Documents</span>
+      </Link>
+    </li>
+
   </ul>
 </nav>
     
