@@ -55,7 +55,6 @@ function App() {
           <Route path ="/Med_student_status" element= {<Med_student_status/>}/>
           <Route path="/DownloadCertificate" element={<DownloadCertificate />} />
 
-          
         </Route>
         </Routes>
 </Router>

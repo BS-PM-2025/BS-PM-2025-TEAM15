@@ -2,6 +2,7 @@ import React, { useEffect,useState ,useRef } from "react";
 import styles from "../App.css";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import DownloadCertificate from '../Pages/DownloadCertificate';
 
 
 
