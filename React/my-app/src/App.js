@@ -15,7 +15,7 @@ import Layout from "./Components/layout";
 import LoginPage from "./Pages/LoginPage";
 import Updategrades from "./Pages/updategrades";
 import Student_Dashboard from "./Pages/Student_Dashboard";
-import DownloadCertificate from './components/DownloadCertificate'; // הנתיב בהתאם למיקום שלך
+import DownloadCertificate from './Pages/DownloadCertificate';
 
 
 function App() {
