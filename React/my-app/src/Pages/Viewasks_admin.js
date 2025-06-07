@@ -201,14 +201,16 @@ function ViewAsks() {
 
       </div>
 
-      <RequestModal
-        ask={selectedAsk}
-        onClose={() => setSelectedAsk(null)}
-        admin_id={admin_id}
-        currentUserName={currentUserName}
-        admins={admins}
-        refreshAsks={refreshAsks}
-      />
+     <RequestModal
+  key={selectedAsk?._id || "default"} 
+  ask={selectedAsk}
+  onClose={() => setSelectedAsk(null)}
+  admin_id={admin_id}
+  currentUserName={currentUserName}
+  admins={admins}
+  refreshAsks={refreshAsks}
+/>
+
     </div>
   );
 }
