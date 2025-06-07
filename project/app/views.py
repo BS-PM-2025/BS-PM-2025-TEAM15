@@ -538,3 +538,25 @@ class DownloadCertificateView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=500)
 
+class StudentNotificationsView(APIView):
+    def get(self, request, user_id):
+        try:
+            ask_ids = db.get_student_asks(user_id)
+            answered_requests = []
+
+            for aid in reversed(ask_ids):
+                ask = db.get_ask_by_id(aid)
+                if ask and ask.get("status") in ["approved", "done"]:
+                    answered_requests.append({
+                        "title": ask.get("title"),
+                        "status": ask.get("status"),
+                        "updated_at": ask.get("updated_at", "N/A")
+                    })
+
+                if len(answered_requests) == 10:
+                    break
+
+            return Response({"notifications": answered_requests}, status=200)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)

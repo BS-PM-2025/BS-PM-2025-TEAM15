@@ -8,17 +8,35 @@ import DownloadCertificate from '../Pages/DownloadCertificate';
 
 
 
-
 export default function Sidebar() {
+  
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(null);
   const [isProf, setIsProf] = useState(false);
   const BASE_URL_ADMIN = 'http://localhost:8000/api/isadmin/';
   const BASE_URL_PROF = 'http://localhost:8000/api/isprof/';
 
+  const [notifications, setNotifications] = useState([]);  // ✅ בתוך הקומפוננטה
+  const [showNotifications, setShowNotifications] = useState(false);  // ✅
+  
   const toggleButtonRef = useRef(null);
   const sidebarRef = useRef(null);
   const userId = localStorage.getItem('user_id');
+
+  useEffect(() => {
+    if (userId) {
+      axios.get(`http://localhost:8000/api/request_status/?user_id=${userId}`)
+        .then((res) => {
+          const doneRequests = res.data
+            .filter((r) => r.status.toLowerCase() === "done")
+            .slice(-10); // רק 10 אחרונות
+          setNotifications(doneRequests);
+        })
+        .catch((err) => {
+          console.error("שגיאה בקבלת התראות:", err);
+        });
+    }
+  }, []);
 
   function closeAllSubMenus(e) {
     if (!e || !e.currentTarget) return;
@@ -176,6 +194,50 @@ export default function Sidebar() {
         <span>Documents</span>
       </Link>
     </li>
+    <li style={{ position: "relative" }}>
+  <button
+    onClick={() => setShowNotifications((prev) => !prev)}
+    style={{
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontSize: "20px",
+      marginRight: "10px",
+      marginTop: "24px" // << כאן שולטים בגובה הפעמון
+    }}
+  >
+    🔔
+  </button>
+
+  {showNotifications && (
+    <div style={{
+      position: "absolute",
+      top: "60px",
+      right: "0",
+      backgroundColor: "white",
+      border: "1px solid #ccc",
+      borderRadius: "8px",
+      padding: "10px",
+      width: "250px",
+      zIndex: 1000,
+      boxShadow: "0 4px 8px rgba(0,0,0,0.1)"
+    }}>
+      <h4 style={{ marginTop: 0 }}>התראות אחרונות</h4>
+      {notifications.length === 0 ? (
+        <p style={{ fontSize: "14px" }}>אין התראות חדשות</p>
+      ) : (
+        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+          {notifications.map((item, index) => (
+            <li key={index} style={{ fontSize: "14px", marginBottom: "8px" }}>
+              ✔️ בקשה: <strong>{item.title}</strong> הסתיימה
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )}
+</li>
+  
           {logoutButton}
         </ul>
       </nav>
