@@ -386,11 +386,12 @@ class graphs(APIView):
 
                 grade = dbcom.find_courses_with_nested_id(string_id,user_id)
                 name_course = dbcom.get_course_by_oid(course)
+                print("Course id :",course)
                 print("name",name_course)
                 print("grade::",grade)
                 user_courses_grades.append({
                     "name": name_course,
-                    "grade": grade if grade is not None else 'None'
+                    "grade": grade if grade is not None else 0
                 })
                 serializer = grades_graph(user_courses_grades,many=True)
                 serialized_data = serializer.data

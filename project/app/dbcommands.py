@@ -144,55 +144,25 @@ def get_grade(student_id, course_id):
 
 def find_courses_with_nested_id(target_course_id_str,user_id):
     print(f"Looking for entries with course ID $oid: {target_course_id_str}")
-    
-    
-    # Initialize counters and result list
-    total_checked = 0
-    matches_found = 0
-    matching_entries = []
-    grade = 0
-    # Get all entries
+
     all_entries = studcourses.find()
-    
-    # Iterate through each entry
     for entry in all_entries:
-        total_checked += 1
-        
-        # Extract the course ID from the nested structure
-        entry_course_id = None
         id_course_field = entry.get('id_course')
-        
-        # Handle different possible structures
+
+        # Extract course ID string
         if isinstance(id_course_field, dict) and '$oid' in id_course_field:
             entry_course_id = id_course_field['$oid']
-        elif hasattr(id_course_field, 'id') and hasattr(id_course_field.id, 'hex'):
-            # If it's an ObjectId directly
-            entry_course_id = str(id_course_field)
         else:
-            # Try string conversion as fallback
             entry_course_id = str(id_course_field)
-        
-        # Check for match
-        if entry_course_id and target_course_id_str in entry_course_id:
-        
-                matches_found += 1
-                matching_entries.append(entry)
-                if(entry["id_student"],user_id):
-                    print("std",entry["id_student"])
-                    print("grade?",entry["grade"])
-                    grade = entry["grade"]
-                    return grade
-                # Display the matching entry
-                print(f"\nMatch #{matches_found} found:")
-                for key, value in entry.items():
-                    print(f"  {key}: {value}")
 
-    # Print summary
-    print(f"\nChecked {total_checked} entries in total")
-    print(f"Found {matches_found} entries with course ID $oid matching {target_course_id_str}")
-    
-    return matching_entries
+        # 🔒 Exact match only
+        if entry_course_id == target_course_id_str and str(entry["id_student"]) == str(user_id):
+            print("std", entry["id_student"])
+            print("grade?", entry["grade"])
+            return entry.get("grade")
 
+    print("⚠️ No matching course and student entry found.")
+    return None
 
 def get_average(student_id):
     grades = [get_grade(student_id, cid) for cid in get_all_courses(student_id)]

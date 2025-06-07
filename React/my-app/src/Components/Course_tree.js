@@ -256,9 +256,9 @@ const CourseCardNode = ({ data }) => (
       
       data.status === 'Completed'
         ? '#d0f0c0'
-        : data.status === 'In Progress'
-        ? '#fff3cd'
-        : '#f8d7da',
+        : data.status === 'Failed'
+        ? '#FF0000'
+        : '#FFFFED',
   }}>
     
     <Handle type="target" position={Position.Top} />
