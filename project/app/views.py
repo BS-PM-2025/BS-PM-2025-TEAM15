@@ -9,6 +9,9 @@ from rest_framework.response import Response
 from .serializer import *
 from django.contrib.auth.hashers import make_password, check_password
 import json
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+
 from . import dbcommands as dbcom 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -458,8 +461,8 @@ class GetStudentCourseInfoView(APIView):
             print("ERROR:", str(e))
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-from .models import StudentRequest
-from django.views.decorators.csrf import csrf_exempt
+
+from .dbcommands import append_text  # ✅ import your helper
 
 @csrf_exempt
 def edit_request_text(request, ask_id):
@@ -471,13 +474,13 @@ def edit_request_text(request, ask_id):
             if not new_text:
                 return JsonResponse({"error": "Text cannot be empty."}, status=400)
 
-            req = StudentRequest.objects.get(id_sending=ask_id)
-            req.text = new_text
-            req.save()
+            success = append_text(ask_id, new_text)  # ✅ use your helper
 
-            return JsonResponse({"message": "Text updated successfully."}, status=200)
-        except StudentRequest.DoesNotExist:
-            return JsonResponse({"error": "Request not found."}, status=404)
+            if not success:
+                return JsonResponse({"error": "Request not found."}, status=404)
+
+            return JsonResponse({"message": "Text appended successfully."}, status=200)
+
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 

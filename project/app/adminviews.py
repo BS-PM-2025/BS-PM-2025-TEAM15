@@ -4,7 +4,10 @@ from rest_framework import status
 from . import dbcommands
 from django.utils.dateparse import parse_datetime
 from bson import ObjectId
-
+import os, zipfile
+from django.http import HttpResponse, Http404
+from django.conf import settings
+from io import BytesIO
 # --- GET all admins ---
 @api_view(["GET"])
 def get_all_admins(request):
@@ -19,13 +22,19 @@ def get_all_admins(request):
             })
     return Response(results)
 
-# -- Check if current user is admin --
+# -- Check if current user is admin or prof --
 @api_view(["POST"])
 def is_admin(request):
     user_id = request.data.get("userId")
     user_check = dbcommands.is_admin(user_id)
     return Response({"is_admin": user_check})
 
+# -- Check if current user is admin --
+@api_view(["POST"])
+def is_prof(request):
+    user_id = request.data.get("userId")
+    user_check = dbcommands.is_prof(user_id)
+    return Response({"is_": user_check})
 # --- POST: Reassign ask to a different admin ---
 @api_view(["POST"])
 def reassign_ask(request, ask_id):
@@ -216,16 +225,50 @@ def students_in_course(request, course_id):
 def update_grade(request):
     try:
         print("📥 Grade update request:", request.data)
+
         user_id = int(request.data.get("user_id"))
         course_id = request.data.get("course_id")
         new_grade = float(request.data.get("grade"))
 
-        updated = dbcommands.update_student_grade(user_id, course_id, new_grade)
-        print(f"✅ Updated records: {updated}")
-
-        return Response({"message": "Grade updated successfully"})
+        if 0 <= new_grade <= 100:
+            updated = dbcommands.update_student_grade(user_id, course_id, new_grade)
+            print(f"✅ Updated records: {updated}")
+            return Response({"message": "Grade updated successfully."})
+        else:
+            return Response({"error": "Grade must be between 0 and 100."}, status=400)
 
     except Exception as e:
         print("❌ Error:", e)
         return Response({"error": str(e)}, status=400)
 
+
+@api_view(["GET"])
+def get_ask_details(request, ask_id):
+    ask = dbcommands.get_ask_by_id(int(ask_id))
+    if ask:
+        return Response(ask)
+    return Response({"error": "Ask not found"}, status=404)
+
+
+def download_request_documents(request, idr):
+    ask = dbcommands.get_ask_by_id(int(idr))
+    if not ask or not ask.get("documents"):
+        raise Http404("No documents listed for this request.")
+
+    memory_file = BytesIO()
+    files_added = 0
+
+    with zipfile.ZipFile(memory_file, 'w') as zipf:
+        for path in ask["documents"]:
+            abs_path = os.path.join(settings.MEDIA_ROOT, path)
+            if os.path.exists(abs_path):
+                zipf.write(abs_path, os.path.basename(path))
+                files_added += 1
+
+    if files_added == 0:
+        raise Http404("All listed document files are missing from server.")
+
+    memory_file.seek(0)
+    response = HttpResponse(memory_file, content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename=request_{idr}_documents.zip'
+    return response
