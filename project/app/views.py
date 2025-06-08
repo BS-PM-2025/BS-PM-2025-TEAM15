@@ -252,9 +252,7 @@ class StudentStatsView(APIView):
 
                     if status_val == "pending":
                         pending += 1
-                    elif status_val == "approved":
-                        approved += 1
-                    elif status_val == "done":
+                    elif status_val == "closed":
                         done += 1
                     elif "in progress" in status_val or "בטיפול" in status_val:
                         inprogress += 1

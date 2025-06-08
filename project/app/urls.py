@@ -5,7 +5,7 @@ from .views import  ReactView,Student_personal_requests,RequestStatusView,SignUp
 from django.conf.urls.static import static
 from django.conf import settings 
 from .views import StudentStatsView , edit_request_text
-from .adminviews import update_grade,students_in_course,professor_courses,get_ask_details,download_request_documents
+from .adminviews import update_grade,students_in_course,professor_courses,get_ask_details,download_request_documents, get_comment,get_all_courses_view,add_course,get_all_professors
 
 urlpatterns = [
    
@@ -26,8 +26,10 @@ urlpatterns = [
     path('api/stats/<int:student_id>', StudentStatsView.as_view(), name='student-stats'),
     path("asks/<int:ask_id>/edit_text/", views.edit_request_text, name="edit_request_text"),
     path("asks/<int:ask_id>/", get_ask_details),
+    path("courses/all/", get_all_courses_view),
+    path("api/professors/", get_all_professors),
+    path("comments/<int:idr>/", get_comment),
 
-    
     path('api/search/', Searchview.as_view(), name="search"),
     path('api/update_status/',Searchview.as_view()),
     path('api/graph/',graphs.as_view()),
@@ -37,6 +39,7 @@ urlpatterns = [
     path("api/students_in_course/<str:course_id>/", students_in_course),
     path("api/update_grade/", update_grade),
     path("asks/<int:idr>/download_documents/", download_request_documents),
+    path("courses/add/", add_course),
 
     #to check if the user is admin
     path('api/isadmin/',is_admin),

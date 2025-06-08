@@ -179,7 +179,7 @@ askLayer: {
   gap: '10px',
   width: '40%',
   height: '100px',          // ✅ fixed height
-  overflowY: 'visible',        // ✅ enable vertical scroll
+  overflowY: 'auto',        // ✅ enable vertical scroll
   paddingRight: '5px' ,      // optional: prevents scrollbar overlap
 
 },

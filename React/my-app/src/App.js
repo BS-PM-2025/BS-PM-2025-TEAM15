@@ -15,6 +15,7 @@ import Layout from "./Components/layout";
 import LoginPage from "./Pages/LoginPage";
 import Updategrades from "./Pages/updategrades";
 import Student_Dashboard from "./Pages/Student_Dashboard";
+import Editcourses from "./Pages/Editcourses";
 
 function App() {
   
@@ -35,7 +36,9 @@ function App() {
           <Route path="/Requestsubmissions_student" element={<Requestsubmissions_student />} />
           <Route path="/Student_status_request" element={<Student_status_request />} />
           <Route path="/Student_Dashboard" element={<Student_Dashboard />} />
-          <Route path ="/professor-grade-update" element= {<Updategrades/>}/>        
+          <Route path ="/professor-grade-update" element= {<Updategrades/>}/> 
+          <Route path ="/Editcourses" element= {<Editcourses/>}/>        
+       
           <Route path ="/Med_student_status" element= {<Med_student_status/>}/>
           
         </Route>
