@@ -458,6 +458,32 @@ class GetStudentCourseInfoView(APIView):
             print("ERROR:", str(e))
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class GetStudentProfileView(APIView):
+    def get(self, request):
+        try:
+            user_id = int(request.query_params.get('user_id'))
+            if not user_id:
+                return Response({"error": "Missing user_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+            student_data = db.get_full_student_profile(user_id)
+            user_data = db.get_user_by_id(user_id)
+
+            if not student_data or not user_data:
+                return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            return Response({
+                "name": user_data.get("name"),
+                "email": user_data.get("email"),
+                "department": student_data.get("department"),
+                "status": student_data.get("status"),
+                "sum_points": student_data.get("sum_points"),
+                "average": student_data.get("average"),
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 from .models import StudentRequest
 from django.views.decorators.csrf import csrf_exempt
 
