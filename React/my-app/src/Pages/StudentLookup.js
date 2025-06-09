@@ -336,8 +336,7 @@ const clearAll = () => {
     </div>
   )}
 
-  {/* Courses Tab */}
-  {activeTab === "courses" && (
+{activeTab === "courses" && (
     <div style={{
       backgroundColor: "#f5f7fb",
       padding: "30px",

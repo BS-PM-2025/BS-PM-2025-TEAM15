@@ -159,7 +159,11 @@ def find_courses_with_nested_id(target_course_id_str,user_id):
         if entry_course_id == target_course_id_str and str(entry["id_student"]) == str(user_id):
             print("std", entry["id_student"])
             print("grade?", entry["grade"])
-            return entry.get("grade")
+            print("status?",entry["finish"])
+            return {
+                "grade": entry.get("grade"),
+                "finish": entry.get("finish")
+            }
 
     print("⚠️ No matching course and student entry found.")
     return None

@@ -384,14 +384,18 @@ class graphs(APIView):
             for course in course_ids:
                 string_id = str(course)
 
-                grade = dbcom.find_courses_with_nested_id(string_id,user_id)
+                result = dbcom.find_courses_with_nested_id(string_id,user_id)
+                grade = result["grade"]
+                finish = result["finish"]
                 name_course = dbcom.get_course_by_oid(course)
                 print("Course id :",course)
                 print("name",name_course)
                 print("grade::",grade)
+                print("status", finish)
                 user_courses_grades.append({
                     "name": name_course,
-                    "grade": grade if grade is not None else 0
+                    "grade": grade if grade is not None else 0,
+                    "finish": finish
                 })
                 serializer = grades_graph(user_courses_grades,many=True)
                 serialized_data = serializer.data
@@ -418,7 +422,7 @@ class GetStudentCourseInfoView(APIView):
             completed_courses = []
             courses_details = []
             completed_amount = 0
-
+            
             print("######Check######")
             print("Student check: " + str(student))
             print("student courses check: " + str(student_courses))
@@ -436,17 +440,18 @@ class GetStudentCourseInfoView(APIView):
 
                 print("Course info check:" + str(course_info))
 
-                if finished:
-                    total_earned_credits += float(course_info["points"])
-                    completed_amount = completed_amount+1
+                #if finished: (took it down to have access to fetch all the courses of the user - felix.)
+                if grade > 56 and finished == True :  # Checking if the user passed the course.
+                        total_earned_credits += float(course_info["points"])
+                        completed_amount = completed_amount+1
                 courses_details.append({
-                    "name": course_info.get("name"),
-                    "lecturer": course_info.get("lecturer"),
-                    "department": course_info.get("department"),
-                    "points": course_info.get("points"),
-                    "grade": grade,
-                    "finished": finished
-                })
+                        "name": course_info.get("name"),
+                        "lecturer": course_info.get("lecturer"),
+                        "department": course_info.get("department"),
+                        "points": course_info.get("points"),
+                        "grade": grade,
+                        "finished": finished
+                    })
 
             TOTAL_REQUIRED_CREDITS = 160
             remaining_credits = max(0, TOTAL_REQUIRED_CREDITS - total_earned_credits)
@@ -462,6 +467,7 @@ class GetStudentCourseInfoView(APIView):
             print("ERROR:", str(e))
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+  
 
 from .dbcommands import append_text  # ✅ import your helper
 
