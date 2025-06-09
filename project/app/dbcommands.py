@@ -10,13 +10,15 @@ client = MongoClient("mongodb+srv://admin:123456!@db.hsm1joq.mongodb.net/")
 db = client["university_system"]
 
 # Collections
-users = db["users"]
-students = db["students"]
-administrators = db["administrators"]
-requests = db["requests"]
-courses = db["courses"]
-studcourses = db["studcourses"]
-departments = db["departments"]
+users = db.users
+students = db.students
+administrators = db.administrators
+professors = db.professors
+requests = db.requests
+courses = db.courses
+comments = db.comments
+studcourses = db.studcourses
+departments = db.departments
 # Helper
 def to_int(x):
     try:
@@ -460,5 +462,6 @@ def create_course(name, lecturer, department, points):
     }
     db.courses.insert_one(course)
     return True
+
 def get_all_professors():
     return list(db.professors.find({}, {"_id": 0}))  # exclude MongoDB's ObjectId

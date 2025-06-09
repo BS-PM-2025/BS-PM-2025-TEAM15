@@ -1,6 +1,5 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import StudentStatusRequest from "../pages/StudentStatusRequest";
-import axios from "axios";
 // Cancel real calls to the server
 jest.mock("axios");
 

@@ -355,3 +355,5 @@ def get_all_professors(request):
         return Response(results)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
+        

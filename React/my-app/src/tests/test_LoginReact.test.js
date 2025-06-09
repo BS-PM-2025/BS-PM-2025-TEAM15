@@ -1,7 +1,5 @@
-import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import LoginPage from "./LoginPage";
-import axios from "axios";
 
 //npm install --save-dev @testing-library/react @testing-library/jest-dom jest
 //need to check with the rest of the group before adding
