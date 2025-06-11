@@ -166,26 +166,52 @@ const clearAll = () => {
 
   const refreshStudent = () => fetchStudentDetails();
   console.log("well",studentId)
+
   const applyAskFilters = () => {
-    if (!studentData) return [];
+  if (!studentData) return [];
 
-    let filtered = [...studentData.asks];
-    if (importance) filtered = filtered.filter(a => a.importance === importance);
-    if (status) filtered = filtered.filter(a => a.status === status);
-    if (category) filtered = filtered.filter(a => a.category === category);
-    if (fromDate) filtered = filtered.filter(a => new Date(a.date_sent) >= new Date(fromDate));
-    if (toDate) filtered = filtered.filter(a => new Date(a.date_sent) <= new Date(toDate));
+  let filtered = [...studentData.asks];
 
-    if (sortBy === "importance") {
-      const order = { high: 0, medium: 1, low: 2 };
-      filtered.sort((a, b) => (order[a.importance] ?? 3) - (order[b.importance] ?? 3));
-    } else if (sortBy === "date") {
-      filtered.sort((a, b) => new Date(a.date_sent) - new Date(b.date_sent));
-    }
+  // Normalize importance
+  if (importance) {
+    filtered = filtered.filter(a => (a.importance || "").toLowerCase() === importance.toLowerCase());
+  }
 
-    if (sortOrder === "desc") filtered.reverse();
-    return filtered;
-  };
+  // Normalize status
+  if (status) {
+    filtered = filtered.filter(a => {
+      const stat = (a.status || "").toLowerCase();
+      if (status === "in progress") {
+        return a.status?.startsWith("בטיפול");
+      }
+      return stat === status.toLowerCase();
+    });
+  }
+
+  if (category) {
+    filtered = filtered.filter(a => (a.category || "").toLowerCase() === category.toLowerCase());
+  }
+
+  if (fromDate) {
+    filtered = filtered.filter(a => new Date(a.date_sent) >= new Date(fromDate));
+  }
+
+  if (toDate) {
+    filtered = filtered.filter(a => new Date(a.date_sent) <= new Date(toDate));
+  }
+
+  if (sortBy === "importance") {
+    const order = { high: 0, medium: 1, low: 2 };
+    filtered.sort((a, b) => (order[a.importance?.toLowerCase()] ?? 3) - (order[b.importance?.toLowerCase()] ?? 3));
+  } else if (sortBy === "date") {
+    filtered.sort((a, b) => new Date(a.date_sent) - new Date(b.date_sent));
+  }
+
+  if (sortOrder === "desc") filtered.reverse();
+
+  return filtered;
+};
+
 
   return (
    <div style={{
@@ -382,11 +408,12 @@ const clearAll = () => {
       <label>
         <span style={{ color: '#134075' }}>Status:</span>
         <select value={status} onChange={e => setStatus(e.target.value)}>
-          <option value="">..</option>
-          <option value="pending">Pending</option>
-          <option value="assigned to self">Assigned to Self</option>
-          <option value="closed">Closed</option>
-        </select>
+  <option value="">..</option>
+  <option value="pending">Pending</option>
+  <option value="in progress">In Progress</option>
+  <option value="closed">Closed</option>
+</select>
+
       </label>
 
       <label>

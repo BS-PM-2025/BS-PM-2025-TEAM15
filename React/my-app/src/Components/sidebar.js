@@ -206,7 +206,7 @@ export default function Sidebar() {
 
             {isAdmin && !isProf && (
               <li>
-                <Link to="/edit-courses">
+                <Link to="/Editcourses">
                   <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="#e8eaed">
                     <path d="M720-120v-80H600v-80h120v-80l120 120-120 120Zm-640-40v-640 640Zm120 0q-33 0-56.5-23.5T120-240v-640q0-33 23.5-56.5T200-960h560q33 0 56.5 23.5T840-880v240h-80v-240H200v640h280v80H200Zm440-240Z" />
                   </svg>

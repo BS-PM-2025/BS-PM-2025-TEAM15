@@ -10,13 +10,15 @@ client = MongoClient("mongodb+srv://admin:123456!@db.hsm1joq.mongodb.net/")
 db = client["university_system"]
 
 # Collections
-users = db["users"]
-students = db["students"]
-administrators = db["administrators"]
-requests = db["requests"]
-courses = db["courses"]
-studcourses = db["studcourses"]
-departments = db["departments"]
+users = db.users
+students = db.students
+administrators = db.administrators
+professors = db.professors
+requests = db.requests
+courses = db.courses
+comments = db.comments
+studcourses = db.studcourses
+departments = db.departments
 # Helper
 def to_int(x):
     try:
@@ -269,6 +271,10 @@ def get_ask_by_id(idr):
         ask["date_sent"] = ask["date_sent"].isoformat()
     return ask
 
+def get_comment_by_idr(idr):
+    return db.comments.find_one({"idr": int(idr)})
+
+
 # === Requests / Ask Updates ===
 def reassign_ask_by_idr(idr, new_admin_id):
     return requests.update_one(
@@ -287,7 +293,6 @@ def update_ask_status_by_idr(idr, new_status, new_admin_id=None):
     # Prepare updated fields
     update_fields = {
         "status": new_status,
-        "text": ask.get("text", "") + "\n-statuschanged: " + new_status
     }
 
     if new_admin_id is not None:
@@ -302,15 +307,26 @@ def update_ask_status_by_idr(idr, new_status, new_admin_id=None):
 
 
 def append_note_to_ask(idr, note_text):
-    ask = requests.find_one({"idr": to_int(idr)})
-    if not ask:
-        return False
-    new_text = ask.get("text", "") + f"\n{note_text}"
-    result = requests.update_one(
-        {"idr": to_int(idr)},
+    idr = int(idr)
+    timestamp = datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
+    full_line = f"{timestamp} {note_text}"
+
+    comment = db.comments.find_one({"idr": idr})
+
+    if not comment:
+        result = db.comments.insert_one({
+            "idr": idr,
+            "text": full_line
+        })
+        return result.acknowledged
+
+    new_text = comment.get("text", "") + "\n" + full_line
+    result = db.comments.update_one(
+        {"idr": idr},
         {"$set": {"text": new_text}}
     )
-    return result.modified_count > 0
+    return result.modified_count > 0 or result.matched_count > 0
+
 
 def append_text(idr, note_text):
     ask = requests.find_one({"idr": int(idr)})
@@ -436,3 +452,16 @@ def update_student_grade(user_id, course_id, new_grade):
     )
     print("🔄 update result:", result.modified_count)
     return result.modified_count
+
+def create_course(name, lecturer, department, points):
+    course = {
+        "name": name,
+        "lecturer": int(lecturer),
+        "department": department,
+        "points": int(points)
+    }
+    db.courses.insert_one(course)
+    return True
+
+def get_all_professors():
+    return list(db.professors.find({}, {"_id": 0}))  # exclude MongoDB's ObjectId

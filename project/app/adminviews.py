@@ -8,6 +8,8 @@ import os, zipfile
 from django.http import HttpResponse, Http404
 from django.conf import settings
 from io import BytesIO
+from django.http import JsonResponse
+
 # --- GET all admins ---
 @api_view(["GET"])
 def get_all_admins(request):
@@ -41,7 +43,7 @@ def reassign_ask(request, ask_id):
     try:
         ask_id = int(ask_id)
         new_admin_id = int(request.data.get("new_admin_id"))
-        success = dbcommands.reassign_ask_to_admin(ask_id, new_admin_id)
+        success = dbcommands.reassign_ask_by_idr(ask_id, new_admin_id)
         if success:
             return Response({"message": "Ask reassigned."})
         return Response({"error": "Request not found or update failed."}, status=404)
@@ -76,15 +78,32 @@ def get_all_requests(request):
         order = request.GET.get("order", "asc")
         admin_id = request.GET.get("admin_id")
 
+        # 🔽 Normalize to lowercase for consistent matching
+        if importance:
+            importance = importance.lower()
+        if status_filter:
+            status_filter = status_filter.lower()
+        if category:
+            category = category.lower()
+
         query = {}
         if admin_id:
             query["id_receiving"] = int(admin_id)
         if importance:
             query["importance"] = importance
+
+        # ✅ Match "in progress" to statuses that start with "בטיפול"
         if status_filter:
-            query["status"] = status_filter
+            if status_filter == "in progress":
+                query["status"] = {"$regex": "^בטיפול"}
+            elif status_filter == "closed":
+                query["status"] = "closed"
+            else:
+                query["status"] = status_filter
+
         if category:
             query["category"] = category
+
         if date_sent_from or date_sent_to:
             query["date_sent"] = {}
             if date_sent_from:
@@ -108,20 +127,25 @@ def get_all_requests(request):
     except Exception as e:
         return Response({"error": str(e)}, status=400)
 
+
 # --- POST: Add a note ---
 @api_view(["POST"])
 def add_note_to_ask(request, ask_id):
     try:
         ask_id = int(ask_id)
-        note = request.data.get("note", "").strip()
-        if not note:
+        note_body = request.data.get("note", "").strip()
+
+        if not note_body:
             return Response({"error": "Empty note"}, status=400)
+
+        note = note_body
         success = dbcommands.append_note_to_ask(ask_id, note)
         if success:
             return Response({"message": "Note added."})
         return Response({"error": "Ask not found or update failed."}, status=404)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
 
 # --- GET: Full student summary ---
 @api_view(["GET"])
@@ -272,3 +296,64 @@ def download_request_documents(request, idr):
     response = HttpResponse(memory_file, content_type='application/zip')
     response['Content-Disposition'] = f'attachment; filename=request_{idr}_documents.zip'
     return response
+
+
+def get_comment(request, idr):
+    comment = dbcommands.get_comment_by_idr(idr)
+    if comment:
+        return JsonResponse({"text": comment.get("text", "")})
+    return JsonResponse({"text": ""})
+
+@api_view(["GET"])
+def get_all_courses_view(request):
+    try:
+        all_courses = dbcommands.db.courses.find()
+        results = []
+        for course in all_courses:
+            lecturer_id = course.get("lecturer")
+            results.append({
+                "course_id": str(course["_id"]),
+                "name": course.get("name", ""),
+                "points": course.get("points", 0),
+                "lecturer": dbcommands.get_user_name_by_id(lecturer_id) if lecturer_id is not None else "Unknown"
+            })
+        return Response(results)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+
+@api_view(['POST'])
+def add_course(request):
+    try:
+        data = json.loads(request.body)
+        name = data.get("name")
+        lecturer = int(data.get("lecturer"))
+        department = data.get("department")
+        points = int(data.get("points"))
+        
+        dbcommands.create_course(name, lecturer, department, points)
+        return Response({"message": "Course added successfully."})
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+@api_view(['GET'])
+def get_all_professors(request):
+    try:
+        professors = dbcommands.get_all_professors()  # Each has user_id, department, role
+        results = []
+
+        for prof in professors:
+            user_id = prof.get("user_id")
+            name = dbcommands.get_user_name_by_id(user_id)
+            results.append({
+                "user_id": user_id,
+                "name": name,
+                "department": prof.get("department", ""),
+                "role": prof.get("role", "")
+            })
+
+        return Response(results)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+        
