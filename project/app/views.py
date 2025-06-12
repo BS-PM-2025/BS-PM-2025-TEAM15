@@ -317,7 +317,7 @@ class graphs(APIView):
 
             if not user_id:
                 return Response({"success": False, "error": "Missing user_id"}, status=status.HTTP_400_BAD_REQUEST)
-            print("📥 Received GET to /api/graph with user_id =", request.GET.get("user_id"))
+            print(" Received GET to /api/graph with user_id =", request.GET.get("user_id"))
             users_dep = dbcom.get_student_department_by_id(user_id)
             if not users_dep:
                 
@@ -356,7 +356,7 @@ class graphs(APIView):
         
 
     def post(self,request):
-        print("📥 Received post to /api/graph with user_id =", request.GET.get("user_id"))
+        print(" Received post to /api/graph with user_id =", request.GET.get("user_id"))
 
         try:  
             user_id = request.GET.get("user_id")

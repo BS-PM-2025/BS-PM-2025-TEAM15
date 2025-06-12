@@ -540,7 +540,7 @@ const clearAll = () => {
     maxHeight: "400px",        // ✅ enable vertical scroll
     overflowY: "auto"
   }}>
-    <h3 style={{ color: "#134075" }}>📥 Available Courses for Enrollment</h3>
+    <h3 style={{ color: "#134075" }}>Available Courses for Enrollment</h3>
     {availableCourses.length === 0 ? (
       <p>No available courses or all already enrolled.</p>
     ) : (
