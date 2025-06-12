@@ -263,7 +263,7 @@ function RequestModal({ ask, onClose, admin_id, currentUserName, refreshAsks }) 
               </p>
             )}
 
-            <div style={{ marginTop: "20px", marginBottom: "15px" }}>
+            {/* <div style={{ marginTop: "20px", marginBottom: "15px" }}>
               <label><strong>Email Response:</strong></label><br />
               <textarea
                 rows={4} value={emailBack}
@@ -275,7 +275,7 @@ function RequestModal({ ask, onClose, admin_id, currentUserName, refreshAsks }) 
                 }}
               />
               <button onClick={handleSendEmail} style={{ ...buttonStyle, marginTop: "5px" }}>Send Email</button>
-            </div>
+            </div> */}
           </>
         )}
 
