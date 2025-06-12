@@ -1,11 +1,16 @@
 from django.contrib import admin
 from django.contrib.admin import AdminSite
 
-# ✅ Define and instantiate a custom admin site to avoid Jenkins crash
+# Subclass AdminSite and keep it ready before any import uses it
 class SafeAdminSite(AdminSite):
-    site_header = "Placeholder Admin"
-    site_title = "Placeholder Admin Portal"
-    index_title = "Welcome to Placeholder Admin"
+    site_header = "Safe Admin"
+    site_title = "Safe Admin Portal"
+    index_title = "Welcome to Safe Admin"
 
-# ✅ Correct: instantiate the custom admin site
-admin.site = SafeAdminSite(name="safe_admin")
+# Assign to admin.site BEFORE anything uses it
+safe_admin = SafeAdminSite(name="safe_admin")
+admin.site = safe_admin
+
+# You can optionally register your models here, if needed
+# from .models import YourModel
+# admin.site.register(YourModel)
