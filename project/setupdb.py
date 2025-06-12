@@ -72,4 +72,4 @@ studcourses.insert_one({
     "finish": None
 })
 
-print("✅ Users, roles, course, and enrollment added successfully!")
+print(" Users, roles, course, and enrollment added successfully!")
