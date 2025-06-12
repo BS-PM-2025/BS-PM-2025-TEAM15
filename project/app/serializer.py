@@ -85,4 +85,5 @@ class Graph_courses(serializers.Serializer):
 class grades_graph(serializers.Serializer):
         grade =serializers.IntegerField()
         name = serializers.CharField()
+        finish = serializers.BooleanField()
         #average = serializers.IntegerField()
