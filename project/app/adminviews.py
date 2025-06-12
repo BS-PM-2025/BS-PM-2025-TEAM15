@@ -227,7 +227,7 @@ def get_available_courses_view(request, user_id):
 
 @api_view(["GET"])
 def professor_courses(request, professor_id):
-    print(f"📥 GET /api/professor_courses/{professor_id}/ called")
+    print(f" GET /api/professor_courses/{professor_id}/ called")
     courses = dbcommands.get_courses_by_lecturer(professor_id)
     print("🎓 Courses found:", courses)
 
@@ -248,7 +248,7 @@ def students_in_course(request, course_id):
 @api_view(["POST"])
 def update_grade(request):
     try:
-        print("📥 Grade update request:", request.data)
+        print(" Grade update request:", request.data)
 
         user_id = int(request.data.get("user_id"))
         course_id = request.data.get("course_id")
