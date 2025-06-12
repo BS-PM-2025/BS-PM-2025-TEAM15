@@ -42,7 +42,7 @@ pipeline {
     post {
         always {
             junit 'project/report.xml'
-            echo '🚨 Build or tests failed. Check test-report.txt or coverage report.'
+            echo ' Build or tests failed. Check test-report.txt or coverage report.'
         }
     }
 }
