@@ -95,7 +95,7 @@ def test_graphs_get(mock_courses, mock_dept, client):
 
 # 11. Test: graph POST returns course grades
 @patch("app.views.dbcom.get_all_courses", return_value=[{"$oid": "507f1f77bcf86cd799439011"}])
-@patch("app.views.dbcom.find_courses_with_nested_id", return_value=88)
+@patch("app.views.dbcom.find_courses_with_nested_id", return_value={"grade": 88, "finish": True})
 @patch("app.views.dbcom.get_course_by_oid", return_value="Algorithms")
 def test_graphs_post(mock_course_name, mock_find_grade, mock_all_courses, client):
     response = client.post("/api/graph/?user_id=1")
