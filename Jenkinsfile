@@ -46,8 +46,12 @@ pipeline {
                     def failedTests = report.count("FAILED")
                     def totalTests = passedTests + failedTests
 
-                    def coverageOutput = report.findAll(/coverage:.*?(\d+)%/)[-1]
-                    def coveragePercent = coverageOutput ? (coverageOutput =~ /(\d+)%/)[0][1].toInteger() : 0
+                    def matches = report.findAll(/coverage:.*?(\d+)%/)
+                    def coveragePercent = 0
+                    if (matches && matches.size() > 0) {
+                        def lastMatch = matches.last()
+                        coveragePercent = (lastMatch =~ /(\d+)%/)[0][1].toInteger()
+                    }
 
                     if (totalTests > 0) {
                         def passRate = (passedTests * 100) / totalTests
