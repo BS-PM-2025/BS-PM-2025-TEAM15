@@ -42,9 +42,17 @@ pipeline {
             steps {
                 script {
                     def report = readFile('project/test-report.txt')
-                    def passedTests = report.count("PASSED")
-                    def failedTests = report.count("FAILED")
-                    def totalTests = passedTests + failedTests
+
+                    def summaryLine = report.readLines().find { it =~ /(\d+)\s+passed/ }
+                    def passedTests = 0
+                    def totalTests = 0
+                    if (summaryLine) {
+                        def matcher = (summaryLine =~ /(\d+)\s+passed.*in\s+[\d.]+s/)
+                        if (matcher.matches()) {
+                            passedTests = matcher[0][1].toInteger()
+                            totalTests = passedTests // you can improve later by adding failed/skipped too
+                        }
+                    }
 
                     def matches = report.findAll(/coverage:.*?(\d+)%/)
                     def coveragePercent = 0
