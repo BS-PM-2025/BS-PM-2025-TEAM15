@@ -296,7 +296,8 @@ def test_find_courses_with_nested_id_found(mock_db):
         "id_student": 44, "id_course": cid, "grade": 77
     })
     result = db.find_courses_with_nested_id(str(cid), 44)
-    assert result == 77
+    assert result["grade"] == 77
+
 
 def test_find_courses_with_nested_id_not_found(mock_db):
     result = db.find_courses_with_nested_id("nonexisting", 45)
