@@ -11,22 +11,25 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the project...'
-                // Uncomment if you want to install requirements
+                // Uncomment this if you use requirements.txt
                 // bat 'pip install -r requirements.txt'
             }
         }
 
         stage('Test') {
             steps {
-                echo 'Running tests...'
-                // Run pytest and output to a file (Windows syntax!)
-                bat 'pytest --maxfail=5 --disable-warnings --tb=short > test-report.txt || exit 0'
+                echo 'Running tests with coverage and saving reports...'
+                bat '''
+                    set DJANGO_SETTINGS_MODULE=project.settings
+                    set PYTHONPATH=%CD%
+                    pytest --junitxml=report.xml --cov=. --cov-report=html --cov-report=term > test-report.txt || exit 0
+                '''
             }
         }
 
         stage('Results') {
             steps {
-                echo 'Test results:'
+                echo 'Test results and coverage summary:'
                 bat 'type test-report.txt'
             }
         }
@@ -34,13 +37,22 @@ pipeline {
 
     post {
         always {
+            // 🧪 Test results for Jenkins
+            junit 'report.xml'
+
+            // 📄 Text output of pytest
             archiveArtifacts artifacts: 'test-report.txt', fingerprint: true
+
+            // 📊 Full HTML coverage report
+            archiveArtifacts artifacts: 'htmlcov/**', fingerprint: true
         }
+
         failure {
-            echo '🚨 Build or tests failed. Check the test-report.txt for details.'
+            echo '🚨 Build or tests failed. Check test-report.txt or coverage report.'
         }
+
         success {
-            echo '✅ All good! Build and tests passed.'
+            echo '✅ All tests passed. View coverage report in "htmlcov/index.html"'
         }
     }
 }
