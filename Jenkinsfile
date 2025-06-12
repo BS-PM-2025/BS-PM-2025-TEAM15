@@ -47,19 +47,21 @@ pipeline {
                     def failed = 0
                     def errors = 0
                     def skipped = 0
-                    def warnings = 0
 
-                    def matchLine = report.readLines().find { it =~ /\d+\s+passed.*in\s+[\d.]+s/ }
+                    // More tolerant pattern: looks for "in Xs" with any prefix
+                    def matchLine = report.readLines().find { it.contains(" in ") && it.contains("passed") }
 
                     if (matchLine) {
-                        def matcher = (matchLine =~ /(?:(\d+)\s+passed)?(?:,\s*(\d+)\s+failed)?(?:,\s*(\d+)\s+error)?(?:,\s*(\d+)\s+skipped)?(?:,\s*(\d+)\s+warning)?/)
-                        if (matcher.find()) {
-                            passed = matcher[0][1] ? matcher[0][1].toInteger() : 0
-                            failed = matcher[0][2] ? matcher[0][2].toInteger() : 0
-                            errors = matcher[0][3] ? matcher[0][3].toInteger() : 0
-                            skipped = matcher[0][4] ? matcher[0][4].toInteger() : 0
-                            warnings = matcher[0][5] ? matcher[0][5].toInteger() : 0
-                        }
+                        // Match all test outcome numbers regardless of their order
+                        def passMatch = (matchLine =~ /(\d+)\s+passed/)
+                        def failMatch = (matchLine =~ /(\d+)\s+failed/)
+                        def errorMatch = (matchLine =~ /(\d+)\s+error/)
+                        def skipMatch = (matchLine =~ /(\d+)\s+skipped/)
+
+                        passed = passMatch ? passMatch[0][1].toInteger() : 0
+                        failed = failMatch ? failMatch[0][1].toInteger() : 0
+                        errors = errorMatch ? errorMatch[0][1].toInteger() : 0
+                        skipped = skipMatch ? skipMatch[0][1].toInteger() : 0
                     }
 
                     def totalTests = passed + failed + errors + skipped
@@ -74,7 +76,7 @@ pipeline {
                     if (totalTests > 0) {
                         def passRate = (passed * 100) / totalTests
                         echo "Total tests: ${totalTests}"
-                        echo "Passed: ${passed}, Failed: ${failed}, Errors: ${errors}, Skipped: ${skipped}, Warnings: ${warnings}"
+                        echo "Passed: ${passed}, Failed: ${failed}, Errors: ${errors}, Skipped: ${skipped}"
                         echo "Test pass rate: ${passRate}%"
                         echo "Coverage: ${coveragePercent}%"
 
