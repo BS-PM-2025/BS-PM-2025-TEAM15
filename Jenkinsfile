@@ -11,30 +11,29 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the project...'
-                // If you need to install Python dependencies, uncomment this:
-                // sh 'pip install -r requirements.txt'
+                // Uncomment if you want to install requirements
+                // bat 'pip install -r requirements.txt'
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Running tests...'
-                // Run pytest and collect results
-                sh 'pytest --maxfail=5 --disable-warnings --tb=short > test-report.txt || true'
+                // Run pytest and output to a file (Windows syntax!)
+                bat 'pytest --maxfail=5 --disable-warnings --tb=short > test-report.txt || exit 0'
             }
         }
 
         stage('Results') {
             steps {
                 echo 'Test results:'
-                sh 'cat test-report.txt'
+                bat 'type test-report.txt'
             }
         }
     }
 
     post {
         always {
-            // Save test report file as an artifact
             archiveArtifacts artifacts: 'test-report.txt', fingerprint: true
         }
         failure {
