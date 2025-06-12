@@ -1,26 +1,7 @@
-"""
-URL configuration for project project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
-from django.contrib import admin
 from django.urls import path, include
+from app.admin import safe_admin  # ✅ import your custom admin
 
 urlpatterns = [
-    path('admin/', safe_admin.urls),
-    path('', include('app.urls')),  # Route root URL to your app
-       
-
-
+    path('admin/', safe_admin.urls),  # ✅ use your safe_admin
+    path('', include('app.urls')),
 ]
