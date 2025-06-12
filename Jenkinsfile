@@ -26,7 +26,7 @@ pipeline {
                     set DJANGO_SETTINGS_MODULE=project.settings
                     set PYTHONPATH=%WORKSPACE%\\project
                     cd project
-                    pytest --junitxml=report.xml --cov=. --cov-report=html --cov-report=term --capture=no > test-report.txt || exit 0
+                    pytest --junitxml=report.xml --cov=. --cov-report=term --capture=no > test-report.txt || exit 0
                 """
             }
         }
@@ -37,12 +37,38 @@ pipeline {
                 bat 'type project\\test-report.txt'
             }
         }
+
+        stage('Quality Gate') {
+            steps {
+                script {
+                    def report = readFile('project/test-report.txt')
+                    def passedTests = report.count("PASSED")
+                    def failedTests = report.count("FAILED")
+                    def totalTests = passedTests + failedTests
+
+                    def coverageOutput = report.findAll(/coverage:.*?(\d+)%/)[-1]
+                    def coveragePercent = coverageOutput ? (coverageOutput =~ /(\d+)%/)[0][1].toInteger() : 0
+
+                    if (totalTests > 0) {
+                        def passRate = (passedTests * 100) / totalTests
+                        echo "Test pass rate: ${passRate}%"
+                        echo "Coverage: ${coveragePercent}%"
+
+                        if (passRate < 90 || coveragePercent < 80) {
+                            error("Quality gate failed: pass rate < 90% or coverage < 80%")
+                        }
+                    } else {
+                        error("No tests found")
+                    }
+                }
+            }
+        }
     }
 
     post {
         always {
             junit 'project/report.xml'
-            echo ' Build or tests failed. Check test-report.txt or coverage report.'
+            echo 'Build or tests failed. Check test-report.txt or coverage report.'
         }
     }
 }
