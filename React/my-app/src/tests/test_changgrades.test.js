@@ -14,7 +14,7 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-// ✅ 1. Renders course loading state when no courses yet
+//  1. Renders course loading state when no courses yet
 test("shows loading message when no courses are found", async () => {
   axios.get.mockResolvedValueOnce({ data: [] });
 
@@ -23,7 +23,7 @@ test("shows loading message when no courses are found", async () => {
   expect(screen.getByText(/no courses found/i)).toBeInTheDocument();
 });
 
-// ✅ 2. Renders courses as buttons when fetched
+//  2. Renders courses as buttons when fetched
 test("displays courses as clickable buttons", async () => {
   axios.get.mockResolvedValueOnce({
     data: [
@@ -40,7 +40,7 @@ test("displays courses as clickable buttons", async () => {
   });
 });
 
-// ✅ 3. Clicking course button fetches students
+//  3. Clicking course button fetches students
 test("loads students when a course is clicked", async () => {
   axios.get
     .mockResolvedValueOnce({ data: [{ _id: "1", name: "Math" }] }) // courses
@@ -67,7 +67,7 @@ test("loads students when a course is clicked", async () => {
   });
 });
 
-// ✅ 4. Allows grade input change
+//  4. Allows grade input change
 test("can change grade input for a student", async () => {
   axios.get
     .mockResolvedValueOnce({ data: [{ _id: "1", name: "Math" }] }) // courses
@@ -86,7 +86,7 @@ test("can change grade input for a student", async () => {
   expect(input.value).toBe("95");
 });
 
-// ✅ 5. Clicking Save calls POST with correct data
+//  5. Clicking Save calls POST with correct data
 test("saving grade sends POST request", async () => {
   axios.get
     .mockResolvedValueOnce({ data: [{ _id: "1", name: "Math" }] }) // courses
@@ -107,11 +107,11 @@ test("saving grade sends POST request", async () => {
       "http://127.0.0.1:8000/api/update_grade/",
       { user_id: 100, course_id: "1", grade: 90 }
     );
-    expect(window.alert).toHaveBeenCalledWith("✅ Grade saved!");
+    expect(window.alert).toHaveBeenCalledWith(" Grade saved!");
   });
 });
 
-// ✅ 6. Clicking Close resets selected course
+//  6. Clicking Close resets selected course
 test("close table button resets course and students", async () => {
   axios.get
     .mockResolvedValueOnce({ data: [{ _id: "1", name: "Math" }] }) // courses

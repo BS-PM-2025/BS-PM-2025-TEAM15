@@ -161,13 +161,13 @@ def find_courses_with_nested_id(target_course_id_str,user_id):
         if entry_course_id == target_course_id_str and str(entry["id_student"]) == str(user_id):
             print("std", entry["id_student"])
             print("grade?", entry["grade"])
-            print("status?",entry["finish"])
+            print("status?", entry.get("finish"))
             return {
                 "grade": entry.get("grade"),
                 "finish": entry.get("finish")
             }
 
-    print("⚠️ No matching course and student entry found.")
+    print(" No matching course and student entry found.")
     return None
 
 def get_average(student_id):
@@ -385,20 +385,20 @@ def get_courses_by_lecturer(lecturer_id):
 
 def get_students_for_course(course_id):
     try:
-        print("🔍 get_students_for_course called with:", course_id)
+        print(" get_students_for_course called with:", course_id)
 
         # Convert to ObjectId
         course_oid = ObjectId(course_id)
 
         enrollments = list(db.studcourses.find({"id_course": course_oid}))
-        print("📚 Found enrollments:", enrollments)
+        print(" Found enrollments:", enrollments)
 
         results = []
 
         for e in enrollments:
             student = db.students.find_one({"user_id": e["id_student"]})
             user = db.users.find_one({"_id": e["id_student"]})
-            print(f"👤 Fetching student {e['id_student']}: student={student}, user={user}")
+            print(f" Fetching student {e['id_student']}: student={student}, user={user}")
 
             if student and user:
                 results.append({
@@ -407,11 +407,11 @@ def get_students_for_course(course_id):
                     "grade": e.get("grade", None)
                 })
 
-        print("✅ Final student list:", results)
+        print(" Final student list:", results)
         return results
 
     except Exception as e:
-        print("❌ Error in get_students_for_course:", e)
+        print(" Error in get_students_for_course:", e)
         return []
 
 
@@ -424,7 +424,7 @@ def update_student_grade(user_id, course_id, new_grade):
         {"id_student": user_id, "id_course": course_id},
         {"$set": {"grade": new_grade}}
     )
-    print("🔄 update result:", result.modified_count)
+    print(" update result:", result.modified_count)
     return result.modified_count
 
 def create_course(name, lecturer, department, points):

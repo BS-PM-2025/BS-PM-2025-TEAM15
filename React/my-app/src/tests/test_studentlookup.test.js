@@ -24,7 +24,7 @@ afterEach(() => {
 });
 
 
-// ✅ 1. Renders the component with input and buttons
+//  1. Renders the component with input and buttons
 test("renders input and buttons correctly", () => {
   render(<StudentLookup />);
   expect(screen.getByPlaceholderText(/enter student id/i)).toBeInTheDocument();
@@ -32,7 +32,7 @@ test("renders input and buttons correctly", () => {
   expect(screen.getByText("Clear")).toBeInTheDocument();
 });
 
-// ✅ 2. Shows error on invalid student ID
+//  2. Shows error on invalid student ID
 test("alerts on invalid student ID", () => {
   window.alert = jest.fn();
   render(<StudentLookup />);
@@ -41,7 +41,7 @@ test("alerts on invalid student ID", () => {
   expect(window.alert).toHaveBeenCalledWith("Please enter a valid numeric student ID.");
 });
 
-// ✅ 3. Fetches and displays student data
+//  3. Fetches and displays student data
 test("fetches student data and renders tabs", async () => {
   global.fetch
     .mockResolvedValueOnce({ ok: true, json: async () => ({ info: { name: "Test", user_id: 2, email: "x", department: "CS", status: "Active", sum_points: 100, average: 90 }, asks: [] }) })
@@ -52,12 +52,12 @@ test("fetches student data and renders tabs", async () => {
   userEvent.click(screen.getByText("Search"));
 
   await waitFor(() => {
-    expect(screen.getByText(/👤 Student Details/)).toBeInTheDocument();
+    expect(screen.getByText(/ Student Details/)).toBeInTheDocument();
     expect(screen.getByText(/Test/)).toBeInTheDocument();
   });
 });
 
-// ✅ 4. Can switch tabs and render enroll tab
+//  4. Can switch tabs and render enroll tab
 test("switches to enroll tab and shows message", async () => {
   global.fetch
     .mockResolvedValueOnce({ ok: true, json: async () => ({ info: { name: "Test", user_id: 2, email: "x", department: "CS", status: "Active", sum_points: 100, average: 90 }, asks: [] }) })
@@ -75,7 +75,7 @@ test("switches to enroll tab and shows message", async () => {
   });
 });
 
-// ✅ 5. Shows loading state
+//  5. Shows loading state
 test("shows loading message while fetching student", async () => {
   global.fetch.mockImplementationOnce(() => new Promise(resolve => setTimeout(() => resolve({
     ok: true,
@@ -89,7 +89,7 @@ test("shows loading message while fetching student", async () => {
   expect(screen.getByText("Loading student data...")).toBeInTheDocument();
 });
 
-// ✅ 6. Filters asks by importance
+//  6. Filters asks by importance
 test("filters student asks by importance", async () => {
   global.fetch
     .mockResolvedValueOnce({ ok: true, json: async () => ({ info: { name: "Test", user_id: 2, email: "x", department: "CS", status: "Active", sum_points: 100, average: 90 }, asks: [
@@ -114,7 +114,7 @@ test("filters student asks by importance", async () => {
   expect(screen.queryByText(/Req B/)).not.toBeInTheDocument();
 });
 
-// ✅ 7. Clicking request opens modal
+//  7. Clicking request opens modal
 test("opens request modal when ask is clicked", async () => {
   global.fetch
     .mockResolvedValueOnce({ ok: true, json: async () => ({ info: { name: "Test", user_id: 2, email: "x", department: "CS", status: "Active", sum_points: 100, average: 90 }, asks: [

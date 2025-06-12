@@ -31,4 +31,4 @@ for request in requests_col.find():
     comments_col.insert_one(comment_doc)
     created_count += 1
 
-print(f"✅ Created {created_count} new comment documents.")
+print(f" Created {created_count} new comment documents.")

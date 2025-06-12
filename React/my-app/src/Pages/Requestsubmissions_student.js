@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import Progress from "../Components/Progress";
 import axios from "axios";
-console.log("✅ Requestsubmissions_student loaded");
+console.log(" Requestsubmissions_student loaded");
 
 // To what endpoint to send
  const BASE_URL = 'http://localhost:8000/api/studentrequests/';

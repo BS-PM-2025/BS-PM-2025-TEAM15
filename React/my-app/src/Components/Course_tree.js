@@ -201,7 +201,7 @@ export default function Course_tree({ userId: propUserId }) {
 </div>
 ) : noCourses ? (
   <div style={{ padding: "20px", color: "red", fontWeight: "bold" }}>
-    ⚠️ No courses found for this user.
+     No courses found for this user.
   </div> 
     ) : (
       <div style={{ width: '100%', height: '100vh', overflow: 'hidden' }}>

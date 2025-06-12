@@ -92,7 +92,7 @@ def get_all_requests(request):
         if importance:
             query["importance"] = importance
 
-        # ✅ Match "in progress" to statuses that start with "בטיפול"
+        #  Match "in progress" to statuses that start with "בטיפול"
         if status_filter:
             if status_filter == "in progress":
                 query["status"] = {"$regex": "^בטיפול"}
@@ -229,7 +229,7 @@ def get_available_courses_view(request, user_id):
 def professor_courses(request, professor_id):
     print(f" GET /api/professor_courses/{professor_id}/ called")
     courses = dbcommands.get_courses_by_lecturer(professor_id)
-    print("🎓 Courses found:", courses)
+    print(" Courses found:", courses)
 
     # Convert ObjectId to str
     for course in courses:
@@ -256,13 +256,13 @@ def update_grade(request):
 
         if 0 <= new_grade <= 100:
             updated = dbcommands.update_student_grade(user_id, course_id, new_grade)
-            print(f"✅ Updated records: {updated}")
+            print(f" Updated records: {updated}")
             return Response({"message": "Grade updated successfully."})
         else:
             return Response({"error": "Grade must be between 0 and 100."}, status=400)
 
     except Exception as e:
-        print("❌ Error:", e)
+        print(" Error:", e)
         return Response({"error": str(e)}, status=400)
 
 

@@ -11,7 +11,7 @@ const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY ,data}) => {
       fill="none"
       stroke="#555"
       strokeWidth={3}
-      markerEnd="url(#arrowhead)" // ✅ arrow!
+      markerEnd="url(#arrowhead)" //  arrow!
      
     />
   );

@@ -44,7 +44,7 @@ function ViewAsks() {
     fetch(url)
       .then(res => res.json())
       .then(data => {
-        setAsks(data); // ✅ DO NOT filter out closed here
+        setAsks(data); //  DO NOT filter out closed here
       });
   };
 
@@ -171,7 +171,7 @@ function ViewAsks() {
             </div>
 
             <div style={{ flex: 1, textAlign: "center", fontSize: "14px", color: "#333" }}>
-              👤 {ask.id_sending}
+               {ask.id_sending}
             </div>
 
             <div style={{ flex: 1, textAlign: "right" }}>

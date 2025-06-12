@@ -34,10 +34,10 @@ function ProfessorGrades() {
       course_id: selectedCourse,
       grade: student.grade,
     })
-    .then(() => alert("✅ Grade saved!"))
+    .then(() => alert(" Grade saved!"))
     .catch(err => {
       console.error("Failed to save grade:", err);
-      alert("❌ Error saving grade.");
+      alert(" Error saving grade.");
     });
   };
 
@@ -49,7 +49,7 @@ function ProfessorGrades() {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h2>📚 Your Courses</h2>
+      <h2> Your Courses</h2>
       <p>Logged in as Professor (ID: {user_id})</p>
 
       <div style={{ marginBottom: "20px" }}>
