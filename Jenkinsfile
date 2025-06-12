@@ -11,8 +11,8 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the project...'
-                // Uncomment this if you use requirements.txt
-                // bat 'pip install -r requirements.txt'
+                // Optional: install dependencies
+                // bat 'pip install -r project/requirements.txt'
             }
         }
 
@@ -21,8 +21,9 @@ pipeline {
                 echo 'Running tests with coverage and saving reports...'
                 bat '''
                     set DJANGO_SETTINGS_MODULE=project.settings
-                    set PYTHONPATH=%CD%
-                    pytest --junitxml=report.xml --cov=. --cov-report=html --cov-report=term > test-report.txt || exit 0
+                    set PYTHONPATH=%CD%\\project
+                    cd project
+                    pytest --junitxml=report.xml --cov=. --cov-report=html --cov-report=term --capture=no > test-report.txt || exit 0
                 '''
             }
         }
@@ -30,21 +31,16 @@ pipeline {
         stage('Results') {
             steps {
                 echo 'Test results and coverage summary:'
-                bat 'type test-report.txt'
+                bat 'type project\\test-report.txt'
             }
         }
     }
 
     post {
         always {
-            // 🧪 Test results for Jenkins
-            junit 'report.xml'
-
-            // 📄 Text output of pytest
-            archiveArtifacts artifacts: 'test-report.txt', fingerprint: true
-
-            // 📊 Full HTML coverage report
-            archiveArtifacts artifacts: 'htmlcov/**', fingerprint: true
+            junit 'project/report.xml'                             // 📄 Test results
+            archiveArtifacts artifacts: 'project/test-report.txt', fingerprint: true
+            archiveArtifacts artifacts: 'project/htmlcov/**', fingerprint: true
         }
 
         failure {
@@ -52,7 +48,7 @@ pipeline {
         }
 
         success {
-            echo '✅ All tests passed. View coverage report in "htmlcov/index.html"'
+            echo '✅ All tests passed. View coverage in project/htmlcov/index.html'
         }
     }
 }
