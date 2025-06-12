@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        // Optional: activate virtualenv, or set PYTHONPATH here if needed
-    }
-
     stages {
         stage('Clone') {
             steps {
@@ -15,7 +11,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the project...'
-                // If needed, install dependencies:
+                // If you need to install Python dependencies, uncomment this:
                 // sh 'pip install -r requirements.txt'
             }
         }
@@ -23,13 +19,14 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Running tests...'
+                // Run pytest and collect results
                 sh 'pytest --maxfail=5 --disable-warnings --tb=short > test-report.txt || true'
             }
         }
 
         stage('Results') {
             steps {
-                echo 'Displaying test results...'
+                echo 'Test results:'
                 sh 'cat test-report.txt'
             }
         }
@@ -37,14 +34,14 @@ pipeline {
 
     post {
         always {
-            // Optional: archive test report
+            // Save test report file as an artifact
             archiveArtifacts artifacts: 'test-report.txt', fingerprint: true
         }
         failure {
-            echo 'Build or tests failed. Check logs for details.'
+            echo '🚨 Build or tests failed. Check the test-report.txt for details.'
         }
         success {
-            echo 'Pipeline finished successfully.'
+            echo '✅ All good! Build and tests passed.'
         }
     }
 }
