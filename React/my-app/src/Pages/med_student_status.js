@@ -5,7 +5,7 @@ import axios from "axios";
 import StudentStatusEditor from "../Components/StudentStatusEditor";
 import Course_tree from "../Components/Course_tree";
 
-console.log("✅ Requestsubmissions_student loaded");
+console.log(" Requestsubmissions_student loaded");
 // To what endpoint to send
  const BASE_URL = 'http://localhost:8000/api/?/';
  const user_id = localStorage.getItem('user_id');

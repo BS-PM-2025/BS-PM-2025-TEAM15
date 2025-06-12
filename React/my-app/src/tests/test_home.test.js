@@ -22,7 +22,7 @@ test('renders loading text before data is loaded', () => {
   expect(screen.getByText(/loading user name/i)).toBeInTheDocument();
 });
 
-// ✅ Test that user name is fetched and displayed
+//  Test that user name is fetched and displayed
 test('displays user name after fetch', async () => {
   axios.post.mockResolvedValueOnce({ data: { name: 'Tali' } });
   axios.get.mockResolvedValueOnce({ data: { totalRequests: 0, doneRequests: 0, IN_progress: 0, pendingRequests: 0 } });
@@ -36,7 +36,7 @@ test('displays user name after fetch', async () => {
   });
 });
 
-// ✅ Test that stats are shown correctly
+//  Test that stats are shown correctly
 test('shows correct stats from backend', async () => {
   axios.post.mockResolvedValueOnce({ data: { name: 'Tali' } });
   axios.get.mockResolvedValueOnce({
@@ -53,7 +53,7 @@ test('shows correct stats from backend', async () => {
   });
 });
 
-// ✅ Test that latest requests are displayed
+//  Test that latest requests are displayed
 test('shows latest requests for student', async () => {
   axios.post.mockResolvedValueOnce({ data: { name: 'Tali' } });
   axios.get.mockResolvedValueOnce({ data: { totalRequests: 0, doneRequests: 0, IN_progress: 0, pendingRequests: 0 } });
@@ -73,7 +73,7 @@ test('shows latest requests for student', async () => {
   });
 });
 
-// ✅ Test that admin sees modal when clicking a request
+//  Test that admin sees modal when clicking a request
 test('admin can click and see RequestModal', async () => {
   axios.post.mockResolvedValueOnce({ data: { name: 'Admin' } });
   axios.get.mockResolvedValueOnce({ data: { totalRequests: 0, doneRequests: 0, IN_progress: 0, pendingRequests: 0 } });
@@ -100,7 +100,7 @@ test('admin can click and see RequestModal', async () => {
   });
 });
 
-// ✅ Test that non-admin sees Request_view
+//  Test that non-admin sees Request_view
 test('non-admin can click and see Request_view', async () => {
   axios.post.mockResolvedValueOnce({ data: { name: 'Tali' } });
   axios.get.mockResolvedValueOnce({ data: { totalRequests: 0, doneRequests: 0, IN_progress: 0, pendingRequests: 0 } });

@@ -271,7 +271,7 @@
 //       overflowY: "auto" 
 //     }}>
 //       <Typography variant="h5" color="#134075" gutterBottom>
-//         📚 Enrolled Courses
+//          Enrolled Courses
 //       </Typography>
 //       <Course_tree userId={userId} />
 //     </div>
@@ -490,7 +490,7 @@ function Student_Dashboard() {
     <div style={graph_student}>
       <div style={cardScrollable}>
         <Typography variant="h5" color="#134075" gutterBottom>
-          📚 Enrolled Courses
+           Enrolled Courses
         </Typography>
         <Course_tree userId={userId} />
       </div>

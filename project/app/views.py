@@ -272,7 +272,7 @@ class StudentStatsView(APIView):
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
-            print("❌ Error in StudentStatsView:", e)
+            print(" Error in StudentStatsView:", e)
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -467,7 +467,7 @@ class GetStudentCourseInfoView(APIView):
 
   
 
-from .dbcommands import append_text  # ✅ import your helper
+from .dbcommands import append_text  #  import your helper
 
 @csrf_exempt
 def edit_request_text(request, ask_id):
@@ -479,7 +479,7 @@ def edit_request_text(request, ask_id):
             if not new_text:
                 return JsonResponse({"error": "Text cannot be empty."}, status=400)
 
-            success = append_text(ask_id, new_text)  # ✅ use your helper
+            success = append_text(ask_id, new_text)  # use your helper
 
             if not success:
                 return JsonResponse({"error": "Request not found."}, status=404)

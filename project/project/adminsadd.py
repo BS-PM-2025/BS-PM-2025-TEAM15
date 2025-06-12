@@ -57,4 +57,4 @@ for admin in new_admins:
         "role": admin["role"]
     })
 
-print("✅ 3 new admins inserted successfully!")
+print("3 new admins inserted successfully!")
