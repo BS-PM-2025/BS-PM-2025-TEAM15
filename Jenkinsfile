@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        DJANGO_SETTINGS_MODULE = "project.settings"
+        PYTHONPATH = "${WORKSPACE}/project"
+    }
+
     stages {
         stage('Clone') {
             steps {
@@ -11,20 +16,18 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the project...'
-                // Optional: install dependencies
-                // bat 'pip install -r project/requirements.txt'
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Running tests with coverage and saving reports...'
-                bat '''
+                bat """
                     set DJANGO_SETTINGS_MODULE=project.settings
-                    set PYTHONPATH=%CD%\\project
+                    set PYTHONPATH=%WORKSPACE%\\project
                     cd project
                     pytest --junitxml=report.xml --cov=. --cov-report=html --cov-report=term --capture=no > test-report.txt || exit 0
-                '''
+                """
             }
         }
 
@@ -38,17 +41,8 @@ pipeline {
 
     post {
         always {
-            junit 'project/report.xml'                             // 📄 Test results
-            archiveArtifacts artifacts: 'project/test-report.txt', fingerprint: true
-            archiveArtifacts artifacts: 'project/htmlcov/**', fingerprint: true
-        }
-
-        failure {
+            junit 'project/report.xml'
             echo '🚨 Build or tests failed. Check test-report.txt or coverage report.'
-        }
-
-        success {
-            echo '✅ All tests passed. View coverage in project/htmlcov/index.html'
         }
     }
 }
