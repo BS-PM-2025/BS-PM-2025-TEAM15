@@ -8,7 +8,6 @@ from .views import StudentStatsView , edit_request_text
 from .adminviews import update_grade,students_in_course,professor_courses,get_ask_details,download_request_documents, get_comment,get_all_courses_view,add_course,get_all_professors
 
 urlpatterns = [
-    path('admin/', safe_admin.urls),
     path('', views.home, name='home'),
     path('wel/', ReactView.as_view(), name="something"),
     path('api/studentrequests/',Student_personal_requests.as_view(),name = "Studentrequest"),
