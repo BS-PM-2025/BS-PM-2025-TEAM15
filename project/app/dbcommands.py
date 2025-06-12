@@ -168,7 +168,7 @@ def find_courses_with_nested_id(target_course_id_str,user_id):
             }
 
     print(" No matching course and student entry found.")
-    return None
+    return []
 
 def get_average(student_id):
     grades = [get_grade(student_id, cid) for cid in get_all_courses(student_id)]
