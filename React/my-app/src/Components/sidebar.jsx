@@ -131,9 +131,9 @@ export default function Sidebar() {
 
           <li>
             <Link to="/Student_Dashboard">
-              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+              {/* <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
                 <path d="M240-200h120v-200q0-17 11.5-28.5T400-440h160q17 0 28.5 11.5T600-400v200h120v-360L480-740 240-560v360Z" />
-              </svg>
+              </svg> */}
               <span>Dashboard</span>
             </Link>
           </li>

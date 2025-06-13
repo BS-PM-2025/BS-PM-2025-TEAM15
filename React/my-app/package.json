@@ -11,11 +11,14 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^13.5.0",
+    "ajv": "^6.12.6",
+    "ajv-keywords": "^3.5.2",
     "axios": "^1.8.4",
     "d3": "^7.9.0",
     "dagre": "^0.8.5",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-flow-renderer": "^10.3.17",
     "react-router-dom": "^7.6.2",
     "react-scripts": "^5.0.1",
     "react-select": "^5.10.1",
@@ -26,7 +29,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "test:ui": "vitest --ui"
   },
   "eslintConfig": {
     "extends": [
@@ -45,5 +49,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@vitest/ui": "^3.2.3",
+    "vitest": "^3.2.3"
   }
 }
