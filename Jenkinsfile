@@ -21,7 +21,7 @@ pipeline {
                     set DJANGO_SETTINGS_MODULE=project.settings
                     set PYTHONPATH=%WORKSPACE%\\project
                     cd project
-                    pytest --junitxml=report.xml --cov=. --cov-report=term --capture=no > test-report.txt || exit 0
+                    python -m pytest --junitxml=report.xml --cov=. --cov-report=term --capture=no > test-report.txt || exit 0
                 """
             }
         }
