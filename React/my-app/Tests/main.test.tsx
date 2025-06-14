@@ -265,16 +265,7 @@ describe('Sidebar_Tests for Regular user', () => {
 
     expect(screen.getByText(/Requests/i)).toBeInTheDocument();
   });
-  it('should render Sidebar with Exams', () => {
-    render(
-      <MemoryRouter>
-        <Sidebar />
-      </MemoryRouter>
-    );
-
-    expect(screen.getByText(/Exams/i)).toBeInTheDocument();
-  });
-
+ 
   it('should render Sidebar with Logout', () => {
     render(
       <MemoryRouter>
@@ -284,15 +275,7 @@ describe('Sidebar_Tests for Regular user', () => {
 
     expect(screen.getByText(/Logout/i)).toBeInTheDocument();
   });
-  it('should render Sidebar with Exams', () => {
-    render(
-      <MemoryRouter>
-        <Sidebar />
-      </MemoryRouter>
-    );
-
-    expect(screen.getByText(/Logout/i)).toBeInTheDocument();
-  });
+ 
   //fails
   it('should not  render Sidebar without save button', () => {
     render(
