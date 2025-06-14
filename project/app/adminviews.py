@@ -9,6 +9,7 @@ from django.http import HttpResponse, Http404
 from django.conf import settings
 from io import BytesIO
 from django.http import JsonResponse
+from datetime import datetime
 
 # --- GET all admins ---
 @api_view(["GET"])
@@ -356,4 +357,51 @@ def get_all_professors(request):
     except Exception as e:
         return Response({"error": str(e)}, status=400)
 
-        
+@api_view(["GET"])
+def get_user_notifications(request):
+    user_id = request.GET.get("user_id")
+    if not user_id:
+        return Response({"error": "Missing user_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        raw_notifications = dbcommands.get_notifications(int(user_id))
+
+        # Convert ObjectId and datetime to strings
+        notifications = []
+        for n in raw_notifications:
+            n["_id"] = str(n["_id"])
+            if isinstance(n["time"], datetime):
+                n["time"] = n["time"].isoformat()
+            notifications.append(n)
+
+        return Response(notifications, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# POST /api/notifications/mark_seen/
+@api_view(["POST"])
+def mark_notifications_seen(request):
+    user_id = request.data.get("user_id")
+    if not user_id:
+        return Response({"error": "Missing user_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        dbcommands.mark_notifications_as_seen(int(user_id))
+        return Response({"message": "Marked as seen"}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# GET /api/notifications/has_unseen/?user_id=123
+@api_view(["GET"])
+def has_unseen_notifications(request):
+    user_id = request.GET.get("user_id")
+    if not user_id:
+        return Response({"error": "Missing user_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        has_unseen = dbcommands.has_unseen_notifications(int(user_id))
+        return Response({"has_unseen": has_unseen}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)        
