@@ -2,43 +2,61 @@ import React, { useEffect, useState, useRef } from "react";
 import styles from "../App.css";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { FaBell } from 'react-icons/fa'; // 
 import DownloadCertificate from '../Pages/DownloadCertificate';
 
-
-
-
-
 export default function Sidebar() {
-  
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(null);
   const [isProf, setIsProf] = useState(false);
-  const BASE_URL_ADMIN = 'http://localhost:8000/api/isadmin/';
-  const BASE_URL_PROF = 'http://localhost:8000/api/isprof/';
   const [notifications, setNotifications] = useState([]);
   const [hasUnseen, setHasUnseen] = useState(false);
-
-  const [showNotifications, setShowNotifications] = useState(false);  // ✅
-  
-  const toggleButtonRef = useRef(null);
-  const sidebarRef = useRef(null);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const BASE_URL_ADMIN = 'http://localhost:8000/api/isadmin/';
+  const BASE_URL_PROF = 'http://localhost:8000/api/isprof/';
   const userId = localStorage.getItem('user_id');
 
+  const sidebarRef = useRef(null);
+  const toggleButtonRef = useRef(null);
+
+  // Roles + Notifications
   useEffect(() => {
-    if (userId) {
-      axios.get(`http://localhost:8000/api/request_status/?user_id=${userId}`)
-        .then((res) => {
-          const doneRequests = res.data
-            .filter((r) => r.status.toLowerCase() === "done")
-            .slice(-10); // רק 10 אחרונות
-          setNotifications(doneRequests);
-        })
-        .catch((err) => {
-          console.error("שגיאה בקבלת התראות:", err);
-        });
+    if (!userId) return;
+
+    axios.post(BASE_URL_ADMIN, { userId })
+      .then(res => setIsAdmin(res.data.is_admin))
+      .catch(err => {
+        console.error("Admin check failed:", err);
+        setIsAdmin(false);
+      });
+
+    axios.post(BASE_URL_PROF, { userId })
+      .then(res => setIsProf(res.data.is_prof))
+      .catch(err => {
+        console.error("Professor check failed:", err);
+        setIsProf(false);
+      });
+
+    axios.get(`http://localhost:8000/notifications/?user_id=${userId}`)
+      .then(res => {
+        setNotifications(res.data);
+        setHasUnseen(res.data.some(n => n.seen === false));
+      })
+      .catch(err => console.error("Notification fetch error:", err));
+  }, [userId]);
+
+  // Handle bell click
+  const handleBellClick = async () => {
+    setShowNotifications(prev => !prev);
+    if (!showNotifications) {
+      try {
+        await axios.post(`http://localhost:8000/notifications/mark_seen/`, { user_id: userId });
+        setNotifications(prev => prev.map(n => ({ ...n, seen: true })));
+        setHasUnseen(false);
+      } catch (err) {
+        console.error("Failed to mark notifications as seen:", err);
+      }
     }
-  }, []);
+  };
 
   function closeAllSubMenus(e) {
     if (!e || !e.currentTarget) return;
@@ -78,52 +96,77 @@ export default function Sidebar() {
     }
   }
 
-  useEffect(() => {
-    if (userId) {
-      axios.post(BASE_URL_ADMIN, { userId }, {
-        headers: { "Content-Type": "application/json" },
-      })
-        .then((response) => {
-          setIsAdmin(response.data.is_admin);
-        })
-        .catch((error) => {
-          console.error("Admin check failed:", error);
-          setIsAdmin(false);
-        });
+  // Bell notification component
+  const bellNotification = (
+    <li style={{ position: 'relative' }}>
+      <button
+        onClick={handleBellClick}
+        style={{
+          background: 'none',
+          border: 'none',
+          padding: '5px 10px',
+          marginTop: '20px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          color: '#e8eaed',
+          fontSize: '1rem'
+        }}
+      >
+        <span style={{ fontSize: '1.2rem' }}>🔔</span>
+        {hasUnseen && (
+          <span
+            style={{
+              position: 'absolute',
+              top: '2px',
+              right: '-2px',
+              height: '10px',
+              width: '10px',
+              backgroundColor: 'dodgerblue',
+              borderRadius: '50%'
+            }}
+          />
+        )}
+      </button>
 
-      axios.post(BASE_URL_PROF, { userId }, {
-        headers: { "Content-Type": "application/json" },
-      })
-        .then((response) => {
-          setIsProf(response.data.is_prof);
-        })
-        .catch((error) => {
-          console.error("Professor check failed:", error);
-          setIsProf(false);
-        });
-
-      axios.get(`http://localhost:8000/notifications/?user_id=${userId}`)
-  .then((res) => {
-    setNotifications(res.data);
-    const unseen = res.data.some(n => n.seen === false);
-    setHasUnseen(unseen);
-  })
-  .catch((err) => console.error("Failed to load notifications:", err));
-
-    }
-  }, [userId]);
-
-  const handleBellClick = async () => {
-  setShowNotifications(!showNotifications);
-  if (!showNotifications) {
-await axios.post(`http://localhost:8000/notifications/mark_seen/`, {
-  user_id: userId
-});
-    setNotifications(prev => prev.map(n => ({ ...n, seen: true })));
-    setHasUnseen(false);
-  }
-  
-};
+      {showNotifications && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '40px',
+            right: '0px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            borderRadius: '5px',
+            width: '300px',
+            zIndex: 1000,
+            maxHeight: '300px',
+            overflowY: 'auto',
+            padding: '10px',
+            color: 'black'
+          }}
+        >
+          {notifications.length === 0 ? (
+            <div style={{ padding: '10px' }}>No notifications.</div>
+          ) : (
+            notifications.map((n, idx) => (
+              <div
+                key={idx}
+                style={{
+                  padding: '8px 0',
+                  borderBottom: '1px solid #eee'
+                }}
+              >
+                <strong>{new Date(n.time).toLocaleString()}</strong>
+                <div>{n.text}</div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </li>
+  );
 
   const logoutButton = (
     <li>
@@ -133,7 +176,7 @@ await axios.post(`http://localhost:8000/notifications/mark_seen/`, {
           window.location.href = "/";
         }}
         style={{
-          backgroundColor: ' #ff4d4f',
+          backgroundColor: '#ff4d4f',
           color: 'white',
           padding: '5px 10px',
           border: 'none',
@@ -151,75 +194,9 @@ await axios.post(`http://localhost:8000/notifications/mark_seen/`, {
     </li>
   );
 
-const bellNotification = (
-  <li style={{ position: 'relative' }}>
-  <button
-    onClick={handleBellClick}
-    style={{
-      background: 'none',
-      border: 'none',
-      padding: '5px 10px',
-      marginTop: '20px',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '6px',
-      color: '#e8eaed',
-      fontSize: '1rem'
-    }}
-  >
-    <span style={{ fontSize: '1.2rem' }}>🔔</span>
-    <span>Notifications</span>
-    {hasUnseen && (
-      <span
-        style={{
-          position: 'absolute',
-          top: '2px',
-          right: '-2px',
-          height: '10px',
-          width: '10px',
-          backgroundColor: 'dodgerblue',
-          borderRadius: '50%'
-        }}
-      />
-    )}
-  </button>
+ 
 
-  {showNotifications && (
-    <div
-      style={{
-        position: 'absolute',
-        top: '40px',
-        right: '0px',
-        backgroundColor: 'white',
-        border: '1px solid #ccc',
-        borderRadius: '5px',
-        width: '300px',
-        zIndex: 1000,
-        maxHeight: '300px',
-        overflowY: 'auto',
-        padding: '10px',
-        color: 'black'
-      }}
-    >
-      {notifications.length === 0 ? (
-        <div style={{ padding: '10px' }}>No notifications.</div>
-      ) : (
-        notifications.map((n, idx) => (
-          <div
-            key={idx}
-            style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}
-          >
-            <strong>{new Date(n.time).toLocaleString()}</strong>
-            <div>{n.text}</div>
-          </div>
-        ))
-      )}
-    </div>
-  )}
-</li>
 
-);
 
   if (!isAdmin) {
     return (
@@ -271,15 +248,7 @@ const bellNotification = (
             </ul>
           </li>
 
-          <li>
-            <Link to="/exams">
-              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
-                <path d="M200-80q-33 0-56.5-23.5T120-160v-640q0-33 23.5-56.5T200-880h400q17 0 28.5 11.5T640-840q0 17-11.5 28.5T600-800H200v640h560v-280q0-17 11.5-28.5T800-480q17 0 28.5 11.5T840-440v280q0 33-23.5 56.5T760-80H200Z" />
-              </svg>
-              <span>Exams</span>
-            </Link>
-          </li>
-          {bellNotification}
+        
  <li>
       <Link to="/DownloadCertificate">
         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
@@ -289,49 +258,10 @@ const bellNotification = (
       </Link>
     </li>
     <li style={{ position: "relative" }}>
-  <button
-    onClick={() => setShowNotifications((prev) => !prev)}
-    style={{
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      fontSize: "20px",
-      marginRight: "10px",
-      marginTop: "24px" // << כאן שולטים בגובה הפעמון
-    }}
-  >
-    🔔
-  </button>
-
-  {showNotifications && (
-    <div style={{
-      position: "absolute",
-      top: "60px",
-      right: "0",
-      backgroundColor: "white",
-      border: "1px solid #ccc",
-      borderRadius: "8px",
-      padding: "10px",
-      width: "250px",
-      zIndex: 1000,
-      boxShadow: "0 4px 8px rgba(0,0,0,0.1)"
-    }}>
-      <h4 style={{ marginTop: 0 }}>התראות אחרונות</h4>
-      {notifications.length === 0 ? (
-        <p style={{ fontSize: "14px" }}>אין התראות חדשות</p>
-      ) : (
-        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          {notifications.map((item, index) => (
-            <li key={index} style={{ fontSize: "14px", marginBottom: "8px" }}>
-              ✔️ בקשה: <strong>{item.title}</strong> הסתיימה
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  )}
-</li>
   
+ 
+</li>
+          {bellNotification}
           {logoutButton}
         </ul>
       </nav>
