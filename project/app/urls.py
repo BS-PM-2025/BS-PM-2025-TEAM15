@@ -6,7 +6,7 @@ from django.conf.urls.static import static
 from django.conf import settings 
 from .views import StudentStatsView , edit_request_text
 from .adminviews import update_grade,students_in_course,professor_courses,get_ask_details,download_request_documents, get_comment,get_all_courses_view,add_course,get_all_professors
-
+from .adminviews import get_user_notifications,mark_notifications_seen,has_unseen_notifications
 urlpatterns = [
     path('', views.home, name='home'),
     path('wel/', ReactView.as_view(), name="something"),
@@ -40,6 +40,9 @@ urlpatterns = [
     path("asks/<int:idr>/download_documents/", download_request_documents),
     path("courses/add/", add_course),
 
+    path("notifications/", get_user_notifications),
+    path("notifications/mark_seen/",mark_notifications_seen),
+    path("notifications/has_unseen/", has_unseen_notifications),
     #to check if the user is admin
     path('api/isadmin/',is_admin),
     path('api/isprof/',is_prof),

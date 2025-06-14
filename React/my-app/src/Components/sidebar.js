@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import styles from "../App.css";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { FaBell } from 'react-icons/fa'; // 
 
 export default function Sidebar() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -9,6 +10,9 @@ export default function Sidebar() {
   const [isProf, setIsProf] = useState(false);
   const BASE_URL_ADMIN = 'http://localhost:8000/api/isadmin/';
   const BASE_URL_PROF = 'http://localhost:8000/api/isprof/';
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [hasUnseen, setHasUnseen] = useState(false);
 
   const toggleButtonRef = useRef(null);
   const sidebarRef = useRef(null);
@@ -75,8 +79,29 @@ export default function Sidebar() {
           console.error("Professor check failed:", error);
           setIsProf(false);
         });
+
+      axios.get(`http://localhost:8000/notifications/?user_id=${userId}`)
+  .then((res) => {
+    setNotifications(res.data);
+    const unseen = res.data.some(n => n.seen === false);
+    setHasUnseen(unseen);
+  })
+  .catch((err) => console.error("Failed to load notifications:", err));
+
     }
   }, [userId]);
+
+  const handleBellClick = async () => {
+  setShowNotifications(!showNotifications);
+  if (!showNotifications) {
+await axios.post(`http://localhost:8000/notifications/mark_seen/`, {
+  user_id: userId
+});
+    setNotifications(prev => prev.map(n => ({ ...n, seen: true })));
+    setHasUnseen(false);
+  }
+  
+};
 
   const logoutButton = (
     <li>
@@ -103,6 +128,76 @@ export default function Sidebar() {
       </button>
     </li>
   );
+
+const bellNotification = (
+  <li style={{ position: 'relative' }}>
+  <button
+    onClick={handleBellClick}
+    style={{
+      background: 'none',
+      border: 'none',
+      padding: '5px 10px',
+      marginTop: '20px',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+      color: '#e8eaed',
+      fontSize: '1rem'
+    }}
+  >
+    <span style={{ fontSize: '1.2rem' }}>🔔</span>
+    <span>Notifications</span>
+    {hasUnseen && (
+      <span
+        style={{
+          position: 'absolute',
+          top: '2px',
+          right: '-2px',
+          height: '10px',
+          width: '10px',
+          backgroundColor: 'dodgerblue',
+          borderRadius: '50%'
+        }}
+      />
+    )}
+  </button>
+
+  {showNotifications && (
+    <div
+      style={{
+        position: 'absolute',
+        top: '40px',
+        right: '0px',
+        backgroundColor: 'white',
+        border: '1px solid #ccc',
+        borderRadius: '5px',
+        width: '300px',
+        zIndex: 1000,
+        maxHeight: '300px',
+        overflowY: 'auto',
+        padding: '10px',
+        color: 'black'
+      }}
+    >
+      {notifications.length === 0 ? (
+        <div style={{ padding: '10px' }}>No notifications.</div>
+      ) : (
+        notifications.map((n, idx) => (
+          <div
+            key={idx}
+            style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}
+          >
+            <strong>{new Date(n.time).toLocaleString()}</strong>
+            <div>{n.text}</div>
+          </div>
+        ))
+      )}
+    </div>
+  )}
+</li>
+
+);
 
   if (!isAdmin) {
     return (
@@ -162,7 +257,7 @@ export default function Sidebar() {
               <span>Exams</span>
             </Link>
           </li>
-
+          {bellNotification}
           {logoutButton}
         </ul>
       </nav>
@@ -214,7 +309,7 @@ export default function Sidebar() {
                 </Link>
               </li>
             )}
-
+            {bellNotification}
             {logoutButton}
           </ul>
         </nav>
