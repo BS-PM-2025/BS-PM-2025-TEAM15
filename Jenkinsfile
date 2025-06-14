@@ -41,57 +41,62 @@ pipeline {
             }
         }
 
-        stage('Quality Gate') {
-            steps {
-                script {
-                    def report = readFile('project/test-report.txt')
+       stage('Quality Gate') {
+    steps {
+        script {
+            def report = readFile('project/test-report.txt')
 
-                    def passed = 0
-                    def failed = 0
-                    def errors = 0
-                    def skipped = 0
+            def passed = 0
+            def failed = 0
+            def errors = 0
+            def skipped = 0
 
-                    def matchLine = report.readLines().find { it.contains(" in ") && it.contains("passed") }
+            def matchLine = report.readLines().find { it.contains(" in ") && it.contains("passed") }
 
-                    if (matchLine) {
-                        def passMatch = (matchLine =~ /(\d+)\s+passed/)
-                        def failMatch = (matchLine =~ /(\d+)\s+failed/)
-                        def errorMatch = (matchLine =~ /(\d+)\s+error/)
-                        def skipMatch = (matchLine =~ /(\d+)\s+skipped/)
+            if (matchLine) {
+                def passMatch = (matchLine =~ /(\d+)\s+passed/)
+                def failMatch = (matchLine =~ /(\d+)\s+failed/)
+                def errorMatch = (matchLine =~ /(\d+)\s+error/)
+                def skipMatch = (matchLine =~ /(\d+)\s+skipped/)
 
-                        passed = passMatch ? passMatch[0][1].toInteger() : 0
-                        failed = failMatch ? failMatch[0][1].toInteger() : 0
-                        errors = errorMatch ? errorMatch[0][1].toInteger() : 0
-                        skipped = skipMatch ? skipMatch[0][1].toInteger() : 0
-                    }
+                passed = passMatch ? passMatch[0][1].toInteger() : 0
+                failed = failMatch ? failMatch[0][1].toInteger() : 0
+                errors = errorMatch ? errorMatch[0][1].toInteger() : 0
+                skipped = skipMatch ? skipMatch[0][1].toInteger() : 0
+            }
 
-                    def totalTests = passed + failed + errors + skipped
-                    def coveragePercent = 0
-                    def totalLine = report.readLines().find { it.trim().startsWith('TOTAL') }
-                    if (totalLine) {
-                        def parts = totalLine.trim().split(/\s+/)
-                        if (parts.size() >= 4 && parts[3].endsWith('%')) {
-                            coveragePercent = parts[3].replace('%', '').toInteger()
-                        }
-                    }
-
-                    if (totalTests > 0) {
-                        def passRate = (passed * 100) / totalTests
-                        echo "Total tests: ${totalTests}"
-                        echo "Passed: ${passed}, Failed: ${failed}, Errors: ${errors}, Skipped: ${skipped}"
-                        echo "Test pass rate: ${passRate}%"
-                        echo "Coverage: ${coveragePercent}%"
-
-                        if (passRate < 90 || coveragePercent < 75) {
-                            error("Quality gate failed: pass rate < 90% or coverage < 75%")
-                        }
-                    } else {
-                        error("No Django tests found or could not parse test summary")
-                    }
+            def totalTests = passed + failed + errors + skipped
+            def coveragePercent = 0
+            def totalLine = report.readLines().find { it.trim().startsWith('TOTAL') }
+            if (totalLine) {
+                def parts = totalLine.trim().split(/\s+/)
+                if (parts.size() >= 4 && parts[3].endsWith('%')) {
+                    coveragePercent = parts[3].replace('%', '').toInteger()
                 }
+            }
+
+            if (totalTests > 0) {
+                def passRate = (passed * 100) / totalTests
+                echo "Total tests: ${totalTests}"
+                echo "Passed: ${passed}, Failed: ${failed}, Errors: ${errors}, Skipped: ${skipped}"
+                echo "Test pass rate: ${passRate}%"
+                echo "Coverage: ${coveragePercent}%"
+
+                if (failed > 0 || errors > 0) {
+                    error(" Some tests failed or errored — marking build as failed.")
+                } else if (passRate < 90 || coveragePercent < 75) {
+                    currentBuild.result = 'UNSTABLE'
+                    echo "⚠ Build marked UNSTABLE: pass rate < 90% or coverage < 75%"
+                } else {
+                    echo " All quality checks passed!"
+                }
+            } else {
+                error("No Django tests found or could not parse test summary.")
             }
         }
     }
+}
+
 
     post {
         always {
