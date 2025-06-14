@@ -4,10 +4,6 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import DownloadCertificate from '../Pages/DownloadCertificate';
 
-
-
-
-
 export default function Sidebar() {
   
   const [isProfileOpen, setIsProfileOpen] = useState(false);
