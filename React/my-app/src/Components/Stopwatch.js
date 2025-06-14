@@ -9,7 +9,7 @@ export default function Stopwatch(){
     },1000);
     return (
         <div>
-            <h2>Time Starts Now!</h2>{
+            <h2>Time Starts Now!</h2> { 
                 seconds
             }seconds
         </div>

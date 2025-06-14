@@ -3,20 +3,42 @@ import styles from "../App.css";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { FaBell } from 'react-icons/fa'; // 
+import DownloadCertificate from '../Pages/DownloadCertificate';
+
+
+
+
 
 export default function Sidebar() {
+  
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(null);
   const [isProf, setIsProf] = useState(false);
   const BASE_URL_ADMIN = 'http://localhost:8000/api/isadmin/';
   const BASE_URL_PROF = 'http://localhost:8000/api/isprof/';
   const [notifications, setNotifications] = useState([]);
-  const [showNotifications, setShowNotifications] = useState(false);
   const [hasUnseen, setHasUnseen] = useState(false);
 
+  const [showNotifications, setShowNotifications] = useState(false);  // ✅
+  
   const toggleButtonRef = useRef(null);
   const sidebarRef = useRef(null);
   const userId = localStorage.getItem('user_id');
+
+  useEffect(() => {
+    if (userId) {
+      axios.get(`http://localhost:8000/api/request_status/?user_id=${userId}`)
+        .then((res) => {
+          const doneRequests = res.data
+            .filter((r) => r.status.toLowerCase() === "done")
+            .slice(-10); // רק 10 אחרונות
+          setNotifications(doneRequests);
+        })
+        .catch((err) => {
+          console.error("שגיאה בקבלת התראות:", err);
+        });
+    }
+  }, []);
 
   function closeAllSubMenus(e) {
     if (!e || !e.currentTarget) return;
@@ -226,9 +248,9 @@ const bellNotification = (
 
           <li>
             <Link to="/Student_Dashboard">
-              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+              {/* <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
                 <path d="M240-200h120v-200q0-17 11.5-28.5T400-440h160q17 0 28.5 11.5T600-400v200h120v-360L480-740 240-560v360Z" />
-              </svg>
+              </svg> */}
               <span>Dashboard</span>
             </Link>
           </li>
@@ -258,6 +280,58 @@ const bellNotification = (
             </Link>
           </li>
           {bellNotification}
+ <li>
+      <Link to="/DownloadCertificate">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+        <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h320q17 0 28.5 11.5T560-800q0 17-11.5 28.5T520-760H200v560h560v-200q0-17 11.5-28.5T800-440q17 0 28.5 11.5T840-400v200q0 33-23.5 56.5T760-120H200Zm226-160-43-43q-11-11-11-28t11-28l214-214q12-12 28-11.5t28 12.5q11 12 11 28t-11 28L467-280h193q17 0 28.5 11.5T700-240q0 17-11.5 28.5T660-200H400q-17 0-28.5-11.5T360-240q0-17 11.5-28.5T400-280h26Z"/>
+        </svg>
+        <span>Documents</span>
+      </Link>
+    </li>
+    <li style={{ position: "relative" }}>
+  <button
+    onClick={() => setShowNotifications((prev) => !prev)}
+    style={{
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontSize: "20px",
+      marginRight: "10px",
+      marginTop: "24px" // << כאן שולטים בגובה הפעמון
+    }}
+  >
+    🔔
+  </button>
+
+  {showNotifications && (
+    <div style={{
+      position: "absolute",
+      top: "60px",
+      right: "0",
+      backgroundColor: "white",
+      border: "1px solid #ccc",
+      borderRadius: "8px",
+      padding: "10px",
+      width: "250px",
+      zIndex: 1000,
+      boxShadow: "0 4px 8px rgba(0,0,0,0.1)"
+    }}>
+      <h4 style={{ marginTop: 0 }}>התראות אחרונות</h4>
+      {notifications.length === 0 ? (
+        <p style={{ fontSize: "14px" }}>אין התראות חדשות</p>
+      ) : (
+        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+          {notifications.map((item, index) => (
+            <li key={index} style={{ fontSize: "14px", marginBottom: "8px" }}>
+              ✔️ בקשה: <strong>{item.title}</strong> הסתיימה
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )}
+</li>
+  
           {logoutButton}
         </ul>
       </nav>
