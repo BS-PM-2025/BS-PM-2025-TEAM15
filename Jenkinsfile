@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DJANGO_SETTINGS_MODULE = "project.settings"
-        PYTHONPATH = "${WORKSPACE}/project"
+        PYTHONPATH = "${WORKSPACE}\\project"
     }
 
     stages {
@@ -13,28 +13,29 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Install & Test Django') {
             steps {
-                echo 'Building the project...'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                echo 'Running tests with coverage and saving reports...'
+                echo 'Running Django tests with coverage...'
                 bat """
-                    set DJANGO_SETTINGS_MODULE=project.settings
-                    set PYTHONPATH=%WORKSPACE%\\project
+                    set PATH=C:\\Users\\97254\\AppData\\Local\\Programs\\Python\\Python312;%PATH%
                     cd project
+                    python -m pip install --upgrade pip
+                    pip install -r requirements.txt
                     pytest --junitxml=report.xml --cov=. --cov-report=term --capture=no > test-report.txt || exit 0
                 """
             }
         }
 
-        stage('Results') {
+        stage('Install & Test React UI') {
             steps {
-                echo 'Test results and coverage summary:'
-                bat 'type project\\test-report.txt'
+                dir('React/my-app') {
+                    echo 'Installing React frontend dependencies...'
+                    bat 'npm install --legacy-peer-deps'
+                    bat 'npm install @vitejs/plugin-react --legacy-peer-deps'
+
+                    echo 'Running React Vitest tests...'
+                    bat 'npx vitest run --reporter=junit --outputFile=vitest-report.xml || exit 0'
+                }
             }
         }
 
@@ -48,11 +49,9 @@ pipeline {
                     def errors = 0
                     def skipped = 0
 
-                    // More tolerant pattern: looks for "in Xs" with any prefix
                     def matchLine = report.readLines().find { it.contains(" in ") && it.contains("passed") }
 
                     if (matchLine) {
-                        // Match all test outcome numbers regardless of their order
                         def passMatch = (matchLine =~ /(\d+)\s+passed/)
                         def failMatch = (matchLine =~ /(\d+)\s+failed/)
                         def errorMatch = (matchLine =~ /(\d+)\s+error/)
@@ -65,15 +64,14 @@ pipeline {
                     }
 
                     def totalTests = passed + failed + errors + skipped
-
-                  def totalLine = report.readLines().find { it.trim().startsWith('TOTAL') }
-def coveragePercent = 0
-if (totalLine) {
-    def parts = totalLine.trim().split(/\s+/)
-    if (parts.size() >= 4 && parts[3].endsWith('%')) {
-        coveragePercent = parts[3].replace('%', '').toInteger()
-    }
-}
+                    def coveragePercent = 0
+                    def totalLine = report.readLines().find { it.trim().startsWith('TOTAL') }
+                    if (totalLine) {
+                        def parts = totalLine.trim().split(/\s+/)
+                        if (parts.size() >= 4 && parts[3].endsWith('%')) {
+                            coveragePercent = parts[3].replace('%', '').toInteger()
+                        }
+                    }
 
                     if (totalTests > 0) {
                         def passRate = (passed * 100) / totalTests
@@ -83,10 +81,10 @@ if (totalLine) {
                         echo "Coverage: ${coveragePercent}%"
 
                         if (passRate < 90 || coveragePercent < 75) {
-                            error("Quality gate failed: pass rate < 90% or coverage < 80%")
+                            error("Quality gate failed: pass rate < 90% or coverage < 75%")
                         }
                     } else {
-                        error("No tests found or could not parse test summary")
+                        error("No Django tests found or could not parse test summary")
                     }
                 }
             }
@@ -96,7 +94,8 @@ if (totalLine) {
     post {
         always {
             junit 'project/report.xml'
-            echo 'Build or tests failed. Check test-report.txt or coverage report.'
+            junit 'React/my-app/vitest-report.xml'
+            echo 'Build or tests failed. Check logs for details.'
         }
     }
 }

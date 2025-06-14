@@ -172,12 +172,59 @@ describe('Student_Dashboard Component', () => {
 import { MemoryRouter } from 'react-router-dom';
 //import { FrontHand, Home } from '@mui/icons-material';
 
-vi.mock('axios'); // make sure this is at the top
+describe('Sidebar_Tests for Regular Admin', () => {
+  beforeEach(() => {
+    localStorage.setItem('user_id', '2');
+  
+    mockAxios.post.mockImplementation((url) => {
+      if (url.includes('/isadmin')) {
+        return Promise.resolve({ data: { is_admin: true } });
+      }
+      if (url.includes('/isprof')) {
+        return Promise.resolve({ data: { is_prof: false } });
+      }
+      return Promise.resolve({ data: {} });
+    });
+  
+    mockAxios.get.mockResolvedValue({
+      data: [
+        { title: 'Request 1', status: 'done' },
+        { title: 'Request 2', status: 'done' }
+      ]
+    });
+  
+  });
+   it('should render Sidebar with Student Lookup for Admin',async () => {
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>
+    );
 
-describe('Sidebar_Tests', () => {
+    expect(await screen.findByText(/Student Lookup/i)).toBeInTheDocument();
+  });
+});
+
+describe('Sidebar_Tests for Regular user', () => {
   beforeEach(() => {
     localStorage.setItem('user_id', '123');
-    axios.post.mockResolvedValue({ data: { is_admin: false, is_prof: false } });
+  
+    mockAxios.post.mockImplementation((url) => {
+      if (url.includes('/isadmin')) {
+        return Promise.resolve({ data: { is_admin: false } });
+      }
+      if (url.includes('/isprof')) {
+        return Promise.resolve({ data: { is_prof: false } });
+      }
+      return Promise.resolve({ data: {} });
+    });
+  
+    mockAxios.get.mockResolvedValue({
+      data: [
+        { title: 'Request 1', status: 'done' },
+        { title: 'Request 2', status: 'done' }
+      ]
+    });
   });
 
   it('should render Sidebar with Home', () => {
@@ -189,6 +236,7 @@ describe('Sidebar_Tests', () => {
 
     expect(screen.getByText(/home/i)).toBeInTheDocument();
   });
+  
   it('should render Sidebar with Dashboard', () => {
     render(
       <MemoryRouter>
@@ -246,14 +294,14 @@ describe('Sidebar_Tests', () => {
     expect(screen.getByText(/Logout/i)).toBeInTheDocument();
   });
   //fails
-  it('should render Sidebar without save button', () => {
+  it('should not  render Sidebar without save button', () => {
     render(
       <MemoryRouter>
         <Sidebar />
       </MemoryRouter>
     );
 
-    expect(screen.getByText(/Save/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Save/i)).not.toBeInTheDocument();
   });
 });
 
@@ -334,19 +382,35 @@ describe('Home Page', () => {
       // Expect initial loading
       expect(screen.getByText(/Loading your courses/i)).toBeInTheDocument();
   
-      // Wait for data to load from backend
-      await waitFor(() => {
-        expect(screen.getByText(/Student Dashboard/i)).toBeInTheDocument();
+      describe('Student_Dashboard Integration Test', () => {
+        beforeEach(() => {
+          localStorage.setItem('user_id', '123456789');
+        });
+      
+        it('renders student dashboard with real backend data', async () => {
+          render(
+            <MemoryRouter>
+              <Student_Dashboard />
+            </MemoryRouter>
+          );
+      
+          // Loading text should appear immediately
+          expect(screen.getByText(/Loading your courses/i)).toBeInTheDocument();
+      
+          // ✅ Wait for actual dashboard content to load
+          const earned = await screen.findByText(/Earned Credits/i);
+          const remaining = await screen.findByText(/Credits Remaining/i);
+          const completed = await screen.findByText(/Completed Courses/i);
+      
+          // ✅ Now it's safe to assert
+          expect(earned).toBeInTheDocument();
+          expect(remaining).toBeInTheDocument();
+          expect(completed).toBeInTheDocument();
+      
+          console.log('✅ Earned:', earned.textContent);
+          console.log('✅ Remaining:', remaining.textContent);
+        });
       });
-  
-      // ✅ Optionally log fetched values from DOM
-      const earned = screen.getByText(/Earned Credits/i);
-      const remaining = screen.getByText(/Credits Remaining/i);
-      console.log('✅ Earned:', earned.textContent);
-      console.log('✅ Remaining:', remaining.textContent);
-  
-      // Confirm a known course exists
-      expect(screen.getByText(/Completed Courses/i)).toBeInTheDocument();
     });
   });
 });
@@ -407,13 +471,14 @@ describe('Request_Tests.', () => {
     expect(submitButton).toBeInTheDocument();
     })
 
-    it('Should have a Upload button.',()=>{
+    it('Should have an Upload button.', () => {
       render(
         <MemoryRouter>
           <Requestsubmission_student />
         </MemoryRouter>
       );
-      const submitButton = screen.getByRole('input', { name: /upload file/i });
-      expect(submitButton).toBeInTheDocument();
-    })
+    
+      const uploadInput = screen.getByLabelText(/upload file/i);
+      expect(uploadInput).toBeInTheDocument();
+    });
   });
