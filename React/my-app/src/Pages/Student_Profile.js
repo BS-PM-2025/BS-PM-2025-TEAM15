@@ -9,6 +9,9 @@ function Student_Profile() {
   const [error, setError] = useState(null);
   const [StudentName, getStudentName] = useState(null);
   const [Email, getEmail] = useState(null);
+  const [NewName, setStudentName] = useState("");
+  const [NewEmail, setEmail] = useState("");
+  //const [NewPassword, setPassword] = useState("")
 
   const userId = localStorage.getItem("user_id");
 

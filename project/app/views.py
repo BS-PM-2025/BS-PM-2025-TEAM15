@@ -137,6 +137,13 @@ import json
 
 # SIGN UP View
 class SignUpView(APIView):
+    def get(self, request):
+        try:
+            departments = db.get_all_departments()  # You already store departments in DB
+            return Response(departments, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     def post(self, request):
         try:
             data = request.data
@@ -485,7 +492,6 @@ class GetStudentProfileView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 
 from .dbcommands import append_text  # ✅ import your helper

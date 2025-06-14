@@ -117,16 +117,25 @@ export default function Sidebar() {
             </Link>
           </li>
 
-          <li>
+          <li> {/*To delete, actual link under this*/}
             <button onClick={toggleSubMenu} className="dropdown-btn" ref={toggleButtonRef}>
               <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
                 <path d="m221-313 142-142q12-12 28-11.5t28 12.5q11 12 11 28t-11 28L250-228q-12 12-28 12t-28-12l-86-86q-11-11-11-28t11-28q11-11 28-11t28 11l57 57Z" />
               </svg>
-              <span>Profile</span>
+              <span>_</span>
             </button>
             <ul className="sub-menu">
               {/* Profile submenu (optional) */}
             </ul>
+          </li>
+
+          <li>
+            <Link to="/Student_Profile">
+              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+                <path d="m221-313 142-142q12-12 28-11.5t28 12.5q11 12 11 28t-11 28L250-228q-12 12-28 12t-28-12l-86-86q-11-11-11-28t11-28q11-11 28-11t28 11l57 57Z" />
+              </svg>
+              <span>Profile</span>
+            </Link>
           </li>
 
           <li>
@@ -154,12 +163,12 @@ export default function Sidebar() {
             </ul>
           </li>
 
-          <li>
+          <li> {/*To delete, we dont have exams */}
             <Link to="/exams">
               <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
                 <path d="M200-80q-33 0-56.5-23.5T120-160v-640q0-33 23.5-56.5T200-880h400q17 0 28.5 11.5T640-840q0 17-11.5 28.5T600-800H200v640h560v-280q0-17 11.5-28.5T800-480q17 0 28.5 11.5T840-440v280q0 33-23.5 56.5T760-80H200Z" />
               </svg>
-              <span>Exams</span>
+              <span>Exams</span> {/*can be changed to Documents*/}
             </Link>
           </li>
 

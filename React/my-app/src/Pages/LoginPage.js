@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 const BASE_URL_Login = "http://localhost:8000/api/users/Login"; 
@@ -12,7 +12,20 @@ function LoginPage() {
   const [signupPassword, setSignupPassword] = useState("");
   const [signupId, setSignupId] = useState("");
   const [signupDepartment, setSignupDepartment] = useState("");
+  const [DepartmentList, setDepartments] = useState([]);
   //const [signupType, setSignupType] = useState("");
+
+  useEffect(() => { //fetching departments
+    const fetchDepartments = async () => {
+      try {
+        const res = await axios.get(BASE_URL_SignUp); 
+        setDepartments(res.data);
+      } catch (err) {
+        console.error("Failed to fetch departments:", err);
+      }
+    };
+    fetchDepartments();
+  }, []);
 
   const handleLogin = async (e) => { //part that will handle login
     e.preventDefault();
@@ -335,15 +348,18 @@ function LoginPage() {
                   onChange={(e) => setSignupId(e.target.value)}
                   required
                   />
-                  <input
-                  className="flip-card__input"
-                  name="Department"
-                  placeholder="Department"
-                  type="text"
-                  value={signupDepartment}
-                  onChange={(e) => setSignupDepartment(e.target.value)}
-                  required
-                  />
+                  <select
+                    className="flip-card__input"
+                    name="Department"
+                    value={signupDepartment}
+                    onChange={(e) => setSignupDepartment(e.target.value)}
+                    required
+                  >
+                    <option value="">Select Department</option>
+                    {DepartmentList.map((dept, idx) => (
+                      <option key={idx} value={dept}>{dept}</option>
+                    ))}
+                  </select>
                   <button className="flip-card__btn" type="submit">
                     Confirm!
                   </button>

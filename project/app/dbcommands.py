@@ -41,7 +41,6 @@ def is_prof(user_id):
     return db.professors.find_one({"user_id": uid}) is not None
       
 
-
 # === User Info ===
 def get_user_info(user_id):
     return users.find_one({"_id": to_int(user_id)}, {"password": 0})
@@ -120,6 +119,11 @@ def update_average(student_id):
     if avg is not None:
         students.update_one({"user_id": to_int(student_id)}, {"$set": {"average": avg}})
     return avg
+
+def update_Student_User_info(student_id, student_name, student_mail): #for updating user info through profile
+    student = students.find_one({"user_id": to_int(student_id)})
+    if student is not None:
+        students.update_one({"user_id": to_int(student_id)}, {"$set": {"email": student_mail, "name": student_name}})
 
 # === Admin Info ===
 def get_admin_department_by_id(user_id):
@@ -436,3 +440,8 @@ def update_student_grade(user_id, course_id, new_grade):
     )
     print("🔄 update result:", result.modified_count)
     return result.modified_count
+
+#fetch list of current departments
+def get_all_departments():
+    departments_list = departments.distinct("department")
+    return sorted(departments_list)
