@@ -39,58 +39,77 @@ pipeline {
             }
         }
 
-        stage('Quality Gate') {
-            steps {
-                script {
-                    def report = readFile('project/test-report.txt')
-                    def passed = 0, failed = 0, errors = 0, skipped = 0
+ stage('Quality Gate') {
+    steps {
+        script {
+            // Django test results
+            def report = readFile('project/test-report.txt')
+            def passed = 0, failed = 0, errors = 0, skipped = 0, totalTests = 0, coveragePercent = 0
 
-                    def matchLine = report.readLines().find { it.contains(" in ") && it.contains("passed") }
+            def matchLine = report.readLines().find { it.contains(" in ") && it.contains("passed") }
+            if (matchLine) {
+                def passMatch = (matchLine =~ /(\d+)\s+passed/)
+                def failMatch = (matchLine =~ /(\d+)\s+failed/)
+                def errorMatch = (matchLine =~ /(\d+)\s+error/)
+                def skipMatch = (matchLine =~ /(\d+)\s+skipped/)
 
-                    if (matchLine) {
-                        def passMatch = (matchLine =~ /(\d+)\s+passed/)
-                        def failMatch = (matchLine =~ /(\d+)\s+failed/)
-                        def errorMatch = (matchLine =~ /(\d+)\s+error/)
-                        def skipMatch = (matchLine =~ /(\d+)\s+skipped/)
+                passed = passMatch ? passMatch[0][1].toInteger() : 0
+                failed = failMatch ? failMatch[0][1].toInteger() : 0
+                errors = errorMatch ? errorMatch[0][1].toInteger() : 0
+                skipped = skipMatch ? skipMatch[0][1].toInteger() : 0
+                totalTests = passed + failed + errors + skipped
+            }
 
-                        passed = passMatch ? passMatch[0][1].toInteger() : 0
-                        failed = failMatch ? failMatch[0][1].toInteger() : 0
-                        errors = errorMatch ? errorMatch[0][1].toInteger() : 0
-                        skipped = skipMatch ? skipMatch[0][1].toInteger() : 0
-                    }
-
-                    def totalTests = passed + failed + errors + skipped
-                    def coveragePercent = 0
-                    def totalLine = report.readLines().find { it.trim().startsWith('TOTAL') }
-                    if (totalLine) {
-                        def parts = totalLine.trim().split(/\s+/)
-                        if (parts.size() >= 4 && parts[3].endsWith('%')) {
-                            coveragePercent = parts[3].replace('%', '').toInteger()
-                        }
-                    }
-
-                    if (totalTests > 0) {
-                        def passRate = (passed * 100) / totalTests
-                        echo "Total tests: ${totalTests}"
-                        echo "Passed: ${passed}, Failed: ${failed}, Errors: ${errors}, Skipped: ${skipped}"
-                        echo "Test pass rate: ${passRate}%"
-                        echo "Coverage: ${coveragePercent}%"
-
-                        if (failed > 0 || errors > 0) {
-                            error(" Some tests failed or errored — marking build as failed.")
-                        } else if (passRate < 90 || coveragePercent < 75) {
-                            currentBuild.result = 'UNSTABLE'
-                            echo "⚠ Build marked UNSTABLE: pass rate < 90% or coverage < 75%"
-                        } else {
-                            echo " All quality checks passed!"
-                        }
-                    } else {
-                        error(" No Django tests found or could not parse test summary.")
-                    }
+            def totalLine = report.readLines().find { it.trim().startsWith('TOTAL') }
+            if (totalLine) {
+                def parts = totalLine.trim().split(/\s+/)
+                if (parts.size() >= 4 && parts[3].endsWith('%')) {
+                    coveragePercent = parts[3].replace('%', '').toInteger()
                 }
+            }
+
+            // Django summary
+            echo "Django Test Summary:"
+            echo "Total tests: ${totalTests}"
+            echo "Passed: ${passed}, Failed: ${failed}, Errors: ${errors}, Skipped: ${skipped}"
+            if (totalTests > 0) {
+                echo "Test pass rate: ${(passed * 100 / totalTests)}%"
+            }
+            echo "Coverage: ${coveragePercent}%"
+
+            // React test results
+            def vitestPassed = 0, vitestFailures = 0, vitestErrors = 0, vitestSkipped = 0, vitestTotal = 0
+
+            if (fileExists('React/my-app/vitest-report.xml')) {
+                def vitestReport = readFile('React/my-app/vitest-report.xml')
+                vitestTotal = (vitestReport =~ /tests="(\d+)"/)[0][1].toInteger()
+                vitestFailures = (vitestReport =~ /failures="(\d+)"/)[0][1].toInteger()
+                vitestErrors = (vitestReport =~ /errors="(\d+)"/)[0][1].toInteger()
+                vitestSkipped = (vitestReport =~ /skipped="(\d+)"/)[0][1].toInteger()
+                vitestPassed = vitestTotal - vitestFailures - vitestErrors - vitestSkipped
+
+                echo "React (Vitest) Test Summary:"
+                echo "Total tests: ${vitestTotal}"
+                echo "Passed: ${vitestPassed}, Failed: ${vitestFailures}, Errors: ${vitestErrors}, Skipped: ${vitestSkipped}"
+            } else {
+                echo "React Vitest report not found. Skipping React test analysis."
+            }
+
+            // Final quality check
+            if ((failed + errors + vitestFailures + vitestErrors) > 0) {
+                error("Some Django or React tests failed or errored — marking build as failed.")
+            } else if (totalTests == 0) {
+                error("No Django tests were found or parsed.")
+            } else if ((passed * 100 / totalTests) < 90 || coveragePercent < 75) {
+                currentBuild.result = 'UNSTABLE'
+                echo "Build marked UNSTABLE: pass rate < 90% or coverage < 75%"
+            } else {
+                echo "All quality checks passed."
             }
         }
     }
+}
+
 
     post {
         always {
