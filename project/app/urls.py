@@ -6,6 +6,8 @@ from django.conf.urls.static import static
 from django.conf import settings 
 from .views import StudentStatsView , edit_request_text
 from .adminviews import update_grade,students_in_course,professor_courses,get_ask_details,download_request_documents, get_comment,get_all_courses_view,add_course,get_all_professors
+from .views import DownloadCertificateView
+
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -38,6 +40,8 @@ urlpatterns = [
     path("api/students_in_course/<str:course_id>/", students_in_course),
     path("api/update_grade/", update_grade),
     path("asks/<int:idr>/download_documents/", download_request_documents),
+    path('api/study-certificate/<int:student_id>/', DownloadCertificateView.as_view(), name='download_certificate'),
+
     path("courses/add/", add_course),
 
     #to check if the user is admin
