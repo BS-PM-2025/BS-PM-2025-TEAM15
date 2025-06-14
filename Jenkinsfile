@@ -18,10 +18,10 @@ pipeline {
                 echo 'Running Django tests with coverage...'
                 bat """
                     set PATH=C:\\Users\\97254\\AppData\\Local\\Programs\\Python\\Python312;%PATH%
-                    set DJANGO_SETTINGS_MODULE=project.settings
-                    set PYTHONPATH=%WORKSPACE%\\project
                     cd project
-                    python -m pytest --junitxml=report.xml --cov=. --cov-report=term --capture=no > test-report.txt || exit 0
+                    python -m pip install --upgrade pip
+                    pip install -r requirements.txt
+                    pytest --junitxml=report.xml --cov=. --cov-report=term --capture=no > test-report.txt || exit 0
                 """
             }
         }
@@ -31,6 +31,7 @@ pipeline {
                 dir('React/my-app') {
                     echo 'Installing React frontend dependencies...'
                     bat 'npm install --legacy-peer-deps'
+                    bat 'npm install @vitejs/plugin-react --legacy-peer-deps'
 
                     echo 'Running React Vitest tests...'
                     bat 'npx vitest run --reporter=junit --outputFile=vitest-report.xml || exit 0'
