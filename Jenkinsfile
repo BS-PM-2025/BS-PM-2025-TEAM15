@@ -13,18 +13,19 @@ pipeline {
             }
         }
 
-       stage('Install & Test Django') {
+  stage('Install & Test Django') {
     steps {
         echo 'Running Django tests with coverage...'
         bat """
             set PYTHONHOME=C:\\Users\\97254\\AppData\\Local\\Programs\\Python\\Python312
             cd project
             C:\\Users\\97254\\AppData\\Local\\Programs\\Python\\Python312\\python.exe -m pip install --upgrade pip
-            C:\\Users\\97254\\AppData\\Local\\Programs\\Python\\Python312\\python.exe -m pip install -r requirements.txt
+            C:\\Users\\97254\\AppData\\Local\\Programs\\Python\\Python312\\python.exe -m pip install pytest pytest-django pytest-cov
             C:\\Users\\97254\\AppData\\Local\\Programs\\Python\\Python312\\python.exe -m pytest --junitxml=report.xml --cov=. --cov-report=term --capture=no > test-report.txt || exit 0
         """
     }
 }
+
 
 
         stage('Install & Test React UI') {
