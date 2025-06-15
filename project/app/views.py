@@ -11,14 +11,12 @@ from django.contrib.auth.hashers import make_password, check_password
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-
 from . import dbcommands as dbcom 
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from . import dbcommands  # חשוב!    
-# Create your views here.
-
+from .dbcommands import append_text
 
 def home(request):
     return render(request, 'home.html')
@@ -137,6 +135,13 @@ import json
 
 # SIGN UP View
 class SignUpView(APIView):
+    def get(self, request):
+        try:
+            departments = db.get_all_departments()  # You already store departments in DB
+            return Response(departments, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     def post(self, request):
         try:
             data = request.data
@@ -173,6 +178,35 @@ class SignUpView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+#Change password
+class newPassword(APIView):
+    def post(self,request):
+        try:
+            
+            data = request.data
+            email = data.get('email')
+            id = data.get('id');
+            newpass = data.get('newPassword');
+            confirmpass =data.get('confirmpass');
+           
+            if (db.get_user_name_by_id(id) and db.get_user_email_by_id(id)):
+                username = db.get_user_name_by_id(id);
+                right_email = db.get_user_email_by_id(id);
+                
+            else:
+                return Response({'error':"failed to find User"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if(newpass != confirmpass):
+                
+                return Response({'error':"Password and confirm Don't match"}, status=status.HTTP_400_BAD_REQUEST)
+            flag = db.reset_user_password(email,newpass)
+            
+            if flag:
+                return  Response({'message': 'Changed Password'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({'error':"Error accoured"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 # LOGIN View
 class LoginView(APIView):
     def post(self, request):
@@ -218,7 +252,6 @@ class GetUserNameView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-
 #ספירת בקשות ובדיקה כמה יש וכמה הסתיימו 
 class StudentStatsView(APIView):
     def get(self, request, student_id):
@@ -274,7 +307,6 @@ class StudentStatsView(APIView):
         except Exception as e:
             print(" Error in StudentStatsView:", e)
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 class Searchview(APIView):
     def get(self, request):
@@ -465,9 +497,97 @@ class GetStudentCourseInfoView(APIView):
             print("ERROR:", str(e))
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-  
+#Student Profile
+def helper_for_sum_points(x):
+            student = db.get_full_student_profile(x)
 
-from .dbcommands import append_text  #  import your helper
+            student_courses = db.get_courses_in_list(x)
+            
+            total_earned_credits = 0.0
+            completed_courses = []
+            courses_details = []
+            completed_amount = 0
+
+            print("######Check######")
+            print("Student check: " + str(student))
+            print("student courses check: " + str(student_courses))
+
+            for course in student_courses:
+                course_id = course["id_course"]
+                grade = course["grade"]
+                finished = course["finish"]
+
+                print("Course_id check: " + str(course_id))
+                print("grade check: " + str(grade))
+                print("finished check: " + str(finished))
+
+                course_info = db.get_course_full_info(course_id)
+
+                print("Course info check:" + str(course_info))
+
+                if finished:
+                    total_earned_credits += float(course_info["points"])
+                    completed_amount = completed_amount+1
+                courses_details.append({
+                    "name": course_info.get("name"),
+                    "lecturer": course_info.get("lecturer"),
+                    "department": course_info.get("department"),
+                    "points": course_info.get("points"),
+                    "grade": grade,
+                    "finished": finished
+                })
+
+            TOTAL_REQUIRED_CREDITS = 160
+            return  total_earned_credits
+class GetStudentProfileView(APIView):
+    
+
+    def get(self, request):
+        try:
+            
+            user_id = int(request.query_params.get('user_id'))
+            if not user_id:
+                return Response({"error": "Missing user_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+            student_data = db.get_full_student_profile(user_id)
+            
+            user_name = db.get_user_name_by_id(user_id)
+            user_email = db.get_user_email_by_id(user_id)
+            user_avg = db.get_student_average_by_id(user_id)
+            user_sun_po = helper_for_sum_points(user_id)
+            if not student_data or not user_name:
+                return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
+            print("well 2", user_sun_po)
+            return Response({
+                "name": user_name,
+                "email": user_email,
+                "department": student_data.get("department"),
+                "status": student_data.get("status"),
+                "sum_points": user_sun_po,
+                "average": user_avg,
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+   
+    def put(self, request):
+        try:
+            user_id = int(request.data.get("user_id"))
+            name = request.data.get("name")
+            email = request.data.get("email")
+
+            if not user_id or not name or not email:
+                return Response({"error": "Missing data"}, status=status.HTTP_400_BAD_REQUEST)
+
+            db.users.update_one({"_id": user_id}, {"$set": {"name": name, "email": email}})
+            return Response({"message": "Profile updated successfully"}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+from .dbcommands import append_text
 
 @csrf_exempt
 def edit_request_text(request, ask_id):

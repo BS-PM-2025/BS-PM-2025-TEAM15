@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 const BASE_URL_Login = "http://localhost:8000/api/users/Login"; 
 const BASE_URL_SignUp = "http://localhost:8000/api/users/SignUp";
+const BASE_URL_NEWPASS = "http://localhost:8000/api/users/newpass";
 
 function LoginPage() {
   const [loginEmail, setLoginEmail] = useState("");
@@ -12,7 +13,53 @@ function LoginPage() {
   const [signupPassword, setSignupPassword] = useState("");
   const [signupId, setSignupId] = useState("");
   const [signupDepartment, setSignupDepartment] = useState("");
+  const [DepartmentList, setDepartments] = useState([]);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotId,setforgotId] = useState("");
+  const [newpassword,setnewpassword] = useState("");
+  const [confirmpass,setconfirmpass] = useState("");
   //const [signupType, setSignupType] = useState("");
+
+  useEffect(() => { //fetching departments
+    const fetchDepartments = async () => {
+      try {
+        const res = await axios.get(BASE_URL_SignUp); 
+        setDepartments(res.data);
+      } catch (err) {
+        console.error("Failed to fetch departments:", err);
+      }
+    };
+    fetchDepartments();
+  }, []);
+
+ const handleForgotPassword = async  (e) => {
+  e.preventDefault();
+
+  try {
+    console.log("Sending reset request to:", forgotEmail);
+    console.log("id:", forgotId);
+    console.log("newpass:", newpassword);
+    console.log("confirm:", confirmpass);
+
+    const res = await axios.post(BASE_URL_NEWPASS, {
+      email: forgotEmail,
+      id: forgotId,
+      newPassword: newpassword,     // 👈 must match Django key: newPassword
+      confirmpass: confirmpass
+    });
+
+    alert(res.data.message);
+    setShowForgotPassword(false);  // 👈 fix: use function call, not assignment
+  } catch (err) {
+    if (err.response?.data?.error) {
+      alert(`❌ ${err.response.data.error}`);
+    } else {
+      alert("❌ Unexpected error occurred.");
+    }
+    console.error(err);
+  }
+};
 
   const handleLogin = async (e) => { //part that will handle login
     e.preventDefault();
@@ -248,7 +295,7 @@ function LoginPage() {
           }
 
           .flip-card__btn {
-              margin: 20px 0;
+              margin: 10px 0;
               width: 120px;
               height: 40px;
               border-radius: 5px;
@@ -271,7 +318,9 @@ function LoginPage() {
 
             <div className="flip-card__inner">
               <div className="flip-card__front">
-                <div className="title">Log in</div>
+                <div className="title">{showForgotPassword ? "Reset Password" : "Log in"}</div>
+                
+                {!showForgotPassword ? (
                 <form className="flip-card__form" onSubmit={handleLogin}>
                   <input
                     className="flip-card__input"
@@ -291,11 +340,83 @@ function LoginPage() {
                     onChange={(e) => setLoginPassword(e.target.value)}
                     required
                   />
+                  <button
+                    type="button"
+                    className="flip-card__link"
+                    
+                    onClick={(e) => {
+                    e.preventDefault();         // 👈 prevents checkbox toggle
+                    setShowForgotPassword(true);
+                  }}
+                    style={{ background: "none", border: "none", color: "#007BFF", cursor: "pointer", marginTop: "10px" }}
+                  >
+                    Forgot Password?
+                  </button>
                   <button className="flip-card__btn" type="submit">
                     Let's go!
                   </button>
                 </form>
-              </div>
+                ): (
+                  <form className="flip-card__form" onSubmit={handleForgotPassword}>
+                <input
+                  className="flip-card__input"
+                  name="forgotEmail"
+                  placeholder="Enter your email"
+                  type="email"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  required
+                />
+                 <input
+                  className="flip-card__input"
+                  name="forgotId"
+                  placeholder="Enter your Id"
+                  type="id"
+                  value={forgotId}
+                  onChange={(e) => setforgotId(e.target.value)}
+                  required
+                />
+                 <input
+                  className="flip-card__input"
+                  name="newpass"
+                  placeholder="Enter new Password"
+                  type="password"
+                  value={newpassword}
+                  onChange={(e) => setnewpassword(e.target.value)}
+                  required
+                />
+                <input
+                  className="flip-card__input"
+                  name=" confirm newpass"
+                  placeholder="Confirm new Password"
+                  type="password"
+                  value={confirmpass}
+                  onChange={(e) => setconfirmpass(e.target.value)}
+                  required
+                />
+                <button className="flip-card__btn" type="submit">
+                  Confirm
+                </button>
+                <button
+                  type="button"
+                  className="flip-card__link"
+                  
+                 onClick={(e) => {
+                    e.preventDefault();       
+                    setShowForgotPassword(false);
+                  }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#007BFF",
+                    cursor: "pointer",
+                    marginTop: "0.25px"
+                  }}
+                >Back to Login
+                </button>
+              </form>
+                )}
+            </div>
 
               <div className="flip-card__back">
                 <div className="title">Sign up</div>
@@ -335,15 +456,18 @@ function LoginPage() {
                   onChange={(e) => setSignupId(e.target.value)}
                   required
                   />
-                  <input
-                  className="flip-card__input"
-                  name="Department"
-                  placeholder="Department"
-                  type="text"
-                  value={signupDepartment}
-                  onChange={(e) => setSignupDepartment(e.target.value)}
-                  required
-                  />
+                  <select
+                    className="flip-card__input"
+                    name="Department"
+                    value={signupDepartment}
+                    onChange={(e) => setSignupDepartment(e.target.value)}
+                    required
+                  >
+                    <option value="">Select Department</option>
+                    {DepartmentList.map((dept, idx) => (
+                      <option key={idx} value={dept}>{dept}</option>
+                    ))}
+                  </select>
                   <button className="flip-card__btn" type="submit">
                     Confirm!
                   </button>

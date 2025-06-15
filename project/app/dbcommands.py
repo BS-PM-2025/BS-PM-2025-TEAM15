@@ -43,7 +43,6 @@ def is_prof(user_id):
     return db.professors.find_one({"user_id": uid}) is not None
       
 
-
 # === User Info ===
 def get_user_info(user_id):
     return users.find_one({"_id": to_int(user_id)}, {"password": 0})
@@ -74,6 +73,15 @@ def set_user(user_id, user_name, user_email, user_password, user_type):
     }
     return users.insert_one(new_user).inserted_id
 
+def reset_user_password(email: str, new_password: str) -> bool:
+    user = users.find_one({"email": email})
+    if not user:
+        return False
+    result = users.update_one(
+        {"email": email},
+        {"$set": {"password": new_password}}
+    )
+    return True
 # === Student Info ===
 def get_all_students():
     students_cursor = students.find()
@@ -123,6 +131,11 @@ def update_average(student_id):
         students.update_one({"user_id": to_int(student_id)}, {"$set": {"average": avg}})
     return avg
 
+def update_Student_User_info(student_id, student_name, student_mail): #for updating user info through profile
+    student = students.find_one({"user_id": to_int(student_id)})
+    if student is not None:
+        students.update_one({"user_id": to_int(student_id)}, {"$set": {"email": student_mail, "name": student_name}})
+
 # === Admin Info ===
 def get_admin_department_by_id(user_id):
     admin = administrators.find_one({"user_id": to_int(user_id)})
@@ -157,7 +170,7 @@ def find_courses_with_nested_id(target_course_id_str,user_id):
         else:
             entry_course_id = str(id_course_field)
 
-        # 🔒 Exact match only
+        # Exact match only
         if entry_course_id == target_course_id_str and str(entry["id_student"]) == str(user_id):
             print("std", entry["id_student"])
             print("grade?", entry["grade"])
@@ -185,7 +198,12 @@ def enroll_student(id_student, id_course):
         "start": datetime.now(),
         "finish": None
     })
+    course = courses.find_one({"_id": to_int(id_course)})
+    if course and "name" in course:
+        add_notification(to_int(id_student), f"Enrolled in course {course['name']}")
+
     return True
+   
 
 def get_course_info(course_id):
     return courses.find_one({"_id": course_id})  # don't cast to int
@@ -232,6 +250,8 @@ def add_ask(id_sending, id_receiving, importance, text, title, documents, depart
         "idr": new_idr,  # generate `idr` for integer indexing
         "category": category
     }
+    
+    add_notification(to_int(id_receiving), f"New ask sent to you: {title}")
     return requests.insert_one(ask).inserted_id
 
 def delete_ask(ask_id):
@@ -258,6 +278,8 @@ def reassign_ask_by_idr(idr, new_admin_id):
             "status": "pending"
         }}
     ).modified_count > 0
+    add_notification(to_int(new_admin_id), f"New ask sent to you")
+
 
 def update_ask_status_by_idr(idr, new_status, new_admin_id=None):
     ask = requests.find_one({"idr": to_int(idr)})
@@ -277,6 +299,13 @@ def update_ask_status_by_idr(idr, new_status, new_admin_id=None):
         {"idr": to_int(idr)},
         {"$set": update_fields}
     )
+
+    # Send notification to the student who sent the ask
+    add_notification(
+        ask["id_sending"],
+        f"Ask '{ask['title']}' status updated to '{new_status}'"
+    )
+
     return result.modified_count > 0
 
 
@@ -285,6 +314,11 @@ def append_note_to_ask(idr, note_text):
     timestamp = datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
     full_line = f"{timestamp} {note_text}"
 
+    # Fetch the ask to get sender, receiver, and title
+    ask = db.requests.find_one({"idr": idr})
+    if not ask:
+        return False
+
     comment = db.comments.find_one({"idr": idr})
 
     if not comment:
@@ -292,14 +326,19 @@ def append_note_to_ask(idr, note_text):
             "idr": idr,
             "text": full_line
         })
-        return result.acknowledged
+    else:
+        new_text = comment.get("text", "") + "\n" + full_line
+        result = db.comments.update_one(
+            {"idr": idr},
+            {"$set": {"text": new_text}}
+        )
 
-    new_text = comment.get("text", "") + "\n" + full_line
-    result = db.comments.update_one(
-        {"idr": idr},
-        {"$set": {"text": new_text}}
-    )
-    return result.modified_count > 0 or result.matched_count > 0
+    # Send notifications to both sender and receiver
+    text = f"New comment on request '{ask['title']}'"
+    add_notification(to_int(ask["id_receiving"]),"node addded" )
+    add_notification(to_int(ask["id_sending"]), "node added")
+
+    return result.modified_count > 0 or result.acknowledged
 
 
 def append_text(idr, note_text):
@@ -418,13 +457,18 @@ def get_students_for_course(course_id):
 def update_student_grade(user_id, course_id, new_grade):
     from bson import ObjectId
     if isinstance(course_id, str):
-        course_id = ObjectId(course_id)
+     course_id = ObjectId(course_id)
 
     result = db.studcourses.update_one(
         {"id_student": user_id, "id_course": course_id},
         {"$set": {"grade": new_grade}}
     )
     print(" update result:", result.modified_count)
+      
+    add_notification(
+        user_id,
+        "grade updated"
+    )
     return result.modified_count
 
 def create_course(name, lecturer, department, points):
@@ -439,3 +483,49 @@ def create_course(name, lecturer, department, points):
 
 def get_all_professors():
     return list(db.professors.find({}, {"_id": 0}))  # exclude MongoDB's ObjectId
+
+notifications = db["notifications"]
+
+def get_notifications(user_id):
+    """
+    Returns a list of notifications for the given user_id, sorted by time (newest first).
+    """
+    return list(notifications.find({"user_id": user_id}).sort("time", -1))
+
+def add_notification(user_id: int, text: str):
+    """
+    Adds a notification for the user with seen=False.
+    If user has more than 3 notifications, removes the oldest one first.
+    """
+    existing = list(notifications.find({"user_id": user_id}).sort("time", 1))  # Oldest first
+    if len(existing) >= 3:
+        oldest = existing[0]
+        notifications.delete_one({"_id": oldest["_id"]})
+
+    new_notif = {
+        "user_id": user_id,
+        "time": datetime.utcnow(),
+        "text": text,
+        "seen": False
+    }
+    notifications.insert_one(new_notif)
+
+def mark_notifications_as_seen(user_id: int):
+    """
+    Mark all notifications for the given user as seen.
+    """
+    result = notifications.update_many(
+        {"user_id": user_id, "seen": False},
+        {"$set": {"seen": True}}
+    )
+    return result.modified_count
+
+def has_unseen_notifications(user_id: int) -> bool:
+    """
+    Return True if there are unseen notifications for the user.
+    """
+    return notifications.find_one({"user_id": user_id, "seen": False}) is not None
+#fetch list of current departments
+def get_all_departments():
+    departments_list = departments.distinct("department")
+    return sorted(departments_list)

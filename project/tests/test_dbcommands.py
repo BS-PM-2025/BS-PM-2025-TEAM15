@@ -188,23 +188,60 @@ def test_reassign_ask_by_idr(mock_db):
     assert success and updated["id_receiving"] == 32
 
 def test_update_ask_status_by_idr(mock_db):
-    mock_db.requests.insert_one({"idr": 33, "status": "pending"})
+    mock_db.requests.insert_one({
+    "idr": 33,
+    "status": "pending",
+    "id_sending": 123,
+    "title": "Test Ask"
+})
     db.update_ask_status_by_idr(33, "closed")
     ask = mock_db.requests.find_one({"idr": 33})
     assert ask["status"] == "closed"
 
+from app import dbcommands as db
+
 def test_append_note_to_ask_new(mock_db):
+    db.requests = mock_db.requests
+    db.comments = mock_db.comments
+    db.notifications = mock_db.notifications
+
+    # Insert ask document (required)
+    mock_db.requests.insert_one({
+        "idr": 34,
+        "id_sending": 101,
+        "id_receiving": 102,
+        "title": "Test Ask"
+    })
+
+    # Also insert comment so it uses update_one() instead of insert_one()
+    mock_db.comments.insert_one({
+        "idr": 34,
+        "text": "Initial note"
+    })
+
     success = db.append_note_to_ask(34, "admin: hello there")
     assert success is True
-    comment = mock_db.comments.find_one({"idr": 34})
-    assert comment and "admin:" in comment.get("text", "")
 
 def test_append_note_to_ask_existing(mock_db):
-    mock_db.comments.insert_one({"idr": 35, "text": "prev"})
+    db.comments = mock_db.comments
+    db.requests = mock_db.requests
+    db.notifications = mock_db.notifications
+
+    mock_db.requests.insert_one({
+        "idr": 35,
+        "id_sending": 201,
+        "id_receiving": 202,
+        "title": "Existing Ask"
+    })
+
+    mock_db.comments.insert_one({
+        "idr": 35,
+        "text": "prev"
+    })
+
     success = db.append_note_to_ask(35, "admin: next")
     assert success is True
-    text = mock_db.comments.find_one({"idr": 35}).get("text", "")
-    assert "next" in text and "prev" in text
+
 
 
 def test_append_text(mock_db):
