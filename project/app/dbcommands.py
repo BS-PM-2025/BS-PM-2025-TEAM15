@@ -43,7 +43,6 @@ def is_prof(user_id):
     return db.professors.find_one({"user_id": uid}) is not None
       
 
-
 # === User Info ===
 def get_user_info(user_id):
     return users.find_one({"_id": to_int(user_id)}, {"password": 0})
@@ -74,6 +73,15 @@ def set_user(user_id, user_name, user_email, user_password, user_type):
     }
     return users.insert_one(new_user).inserted_id
 
+def reset_user_password(email: str, new_password: str) -> bool:
+    user = users.find_one({"email": email})
+    if not user:
+        return False
+    result = users.update_one(
+        {"email": email},
+        {"$set": {"password": new_password}}
+    )
+    return True
 # === Student Info ===
 def get_all_students():
     students_cursor = students.find()
@@ -122,6 +130,11 @@ def update_average(student_id):
     if avg is not None:
         students.update_one({"user_id": to_int(student_id)}, {"$set": {"average": avg}})
     return avg
+
+def update_Student_User_info(student_id, student_name, student_mail): #for updating user info through profile
+    student = students.find_one({"user_id": to_int(student_id)})
+    if student is not None:
+        students.update_one({"user_id": to_int(student_id)}, {"$set": {"email": student_mail, "name": student_name}})
 
 # === Admin Info ===
 def get_admin_department_by_id(user_id):
@@ -512,3 +525,7 @@ def has_unseen_notifications(user_id: int) -> bool:
     Return True if there are unseen notifications for the user.
     """
     return notifications.find_one({"user_id": user_id, "seen": False}) is not None
+#fetch list of current departments
+def get_all_departments():
+    departments_list = departments.distinct("department")
+    return sorted(departments_list)

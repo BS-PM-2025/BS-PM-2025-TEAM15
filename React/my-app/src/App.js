@@ -18,6 +18,7 @@ import Student_Dashboard from "./Pages/Student_Dashboard";
 import Editcourses from "./Pages/Editcourses";
 import DownloadCertificate from './Pages/DownloadCertificate';
 
+import Student_Profile from "./Pages/Student_Profile";
 
 function App() {
   
@@ -43,7 +44,7 @@ function App() {
        
           <Route path ="/Med_student_status" element= {<Med_student_status/>}/>
           <Route path="/DownloadCertificate" element={<DownloadCertificate />} />
-
+<Route path="/Student_Profile" element= {<Student_Profile/>}/>
         </Route>
         </Routes>
 </Router>

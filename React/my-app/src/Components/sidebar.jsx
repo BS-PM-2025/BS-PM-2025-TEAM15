@@ -212,22 +212,19 @@ export default function Sidebar() {
           </li>
 
           <li>
-            <button onClick={toggleSubMenu} className="dropdown-btn" ref={toggleButtonRef}>
+            <Link to="/Student_Profile">
               <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
-                <path d="m221-313 142-142q12-12 28-11.5t28 12.5q11 12 11 28t-11 28L250-228q-12 12-28 12t-28-12l-86-86q-11-11-11-28t11-28q11-11 28-11t28 11l57 57Z" />
+                <path d="M240-200h120v-200q0-17 11.5-28.5T400-440h160q17 0 28.5 11.5T600-400v200h120v-360L480-740 240-560v360Z" />
               </svg>
               <span>Profile</span>
-            </button>
-            <ul className="sub-menu">
-              {/* Profile submenu (optional) */}
-            </ul>
+            </Link>
           </li>
 
           <li>
             <Link to="/Student_Dashboard">
-              {/* <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
-                <path d="M240-200h120v-200q0-17 11.5-28.5T400-440h160q17 0 28.5 11.5T600-400v200h120v-360L480-740 240-560v360Z" />
-              </svg> */}
+              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+                <path d="M200-80q-33 0-56.5-23.5T120-160v-640q0-33 23.5-56.5T200-880h400q17 0 28.5 11.5T640-840q0 17-11.5 28.5T600-800H200v640h560v-280q0-17 11.5-28.5T800-480q17 0 28.5 11.5T840-440v280q0 33-23.5 56.5T760-80H200Z" />
+              </svg>
               <span>Dashboard</span>
             </Link>
           </li>
@@ -247,17 +244,16 @@ export default function Sidebar() {
               <li><Link to="/Student_status_request">Student status request</Link></li>
             </ul>
           </li>
-
-        
- <li>
-      <Link to="/DownloadCertificate">
-        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
-        <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h320q17 0 28.5 11.5T560-800q0 17-11.5 28.5T520-760H200v560h560v-200q0-17 11.5-28.5T800-440q17 0 28.5 11.5T840-400v200q0 33-23.5 56.5T760-120H200Zm226-160-43-43q-11-11-11-28t11-28l214-214q12-12 28-11.5t28 12.5q11 12 11 28t-11 28L467-280h193q17 0 28.5 11.5T700-240q0 17-11.5 28.5T660-200H400q-17 0-28.5-11.5T360-240q0-17 11.5-28.5T400-280h26Z"/>
-        </svg>
-        <span>Documents</span>
-      </Link>
-    </li>
-    <li style={{ position: "relative" }}>
+  
+          <li>
+                <Link to="/DownloadCertificate">
+                  <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+                  <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h320q17 0 28.5 11.5T560-800q0 17-11.5 28.5T520-760H200v560h560v-200q0-17 11.5-28.5T800-440q17 0 28.5 11.5T840-400v200q0 33-23.5 56.5T760-120H200Zm226-160-43-43q-11-11-11-28t11-28l214-214q12-12 28-11.5t28 12.5q11 12 11 28t-11 28L467-280h193q17 0 28.5 11.5T700-240q0 17-11.5 28.5T660-200H400q-17 0-28.5-11.5T360-240q0-17 11.5-28.5T400-280h26Z"/>
+                  </svg>
+                  <span>Documents</span>
+                </Link>
+              </li>
+              <li style={{ position: "relative" }}>
   
  
 </li>
