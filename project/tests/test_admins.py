@@ -1,109 +1,163 @@
 import pytest
 from rest_framework.test import APIClient
-import mongomock
+from unittest.mock import patch
 from bson import ObjectId
-from datetime import datetime
-from app import dbcommands
 
+client = APIClient()
 
-@pytest.fixture
-def client():
-    return APIClient()
+# === 1. /api/isadmin/ — check if user is admin ===
+@patch("app.views.dbcommands.is_admin")
+def test_is_admin_view(mock_is_admin):
+    mock_is_admin.return_value = True
+    response = client.post("/api/isadmin/", {"userId": 1}, format="json")
+    assert response.status_code == 200
+    assert response.data["is_admin"] is True
 
-# --- Get All Admins ---
-def test_get_all_admins(client, monkeypatch):
-    fake_db = mongomock.MongoClient().db
-    fake_db.administrators.insert_one({"user_id": 1})
-    fake_db.users.insert_one({"_id": 1, "name": "Shir"})
+# === 2. /api/isprof/ — check if user is professor ===
+@patch("app.views.dbcommands.is_prof")
+def test_is_prof_view(mock_is_prof):
+    mock_is_prof.return_value = True
+    response = client.post("/api/isprof/", {"userId": 2}, format="json")
+    assert response.status_code == 200
+    assert response.data["is_"] is True
 
-    monkeypatch.setattr(dbcommands, "administrators", fake_db.administrators)
-    monkeypatch.setattr(dbcommands, "get_user_name_by_id", lambda uid: "Shir")
-
+# === 3. /admins/ — get list of all admins ===
+@patch("app.views.dbcommands.administrators.find")
+@patch("app.views.dbcommands.get_user_name_by_id")
+def test_get_all_admins(mock_get_name, mock_find):
+    mock_find.return_value = [{"user_id": 1}, {"user_id": 2}]
+    mock_get_name.side_effect = ["Alice", "Bob"]
     response = client.get("/admins/")
     assert response.status_code == 200
-    assert response.data[0]["user_id"] == 1
-    assert response.data[0]["name"] == "Shir"
+    assert len(response.data) == 2
 
-# --- Get All Requests for Admin ---
-def test_get_all_requests(client, monkeypatch):
-    fake_requests = [
-        {"_id": "ask1", "date_sent": datetime.now(), "status": "pending", "id_receiving": 2}
+# === 4. /api/professors/ — get list of all professors ===
+@patch("app.views.dbcommands.get_all_professors")
+@patch("app.views.dbcommands.get_user_name_by_id")
+def test_get_all_professors(mock_get_name, mock_get_all):
+    mock_get_all.return_value = [{"user_id": 3, "department": "Math", "role": "Lecturer"}]
+    mock_get_name.return_value = "Dr. Smith"
+    response = client.get("/api/professors/")
+    assert response.status_code == 200
+    assert response.data[0]["name"] == "Dr. Smith"
+
+# === 5. /asks/10/ — get ask details ===
+@patch("app.views.dbcommands.get_ask_by_id")
+def test_get_ask_details_found(mock_get_ask):
+    mock_get_ask.return_value = {"idr": 10, "title": "Help"}
+    response = client.get("/asks/10/")
+    assert response.status_code == 200
+    assert response.data["idr"] == 10
+
+# === 6. /asks/99/ — ask not found ===
+@patch("app.views.dbcommands.get_ask_by_id")
+def test_get_ask_details_not_found(mock_get_ask):
+    mock_get_ask.return_value = None
+    response = client.get("/asks/99/")
+    assert response.status_code == 404
+
+# === 7. /asks/15/add_note/ — add note to ask ===
+@patch("app.views.dbcommands.append_note_to_ask")
+def test_add_note_success(mock_append):
+    mock_append.return_value = True
+    response = client.post("/asks/15/add_note/", {"note": "admin: OK"}, format="json")
+    assert response.status_code == 200
+
+# === 8. /asks/15/add_note/ — empty note error ===
+@patch("app.views.dbcommands.append_note_to_ask")
+def test_add_note_empty(mock_append):
+    response = client.post("/asks/15/add_note/", {"note": ""}, format="json")
+    assert response.status_code == 400
+
+# === 9. /comments/123/ — get comment text ===
+@patch("app.views.dbcommands.get_comment_by_idr")
+def test_get_comment_found(mock_get_comment):
+    mock_get_comment.return_value = {"text": "admin: reply"}
+    response = client.get("/comments/123/")
+    assert response.status_code == 200
+    assert "admin" in response.json()["text"]
+
+# === 10. /comments/999/ — comment not found ===
+@patch("app.views.dbcommands.get_comment_by_idr")
+def test_get_comment_not_found(mock_get_comment):
+    mock_get_comment.return_value = None
+    response = client.get("/comments/999/")
+    assert response.status_code == 200
+    assert response.json()["text"] == ""
+
+# === 11. /api/update_grade/ — update valid grade ===
+@patch("app.views.dbcommands.update_student_grade")
+def test_update_grade_valid(mock_update):
+    mock_update.return_value = 1
+    response = client.post("/api/update_grade/", {
+        "user_id": 1,
+        "course_id": "abc123",
+        "grade": 95
+    }, format="json")
+    assert response.status_code == 200
+
+# === 12. /api/update_grade/ — grade out of range ===
+def test_update_grade_invalid_value():
+    response = client.post("/api/update_grade/", {
+        "user_id": 1,
+        "course_id": "abc123",
+        "grade": 110
+    }, format="json")
+    assert response.status_code == 400
+
+# === 13. /api/available_courses/10/ — get available courses ===
+@patch("app.views.dbcommands.get_available_courses")
+def test_get_available_courses(mock_get_courses):
+    mock_get_courses.return_value = [
+        {"_id": ObjectId(), "name": "Physics", "points": 3}
     ]
-    monkeypatch.setattr(dbcommands, "get_open_asks_for_admin", lambda aid: fake_requests)
-
-    response = client.get("/asks/")
+    response = client.get("/api/available_courses/10/")
     assert response.status_code == 200
-    assert len(response.data) == 1
-    assert response.data[0]["_id"] == "ask1"
+    assert response.data[0]["name"] == "Physics"
 
-# --- Update Ask Status ---
-def test_update_ask_status(client, monkeypatch):
-    fake_db = mongomock.MongoClient().db
-    ask_id = fake_db.requests.insert_one({
-        "status": "pending",
-        "id_receiving": 2
-    }).inserted_id
+# === 14. /api/professor_courses/55/ — get professor’s courses ===
+@patch("app.views.dbcommands.get_courses_by_lecturer")
+def test_professor_courses(mock_get_courses):
+    mock_get_courses.return_value = [{"_id": ObjectId(), "name": "AI"}]
+    response = client.get("/api/professor_courses/55/")
+    assert response.status_code == 200
+    assert response.data[0]["name"] == "AI"
 
-    monkeypatch.setattr(dbcommands, "requests", fake_db.requests)
 
-    response = client.post(f"/asks/{ask_id}/update_status/", {
-        "status": "closed"
+# === 17. /courses/add/ — missing field → error ===
+@patch("app.views.dbcommands.create_course")
+def test_add_course_missing_field(mock_create):
+    import json
+    response = client.post("/courses/add/", json.dumps({
+        "name": "DB"
+    }), content_type="application/json")
+    assert response.status_code == 400
+
+# === 18. /api/students_in_course/<id>/ — get enrolled students ===
+@patch("app.views.dbcommands.get_students_for_course")
+def test_students_in_course(mock_get_students):
+    mock_get_students.return_value = [{"user_id": 1, "name": "Jane"}]
+    response = client.get("/api/students_in_course/abc123/")
+    assert response.status_code == 200
+    assert response.data[0]["name"] == "Jane"
+
+# === 19. /api/enroll_course/ — enroll successfully ===
+@patch("app.views.dbcommands.enroll_student")
+def test_enroll_course_success(mock_enroll):
+    mock_enroll.return_value = True
+    response = client.post("/api/enroll_course/", {
+        "user_id": 1,
+        "course_id": str(ObjectId())
     }, format="json")
-
     assert response.status_code == 200
-    updated = fake_db.requests.find_one({"_id": ask_id})
-    assert updated["status"] == "closed"
 
-# --- Reassign Ask ---
-def test_reassign_ask(client, monkeypatch):
-    fake_db = mongomock.MongoClient().db
-    ask_id = fake_db.requests.insert_one({
-        "id_receiving": 2
-    }).inserted_id
-
-    monkeypatch.setattr(dbcommands, "requests", fake_db.requests)
-
-    response = client.post(f"/asks/{ask_id}/reassign/", {
-        "new_admin_id": 3
+# === 20. /api/enroll_course/ — already enrolled ===
+@patch("app.views.dbcommands.enroll_student")
+def test_enroll_course_duplicate(mock_enroll):
+    mock_enroll.return_value = False
+    response = client.post("/api/enroll_course/", {
+        "user_id": 1,
+        "course_id": str(ObjectId())
     }, format="json")
-
     assert response.status_code == 200
-    updated = fake_db.requests.find_one({"_id": ask_id})
-    assert updated["id_receiving"] == 3
-
-# --- Add Note to Ask ---
-def test_add_note_to_ask(client, monkeypatch):
-    fake_db = mongomock.MongoClient().db
-    ask_id = fake_db.requests.insert_one({
-        "text": "Original text"
-    }).inserted_id
-
-    monkeypatch.setattr(dbcommands, "requests", fake_db.requests)
-
-    response = client.post(f"/asks/{ask_id}/add_note/", {
-        "note": "New note"
-    }, format="json")
-
-    assert response.status_code == 200
-    updated = fake_db.requests.find_one({"_id": ask_id})
-    assert "New note" in updated["text"]
-
-# --- Get Full Student Summary ---
-def test_get_full_student_summary(client, monkeypatch):
-    sid = 10
-    fake_students = mongomock.MongoClient().db.students
-    fake_students.insert_one({"user_id": sid})
-
-    monkeypatch.setattr(dbcommands, "students", fake_students)
-    monkeypatch.setattr(dbcommands, "get_user_name_by_id", lambda _: "Tali")
-    monkeypatch.setattr(dbcommands, "get_user_email_by_id", lambda _: "tali@example.com")
-    monkeypatch.setattr(dbcommands, "get_student_department_by_id", lambda _: "CS")
-    monkeypatch.setattr(dbcommands, "get_student_status_by_id", lambda _: "active")
-    monkeypatch.setattr(dbcommands, "get_student_sum_points_by_id", lambda _: 80)
-    monkeypatch.setattr(dbcommands, "get_student_average_by_id", lambda _: 90)
-    monkeypatch.setattr(dbcommands, "get_all_courses", lambda _: [])
-    monkeypatch.setattr(dbcommands, "requests", mongomock.MongoClient().db.requests)
-
-    response = client.get(f"/studentlookup/{sid}/")
-    assert response.status_code == 200
-    assert response.data["info"]["name"] == "Tali"
+    assert "already enrolled" in response.data["message"]

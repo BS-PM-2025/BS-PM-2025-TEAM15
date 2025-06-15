@@ -34,9 +34,9 @@ function ViewAsks() {
 
   const applyFilters = () => {
     let url = `http://localhost:8000/asks/?admin_id=${admin_id}&`;
-    if (importance) url += `importance=${importance}&`;
-    if (status) url += `status=${status}&`;
-    if (category) url += `category=${category}&`;
+    if (importance) url += `importance=${importance.toLowerCase()}&`;
+    if (status) url += `status=${status.toLowerCase()}&`;
+    if (category) url += `category=${category.toLowerCase()}&`;
     if (sortBy) url += `sort=${sortBy}&order=${sortOrder}&`;
     if (fromDate) url += `from=${fromDate}&`;
     if (toDate) url += `to=${toDate}&`;
@@ -44,8 +44,7 @@ function ViewAsks() {
     fetch(url)
       .then(res => res.json())
       .then(data => {
-        const filtered = data.filter(ask => ask.status !== "closed");
-        setAsks(filtered);
+        setAsks(data); //  DO NOT filter out closed here
       });
   };
 
@@ -64,7 +63,7 @@ function ViewAsks() {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h2 style={{ color: '#134075',marginBottom: "40px" }}>Incoming Requests</h2>
+      <h2 style={{ color: '#134075', marginBottom: "40px" }}>Incoming Requests</h2>
 
       {/* Filters */}
       <div style={{ marginBottom: "20px", display: "flex", flexWrap: "wrap", gap: "30px" }}>
@@ -83,13 +82,13 @@ function ViewAsks() {
           <select value={status} onChange={e => setStatus(e.target.value)}>
             <option value="">..</option>
             <option value="pending">Pending</option>
-            <option value="assigned to self">Assigned to Self</option>
+            <option value="in progress">In Progress</option>
             <option value="closed">Closed</option>
           </select>
         </label>
 
         <label>
-           <span style={{ color: '#134075' }}>Category:</span>
+          <span style={{ color: '#134075' }}>Category:</span>
           <select value={category} onChange={e => setCategory(e.target.value)}>
             <option value="">..</option>
             <option value="financial">Financial</option>
@@ -111,106 +110,99 @@ function ViewAsks() {
         </label>
 
         <div>
-         <span style={{ color: '#134075' }}>Order:</span> 
+          <span style={{ color: '#134075' }}>Order:</span>
           <button onClick={() => { setSortOrder("asc"); applyFilters(); }} style={{ marginLeft: "5px" }}>⬆️</button>
           <button onClick={() => { setSortOrder("desc"); applyFilters(); }} style={{ marginLeft: "5px" }}>⬇️</button>
         </div>
 
-       <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
-  <label>
-    <span style={{ color: '#134075' }}>From:</span>
-    <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} />
-  </label>
-  <label>
-    <span style={{ color: ' #134075' }}>To:</span>
-    <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} />
-  </label>
-   <div style={{ display: "flex", gap: "15px" }}>
-    <button onClick={applyFilters}>Apply Filters</button>
-    <button onClick={clearFilters}>Clear Filters</button>
-  </div>
-       
-</div>
-
-
-         
+        <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
+          <label>
+            <span style={{ color: '#134075' }}>From:</span>
+            <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} />
+          </label>
+          <label>
+            <span style={{ color: '#134075' }}>To:</span>
+            <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} />
+          </label>
+          <div style={{ display: "flex", gap: "15px" }}>
+            <button onClick={applyFilters}>Apply Filters</button>
+            <button onClick={clearFilters}>Clear Filters</button>
+          </div>
+        </div>
       </div>
 
       {/* Ask Cards */}
       <div style={{
-  display: "flex",
-  flexDirection: "column",
-  gap: "20px",
-  padding: "10px",
-  alignItems: "center",
-  maxHeight: "60vh",
-  overflowY: "auto"
-}}>
-
-        {asks.map((ask) => (
-  <div
-    key={ask._id}
-    onClick={() => setSelectedAsk(ask)}
-    style={{
-      cursor: "pointer",
-      width: "90%",
-      borderRadius: "12px",
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      padding: "30x 40px",
-      backgroundColor: "#f9f9f9",
-      boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-      borderLeft: ask.importance === "high" ? "5px solid #d9534f" :
-                  ask.importance === "medium" ? "5px solid #f0ad4e" :
-                  "5px solid #5bc0de"
-    }}
-  >
-    <div style={{ flex: 2 }}>
-      <div style={{ fontSize: "14px", color: "#666" }}>
-        📅 {new Date(ask.date_sent).toLocaleDateString()}
-      </div>
-      <div style={{ fontSize: "16px", color: "#134075", fontWeight: "bold" }}>
-        📝 {ask.title}
-      </div>
-    </div>
-
-    <div style={{ flex: 1, textAlign: "center", fontSize: "14px", color: "#333" }}>
-      👤 {ask.id_sending}
-    </div>
-
-    <div style={{ flex: 1, textAlign: "right" }}>
-      <span style={{
-        padding: "6px 12px",
-        borderRadius: "12px",
-        fontSize: "12px",
-        fontWeight: "bold",
-        color: "#fff",
-        backgroundColor:
-          ask.status?.toLowerCase().includes("pending") ? "rgba(53, 57, 53, 0.51)" :
-          ask.status?.toLowerCase().includes("done") || ask.status?.toLowerCase().includes("closed") ? "rgb(54, 220, 65)" :
-          ask.status?.toLowerCase().includes("assigned") || ask.status?.includes("בטיפול") ? "#f0ad4e" :
-          "#90900fb0"
+        display: "flex",
+        flexDirection: "column",
+        gap: "20px",
+        padding: "10px",
+        alignItems: "center",
+        maxHeight: "60vh",
+        overflowY: "auto"
       }}>
-        {ask.status}
-      </span>
-    </div>
-  </div>
-))}
+        {asks.map((ask) => (
+          <div
+            key={ask._id}
+            onClick={() => setSelectedAsk(ask)}
+            style={{
+              cursor: "pointer",
+              width: "90%",
+              borderRadius: "12px",
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "30px 40px",
+              backgroundColor: "#f9f9f9",
+              boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+              borderLeft: ask.importance === "high" ? "5px solid #d9534f" :
+                          ask.importance === "medium" ? "5px solid #f0ad4e" :
+                          "5px solid #5bc0de"
+            }}
+          >
+            <div style={{ flex: 2 }}>
+              <div style={{ fontSize: "14px", color: "#666" }}>
+                📅 {new Date(ask.date_sent).toLocaleDateString()}
+              </div>
+              <div style={{ fontSize: "16px", color: "#134075", fontWeight: "bold" }}>
+                📝 {ask.title}
+              </div>
+            </div>
 
+            <div style={{ flex: 1, textAlign: "center", fontSize: "14px", color: "#333" }}>
+               {ask.id_sending}
+            </div>
+
+            <div style={{ flex: 1, textAlign: "right" }}>
+              <span style={{
+                padding: "6px 12px",
+                borderRadius: "12px",
+                fontSize: "12px",
+                fontWeight: "bold",
+                color: "#fff",
+                backgroundColor:
+                  ask.status?.toLowerCase().includes("closed") ? "#5cb85c" :
+                  ask.status?.toLowerCase().includes("pending") ? "#6c757d" :
+                  ask.status?.includes("בטיפול") ? "#f0ad4e" :
+                  "#90900fb0"
+              }}>
+                {ask.status}
+              </span>
+            </div>
+          </div>
+        ))}
       </div>
 
-     <RequestModal
-  key={selectedAsk?._id || "default"} 
-  ask={selectedAsk}
-  onClose={() => setSelectedAsk(null)}
-  admin_id={admin_id}
-  currentUserName={currentUserName}
-  admins={admins}
-  refreshAsks={refreshAsks}
-/>
-
+      <RequestModal
+        key={selectedAsk?._id || "default"}
+        ask={selectedAsk}
+        onClose={() => setSelectedAsk(null)}
+        admin_id={admin_id}
+        currentUserName={currentUserName}
+        admins={admins}
+        refreshAsks={refreshAsks}
+      />
     </div>
   );
 }

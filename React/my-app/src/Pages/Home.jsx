@@ -87,7 +87,7 @@ function Home_test() {
 
       <div style={styles.statsContainer}>
         <div style={styles.card}>📨 Total Requests<br /><strong>{stats.totalRequests}</strong></div>
-        <div style={styles.card}>✅ Approved Requests<br /><strong>{stats.doneRequests}</strong></div>
+        <div style={styles.card}> Approved Requests<br /><strong>{stats.doneRequests}</strong></div>
         <div style={styles.card}>🕓 Requests in Progress<br /><strong>{stats.IN_progress}</strong></div>
         <div style={styles.card}>⏳ Pending Requests<br /><strong>{stats.pendingRequests}</strong></div>
       </div>
@@ -178,8 +178,8 @@ askLayer: {
   flexDirection: 'column', // stack ask cards
   gap: '10px',
   width: '40%',
-  height: '100px',          // ✅ fixed height
-  overflowY: 'visible',        // ✅ enable vertical scroll
+  height: '100px',          //  fixed height
+  overflowY: 'auto',        //  enable vertical scroll
   paddingRight: '5px' ,      // optional: prevents scrollbar overlap
 
 },
@@ -250,8 +250,8 @@ buttonContainer: {
 
 
 container: {
-  width: '100%',                      // ✅ fix typo
-                 // ✅ fix case
+  width: '100%',                      //  fix typo
+                 //  fix case
   padding: '40px',
   background: 'linear-gradient(to right, rgba(223, 226, 238, 0.19), rgb(255, 255, 255))',
   color: '#134075',

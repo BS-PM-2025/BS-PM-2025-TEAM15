@@ -86,7 +86,7 @@ function StudentStatusEditor({placeholder , data}){
     const renderStudentDetails = () => (
       <div className="profile_student">
       <Box >
-        <Typography  color="black" variant="h3">👤 Student Details</Typography>
+        <Typography  color="black" variant="h3"> Student Details</Typography>
         <Typography color="black" variant="h4"> User Id: {selectedStudent.user_id}</Typography>
         <Typography color="black" variant="h6" ><strong>Department:</strong> {selectedStudent.department}</Typography>
         <Typography color="black" variant="h6"><strong>Status:</strong> {selectedStudent.status}</Typography>
@@ -122,7 +122,7 @@ function StudentStatusEditor({placeholder , data}){
         <Box sx={{ display: "flex", gap: 2, marginTop: 2 }}>
        
           
-        <Button variant="contained" color="success" onClick={handleApprove}>✅ Approve</Button>
+        <Button variant="contained" color="success" onClick={handleApprove}> Approve</Button>
           <Button variant="outlined" onClick={() => setSelectedStudent(null)}>🔙 Back</Button>
         </Box>
       </Box>

@@ -166,26 +166,52 @@ const clearAll = () => {
 
   const refreshStudent = () => fetchStudentDetails();
   console.log("well",studentId)
+
   const applyAskFilters = () => {
-    if (!studentData) return [];
+  if (!studentData) return [];
 
-    let filtered = [...studentData.asks];
-    if (importance) filtered = filtered.filter(a => a.importance === importance);
-    if (status) filtered = filtered.filter(a => a.status === status);
-    if (category) filtered = filtered.filter(a => a.category === category);
-    if (fromDate) filtered = filtered.filter(a => new Date(a.date_sent) >= new Date(fromDate));
-    if (toDate) filtered = filtered.filter(a => new Date(a.date_sent) <= new Date(toDate));
+  let filtered = [...studentData.asks];
 
-    if (sortBy === "importance") {
-      const order = { high: 0, medium: 1, low: 2 };
-      filtered.sort((a, b) => (order[a.importance] ?? 3) - (order[b.importance] ?? 3));
-    } else if (sortBy === "date") {
-      filtered.sort((a, b) => new Date(a.date_sent) - new Date(b.date_sent));
-    }
+  // Normalize importance
+  if (importance) {
+    filtered = filtered.filter(a => (a.importance || "").toLowerCase() === importance.toLowerCase());
+  }
 
-    if (sortOrder === "desc") filtered.reverse();
-    return filtered;
-  };
+  // Normalize status
+  if (status) {
+    filtered = filtered.filter(a => {
+      const stat = (a.status || "").toLowerCase();
+      if (status === "in progress") {
+        return a.status?.startsWith("בטיפול");
+      }
+      return stat === status.toLowerCase();
+    });
+  }
+
+  if (category) {
+    filtered = filtered.filter(a => (a.category || "").toLowerCase() === category.toLowerCase());
+  }
+
+  if (fromDate) {
+    filtered = filtered.filter(a => new Date(a.date_sent) >= new Date(fromDate));
+  }
+
+  if (toDate) {
+    filtered = filtered.filter(a => new Date(a.date_sent) <= new Date(toDate));
+  }
+
+  if (sortBy === "importance") {
+    const order = { high: 0, medium: 1, low: 2 };
+    filtered.sort((a, b) => (order[a.importance?.toLowerCase()] ?? 3) - (order[b.importance?.toLowerCase()] ?? 3));
+  } else if (sortBy === "date") {
+    filtered.sort((a, b) => new Date(a.date_sent) - new Date(b.date_sent));
+  }
+
+  if (sortOrder === "desc") filtered.reverse();
+
+  return filtered;
+};
+
 
   return (
    <div style={{
@@ -304,7 +330,7 @@ const clearAll = () => {
       boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)"
     }}>
       <Typography variant="h5" color="#134075" gutterBottom>
-        👤 Student Details
+         Student Details
       </Typography>
       <Typography variant="body1" style={{ color: '#134075' }}><strong>Name:</strong> {studentData.info.name}</Typography>
       <Typography variant="body1" style={{ color: '#134075' }}><strong>User ID:</strong> {studentData.info.user_id}</Typography>
@@ -331,13 +357,12 @@ const clearAll = () => {
       </div>
 
       <Box sx={{ display: "flex", gap: 2, marginTop: 3 }}>
-        <Button variant="contained" color="success" onClick={handleApprove}>✅ Approve</Button>
+        <Button variant="contained" color="success" onClick={handleApprove}> Approve</Button>
       </Box>
     </div>
   )}
 
-  {/* Courses Tab */}
-  {activeTab === "courses" && (
+{activeTab === "courses" && (
     <div style={{
       backgroundColor: "#f5f7fb",
       padding: "30px",
@@ -347,7 +372,7 @@ const clearAll = () => {
       overflowY: "auto" 
     }}>
       <Typography variant="h5" color="#134075" gutterBottom>
-        📚 Enrolled Courses
+         Enrolled Courses
       </Typography>
       <Course_tree userId={studentId} />
     </div>
@@ -382,11 +407,12 @@ const clearAll = () => {
       <label>
         <span style={{ color: '#134075' }}>Status:</span>
         <select value={status} onChange={e => setStatus(e.target.value)}>
-          <option value="">..</option>
-          <option value="pending">Pending</option>
-          <option value="assigned to self">Assigned to Self</option>
-          <option value="closed">Closed</option>
-        </select>
+  <option value="">..</option>
+  <option value="pending">Pending</option>
+  <option value="in progress">In Progress</option>
+  <option value="closed">Closed</option>
+</select>
+
       </label>
 
       <label>
@@ -463,7 +489,7 @@ const clearAll = () => {
           📝 {ask.title}
         </div>
         <div style={{ fontSize: "14px", color: "#333" }}>
-          👤 Student ID: {ask.id_sending}
+           Student ID: {ask.id_sending}
         </div>
       </div>
 
@@ -511,10 +537,10 @@ const clearAll = () => {
     padding: "30px",
     borderRadius: "15px",
     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-    maxHeight: "400px",        // ✅ enable vertical scroll
+    maxHeight: "400px",        //  enable vertical scroll
     overflowY: "auto"
   }}>
-    <h3 style={{ color: "#134075" }}>📥 Available Courses for Enrollment</h3>
+    <h3 style={{ color: "#134075" }}>Available Courses for Enrollment</h3>
     {availableCourses.length === 0 ? (
       <p>No available courses or all already enrolled.</p>
     ) : (

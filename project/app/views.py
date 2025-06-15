@@ -287,9 +287,7 @@ class StudentStatsView(APIView):
 
                     if status_val == "pending":
                         pending += 1
-                    elif status_val == "approved":
-                        approved += 1
-                    elif status_val == "done":
+                    elif status_val == "closed":
                         done += 1
                     elif "in progress" in status_val or "בטיפול" in status_val:
                         inprogress += 1
@@ -309,7 +307,7 @@ class StudentStatsView(APIView):
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
-            print("❌ Error in StudentStatsView:", e)
+            print(" Error in StudentStatsView:", e)
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class Searchview(APIView):
@@ -353,7 +351,7 @@ class graphs(APIView):
 
             if not user_id:
                 return Response({"success": False, "error": "Missing user_id"}, status=status.HTTP_400_BAD_REQUEST)
-            print("📥 Received GET to /api/graph with user_id =", request.GET.get("user_id"))
+            print(" Received GET to /api/graph with user_id =", request.GET.get("user_id"))
             users_dep = dbcom.get_student_department_by_id(user_id)
             if not users_dep:
                 
@@ -392,7 +390,7 @@ class graphs(APIView):
         
 
     def post(self,request):
-        print("📥 Received post to /api/graph with user_id =", request.GET.get("user_id"))
+        print(" Received post to /api/graph with user_id =", request.GET.get("user_id"))
 
         try:  
             user_id = request.GET.get("user_id")
@@ -418,13 +416,18 @@ class graphs(APIView):
             for course in course_ids:
                 string_id = str(course)
 
-                grade = dbcom.find_courses_with_nested_id(string_id,user_id)
+                result = dbcom.find_courses_with_nested_id(string_id,user_id)
+                grade = result["grade"]
+                finish = result["finish"]
                 name_course = dbcom.get_course_by_oid(course)
+                print("Course id :",course)
                 print("name",name_course)
                 print("grade::",grade)
+                print("status", finish)
                 user_courses_grades.append({
                     "name": name_course,
-                    "grade": grade if grade is not None else 'None'
+                    "grade": grade if grade is not None else 0,
+                    "finish": finish
                 })
                 serializer = grades_graph(user_courses_grades,many=True)
                 serialized_data = serializer.data
@@ -451,7 +454,7 @@ class GetStudentCourseInfoView(APIView):
             completed_courses = []
             courses_details = []
             completed_amount = 0
-
+            
             print("######Check######")
             print("Student check: " + str(student))
             print("student courses check: " + str(student_courses))
@@ -469,17 +472,18 @@ class GetStudentCourseInfoView(APIView):
 
                 print("Course info check:" + str(course_info))
 
-                if finished:
-                    total_earned_credits += float(course_info["points"])
-                    completed_amount = completed_amount+1
+                #if finished: (took it down to have access to fetch all the courses of the user - felix.)
+                if grade > 56 and finished == True :  # Checking if the user passed the course.
+                        total_earned_credits += float(course_info["points"])
+                        completed_amount = completed_amount+1
                 courses_details.append({
-                    "name": course_info.get("name"),
-                    "lecturer": course_info.get("lecturer"),
-                    "department": course_info.get("department"),
-                    "points": course_info.get("points"),
-                    "grade": grade,
-                    "finished": finished
-                })
+                        "name": course_info.get("name"),
+                        "lecturer": course_info.get("lecturer"),
+                        "department": course_info.get("department"),
+                        "points": course_info.get("points"),
+                        "grade": grade,
+                        "finished": finished
+                    })
 
             TOTAL_REQUIRED_CREDITS = 160
             remaining_credits = max(0, TOTAL_REQUIRED_CREDITS - total_earned_credits)
@@ -597,7 +601,7 @@ def edit_request_text(request, ask_id):
             if not new_text:
                 return JsonResponse({"error": "Text cannot be empty."}, status=400)
 
-            success = append_text(ask_id, new_text)  # ✅ use your helper
+            success = append_text(ask_id, new_text)  # use your helper
 
             if not success:
                 return JsonResponse({"error": "Request not found."}, status=404)
@@ -608,3 +612,78 @@ def edit_request_text(request, ask_id):
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid method"}, status=405)
+
+from PyPDF2 import PdfReader, PdfWriter
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from io import BytesIO
+from datetime import datetime
+from django.http import FileResponse
+import os
+from django.conf import settings
+from django.utils.encoding import smart_str
+
+
+def generate_certificate(student_name, student_id):
+    template_path = os.path.join(settings.MEDIA_ROOT, 'documents', 'המכללה האקדמית להנדסה ExampleTech.pdf')
+
+
+    packet = BytesIO()
+    can = canvas.Canvas(packet, pagesize=A4)
+    can.drawString(210, 720, f"תאריך: {datetime.today().strftime('%d/%m/%Y')}")
+    can.drawString(220, 590, f"{student_name}")
+    can.drawString(240, 570, f"ת.ז: {student_id}")
+    can.save()
+
+    packet.seek(0)
+    overlay_pdf = PdfReader(packet)
+    template_pdf = PdfReader(template_path)
+    output_pdf = PdfWriter()
+
+    base_page = template_pdf.pages[0]
+    base_page.merge_page(overlay_pdf.pages[0])
+    output_pdf.add_page(base_page)
+
+    # שמירה לקובץ פיזי בתוך media/documents/
+    output_path = os.path.join(settings.MEDIA_ROOT, 'documents', f'Study_Certificate_{student_id}.pdf')
+    with open(output_path, 'wb') as out_file:
+        output_pdf.write(out_file)
+
+    return output_path  # מחזיר את הנתיב לקובץ שנשמר
+
+class DownloadCertificateView(APIView):
+    def get(self, request, student_id):
+        try:
+            student = db.get_user_name_by_id(student_id)
+            if not student:
+                return Response({'error': 'Student not found'}, status=404)
+
+            file_path = generate_certificate(student_name=student, student_id=student_id)
+            file_handle = open(file_path, 'rb')
+            return FileResponse(file_handle, as_attachment=True, filename=smart_str(os.path.basename(file_path)))
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
+
+class StudentNotificationsView(APIView):
+    def get(self, request, user_id):
+        try:
+            ask_ids = db.get_student_asks(user_id)
+            answered_requests = []
+
+            for aid in reversed(ask_ids):
+                ask = db.get_ask_by_id(aid)
+                if ask and ask.get("status") in ["approved", "done"]:
+                    answered_requests.append({
+                        "title": ask.get("title"),
+                        "status": ask.get("status"),
+                        "updated_at": ask.get("updated_at", "N/A")
+                    })
+
+                if len(answered_requests) == 10:
+                    break
+
+            return Response({"notifications": answered_requests}, status=200)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)

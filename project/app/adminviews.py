@@ -8,6 +8,9 @@ import os, zipfile
 from django.http import HttpResponse, Http404
 from django.conf import settings
 from io import BytesIO
+from django.http import JsonResponse
+from datetime import datetime
+
 # --- GET all admins ---
 @api_view(["GET"])
 def get_all_admins(request):
@@ -41,7 +44,7 @@ def reassign_ask(request, ask_id):
     try:
         ask_id = int(ask_id)
         new_admin_id = int(request.data.get("new_admin_id"))
-        success = dbcommands.reassign_ask_to_admin(ask_id, new_admin_id)
+        success = dbcommands.reassign_ask_by_idr(ask_id, new_admin_id)
         if success:
             return Response({"message": "Ask reassigned."})
         return Response({"error": "Request not found or update failed."}, status=404)
@@ -76,15 +79,32 @@ def get_all_requests(request):
         order = request.GET.get("order", "asc")
         admin_id = request.GET.get("admin_id")
 
+        # 🔽 Normalize to lowercase for consistent matching
+        if importance:
+            importance = importance.lower()
+        if status_filter:
+            status_filter = status_filter.lower()
+        if category:
+            category = category.lower()
+
         query = {}
         if admin_id:
             query["id_receiving"] = int(admin_id)
         if importance:
             query["importance"] = importance
+
+        #  Match "in progress" to statuses that start with "בטיפול"
         if status_filter:
-            query["status"] = status_filter
+            if status_filter == "in progress":
+                query["status"] = {"$regex": "^בטיפול"}
+            elif status_filter == "closed":
+                query["status"] = "closed"
+            else:
+                query["status"] = status_filter
+
         if category:
             query["category"] = category
+
         if date_sent_from or date_sent_to:
             query["date_sent"] = {}
             if date_sent_from:
@@ -108,20 +128,25 @@ def get_all_requests(request):
     except Exception as e:
         return Response({"error": str(e)}, status=400)
 
+
 # --- POST: Add a note ---
 @api_view(["POST"])
 def add_note_to_ask(request, ask_id):
     try:
         ask_id = int(ask_id)
-        note = request.data.get("note", "").strip()
-        if not note:
+        note_body = request.data.get("note", "").strip()
+
+        if not note_body:
             return Response({"error": "Empty note"}, status=400)
+
+        note = note_body
         success = dbcommands.append_note_to_ask(ask_id, note)
         if success:
             return Response({"message": "Note added."})
         return Response({"error": "Ask not found or update failed."}, status=404)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
 
 # --- GET: Full student summary ---
 @api_view(["GET"])
@@ -203,9 +228,9 @@ def get_available_courses_view(request, user_id):
 
 @api_view(["GET"])
 def professor_courses(request, professor_id):
-    print(f"📥 GET /api/professor_courses/{professor_id}/ called")
+    print(f" GET /api/professor_courses/{professor_id}/ called")
     courses = dbcommands.get_courses_by_lecturer(professor_id)
-    print("🎓 Courses found:", courses)
+    print(" Courses found:", courses)
 
     # Convert ObjectId to str
     for course in courses:
@@ -224,7 +249,7 @@ def students_in_course(request, course_id):
 @api_view(["POST"])
 def update_grade(request):
     try:
-        print("📥 Grade update request:", request.data)
+        print(" Grade update request:", request.data)
 
         user_id = int(request.data.get("user_id"))
         course_id = request.data.get("course_id")
@@ -232,13 +257,13 @@ def update_grade(request):
 
         if 0 <= new_grade <= 100:
             updated = dbcommands.update_student_grade(user_id, course_id, new_grade)
-            print(f"✅ Updated records: {updated}")
+            print(f" Updated records: {updated}")
             return Response({"message": "Grade updated successfully."})
         else:
             return Response({"error": "Grade must be between 0 and 100."}, status=400)
 
     except Exception as e:
-        print("❌ Error:", e)
+        print(" Error:", e)
         return Response({"error": str(e)}, status=400)
 
 
@@ -272,3 +297,111 @@ def download_request_documents(request, idr):
     response = HttpResponse(memory_file, content_type='application/zip')
     response['Content-Disposition'] = f'attachment; filename=request_{idr}_documents.zip'
     return response
+
+
+def get_comment(request, idr):
+    comment = dbcommands.get_comment_by_idr(idr)
+    if comment:
+        return JsonResponse({"text": comment.get("text", "")})
+    return JsonResponse({"text": ""})
+
+@api_view(["GET"])
+def get_all_courses_view(request):
+    try:
+        all_courses = dbcommands.db.courses.find()
+        results = []
+        for course in all_courses:
+            lecturer_id = course.get("lecturer")
+            results.append({
+                "course_id": str(course["_id"]),
+                "name": course.get("name", ""),
+                "points": course.get("points", 0),
+                "lecturer": dbcommands.get_user_name_by_id(lecturer_id) if lecturer_id is not None else "Unknown"
+            })
+        return Response(results)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+
+@api_view(['POST'])
+def add_course(request):
+    try:
+        data = json.loads(request.body)
+        name = data.get("name")
+        lecturer = int(data.get("lecturer"))
+        department = data.get("department")
+        points = int(data.get("points"))
+        
+        dbcommands.create_course(name, lecturer, department, points)
+        return Response({"message": "Course added successfully."})
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+@api_view(['GET'])
+def get_all_professors(request):
+    try:
+        professors = dbcommands.get_all_professors()  # Each has user_id, department, role
+        results = []
+
+        for prof in professors:
+            user_id = prof.get("user_id")
+            name = dbcommands.get_user_name_by_id(user_id)
+            results.append({
+                "user_id": user_id,
+                "name": name,
+                "department": prof.get("department", ""),
+                "role": prof.get("role", "")
+            })
+
+        return Response(results)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+@api_view(["GET"])
+def get_user_notifications(request):
+    user_id = request.GET.get("user_id")
+    if not user_id:
+        return Response({"error": "Missing user_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        raw_notifications = dbcommands.get_notifications(int(user_id))
+
+        # Convert ObjectId and datetime to strings
+        notifications = []
+        for n in raw_notifications:
+            n["_id"] = str(n["_id"])
+            if isinstance(n["time"], datetime):
+                n["time"] = n["time"].isoformat()
+            notifications.append(n)
+
+        return Response(notifications, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# POST /api/notifications/mark_seen/
+@api_view(["POST"])
+def mark_notifications_seen(request):
+    user_id = request.data.get("user_id")
+    if not user_id:
+        return Response({"error": "Missing user_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        dbcommands.mark_notifications_as_seen(int(user_id))
+        return Response({"message": "Marked as seen"}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# GET /api/notifications/has_unseen/?user_id=123
+@api_view(["GET"])
+def has_unseen_notifications(request):
+    user_id = request.GET.get("user_id")
+    if not user_id:
+        return Response({"error": "Missing user_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        has_unseen = dbcommands.has_unseen_notifications(int(user_id))
+        return Response({"has_unseen": has_unseen}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)        

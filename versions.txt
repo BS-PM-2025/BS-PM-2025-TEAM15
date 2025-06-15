@@ -11,6 +11,11 @@ all the dependencies we need.
     "react-dom": "^19.1.0",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
+npm install react-flow-renderer
+npm install react-flow-renderer --legacy-peer-deps
+pip install PyPDF2
+pip install reportlab
+
 
 Connting to Django and React : 
 "pip install django-cors-headers"

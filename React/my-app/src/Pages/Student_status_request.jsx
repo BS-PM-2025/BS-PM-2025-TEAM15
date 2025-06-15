@@ -72,7 +72,7 @@ const Student_status_request = () => {
       {doneRequests.length ? doneRequests.map(renderCard) : <p>No completed requests found.</p>}
     </div>
 
-    {/* ✅ Modal for viewing/editing a request */}
+    {/*  Modal for viewing/editing a request */}
     {selectedRequest && (
       <Request_view
         ask={selectedRequest}
