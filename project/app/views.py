@@ -11,14 +11,12 @@ from django.contrib.auth.hashers import make_password, check_password
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-
 from . import dbcommands as dbcom 
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from . import dbcommands  # חשוב!    
-# Create your views here.
-
+from .dbcommands import append_text
 
 def home(request):
     return render(request, 'home.html')
