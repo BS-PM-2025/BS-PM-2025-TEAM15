@@ -180,6 +180,35 @@ class SignUpView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+#Change password
+class newPassword(APIView):
+    def post(self,request):
+        try:
+            
+            data = request.data
+            email = data.get('email')
+            id = data.get('id');
+            newpass = data.get('newPassword');
+            confirmpass =data.get('confirmpass');
+           
+            if (db.get_user_name_by_id(id) and db.get_user_email_by_id(id)):
+                username = db.get_user_name_by_id(id);
+                right_email = db.get_user_email_by_id(id);
+                
+            else:
+                return Response({'error':"failed to find User"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if(newpass != confirmpass):
+                
+                return Response({'error':"Password and confirm Don't match"}, status=status.HTTP_400_BAD_REQUEST)
+            flag = db.reset_user_password(email,newpass)
+            
+            if flag:
+                return  Response({'message': 'Changed Password'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({'error':"Error accoured"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 # LOGIN View
 class LoginView(APIView):
     def post(self, request):

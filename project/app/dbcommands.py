@@ -71,6 +71,15 @@ def set_user(user_id, user_name, user_email, user_password, user_type):
     }
     return users.insert_one(new_user).inserted_id
 
+def reset_user_password(email: str, new_password: str) -> bool:
+    user = users.find_one({"email": email})
+    if not user:
+        return False
+    result = users.update_one(
+        {"email": email},
+        {"$set": {"password": new_password}}
+    )
+    return True
 # === Student Info ===
 def get_all_students():
     students_cursor = students.find()
